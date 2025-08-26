@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/lib/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("VITE_APP_CONNECTION_STRING")
+}
+
+// @map just aliases the column names like @@map 
+model Mentee {
+  id           Int                        @id @default(autoincrement())
+  first_name   String
+  last_name    String
+  age          Int                        @default(20)
+  email        String                     @unique
+  phone_number String                     @unique
+  password     String
+  location     String
+  updateAt     DateTime                   @updatedAt
+  last_login   DateTime                   @default(now())
+  ratings      Int                        @default(0)
+  experience   String?
+  mentor       MentorMenteeRelationShip[]
+  bio          String
+  joined       DateTime                   @default(now())
+  goals        String[]                   @map("Interests")
+
+  @@map("mentee") // This is decoupling for the db while the code using the Mentor notation
+}
+
+model Mentor {
+  id           Int                        @id @default(autoincrement())
+  first_name   String
+  last_name    String
+  age          Int                        @default(20)
+  experience   String[]
+  email        String                     @unique
+  phone_number String                     @unique
+  password     String
+  location     String
+  mentee       MentorMenteeRelationShip[]
+  joined       DateTime                   @default(now())
+  ratings      Int                        @default(0)
+  updateAt     DateTime                   @updatedAt
+  last_login   DateTime                   @default(now())
+  expertise    String[]
+  bio          String                     @map("Biography")
+
+  @@map("mentor") // This is decoupling for the db while the code using the Mentor notation
+}
+
+model MentorMenteeRelationShip {
+  mentee    Mentee   @relation(references: [id], fields: [menteeId])
+  menteeId  Int
+  mentor    Mentor   @relation(references: [id], fields: [mentorId])
+  mentorId  Int
+  createdAt DateTime @default(now())
+
+  @@id([menteeId, mentorId])
+  @@map("Mentor_Mentee_RelationShip")
+}
