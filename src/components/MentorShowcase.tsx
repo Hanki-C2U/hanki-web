@@ -1,51 +1,48 @@
-import { MapPin, Star, Users } from 'lucide-react';
-import type { Mentor } from '../types';
+import { Award, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import type { Mentor } from "../types";
+import { useState } from "react";
 
 export default function MentorShowcase() {
+    const [currentSlide, setCurrentSlide] = useState(0)
   const mentors: Mentor[] = [
     {
       id: 1,
       name: "Dr. Patricia Nkunda",
+      photo: "/professional-headshot-of-confident-hispanic-sales-.png",
       role: "Senior Data Scientist",
-      company: "Google",
-      location: "London, UK",
-      avatar: "PN",
+      flag: "🇬🇧",
       rating: 4.9,
-      sessionsCompleted: 45,
-      expertise: ["Data Science", "Machine Learning", "Career Transition"],
-      bio: "PhD in Computer Science, 8+ years at Google. Passionate about helping Rwandan youth break into tech.",
-      mentees: 23
+      certified: false
     },
     {
       id: 2,
       name: "Eric Gasana",
+      photo: "/professional-headshot-of-young-hispanic-freelancer.png",
       role: "Product Manager",
-      company: "Meta",
-      location: "San Francisco, USA",
-      avatar: "EG",
+      flag: "🇺🇸",
       rating: 4.8,
-      sessionsCompleted: 38,
-      expertise: ["Product Management", "Strategy", "Leadership"],
-      bio: "Leading product teams at Meta. Expertise in building products for emerging markets.",
-      mentees: 19
+      certified: true
     },
     {
       id: 3,
+      photo: "/professional-headshot-of-african-woman-hr-professi.png",
       name: "Aline Uwimana",
       role: "Marketing Director",
-      company: "Shopify",
-      location: "Toronto, Canada",
-      avatar: "AU",
+      flag: "🇨🇦",
       rating: 5.0,
-      sessionsCompleted: 52,
-      expertise: ["Digital Marketing", "Brand Strategy", "Growth"],
-      bio: "10+ years in marketing at top tech companies. Passionate about empowering women in business.",
-      mentees: 31
-    }
+      certified: false
+    },
   ];
 
+   const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % Math.max(1, mentors.length - 2))
+  }
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + Math.max(1, mentors.length - 2)) % Math.max(1, mentors.length - 2))
+  }
   return (
-        <section id="mentor-showcase" className="bg-white py-16 lg:py-24">
+    <section id="mentor-showcase" className="bg-white py-16 lg:py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -53,97 +50,71 @@ export default function MentorShowcase() {
             Learn from the Best
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Connect with successful Rwandan diaspora professionals who are ready 
+            Connect with successful Rwandan diaspora professionals who are ready
             to share their expertise and guide your career journey.
           </p>
         </div>
 
         {/* Mentors Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
-          {mentors.map((mentor) => (
-            <div
-              key={mentor.id}
-              className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 flex flex-col h-full"
-            >
-              {/* Avatar and Basic Info */}
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white font-bold text-xl">
-                    {mentor.avatar}
-                  </span>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">
-                  {mentor.name}
-                </h3>
-                <p className="text-emerald-600 font-medium mb-1">
-                  {mentor.role}
-                </p>
-                <p className="text-gray-600 text-sm font-medium mb-2">
-                  {mentor.company}
-                </p>
-                <div className="flex items-center justify-center gap-1 text-gray-500 text-sm">
-                  <MapPin className="w-4 h-4" />
-                  <span>{mentor.location}</span>
-                </div>
-              </div>
+        <div className="relative">
+              <button
+                onClick={prevSlide}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                aria-label="Previous mentors"
+              >
+                <ChevronLeft className="w-6 h-6 text-gray-600" />
+              </button>
 
-              {/* Stats */}
-              <div className="flex justify-center gap-4 mb-4">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-semibold text-gray-900">
-                      {mentor.rating}
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500">Rating</span>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <Users className="w-4 h-4 text-emerald-600" />
-                    <span className="text-sm font-semibold text-gray-900">
-                      {mentor.mentees}
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500">Mentees</span>
-                </div>
-              </div>
+              <button
+                onClick={nextSlide}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                aria-label="Next mentors"
+              >
+                <ChevronRight className="w-6 h-6 text-gray-600" />
+              </button>
+        <div className="overflow-hidden mx-12">
+                <div
+                  className="flex transition-transform duration-300 ease-in-out"
+                  style={{ transform: `translateX(-${currentSlide * 33.33}%)` }}
+                >
+                  {mentors.map((mentor) => (
+                    <div key={mentor.id} className="w-1/3 flex-shrink-0 px-4">
+                      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                        <div className="relative">
+                          <img
+                            src={mentor.photo || "/placeholder.svg"}
+                            alt={mentor.name}
+                            className="w-full h-64 object-cover"
+                          />
+                          {mentor.rating && (
+                            <div className="absolute top-4 left-4 bg-white rounded-full px-3 py-1 flex items-center gap-1 shadow-md">
+                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                              <span className="font-semibold text-sm">{mentor.rating}</span>
+                            </div>
+                          )}
+                          {mentor.certified && (
+                            <div className="absolute top-4 right-4 bg-emerald-600 text-white rounded-full px-3 py-1 flex items-center gap-1 shadow-md">
+                              <Award className="w-4 h-4" />
+                              <span className="font-semibold text-sm">Certified</span>
+                            </div>
+                          )}
+                        </div>
 
-              {/* Bio */}
-              <div className="flex-grow">
-                <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                  {mentor.bio}
-                </p>
+                        <div className="p-6">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-bold text-lg text-gray-900">{mentor.name}</h3>
+                            <span className="text-lg">{mentor.flag}</span>
+                          </div>
+                          <p className="text-gray-600 mb-4">{mentor.role}</p>
 
-                {/* Expertise Tags */}
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {mentor.expertise.map((skill, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full"
-                    >
-                      {skill}
-                    </span>
+                          <div className="w-12 h-1 bg-teal-400 rounded-full"></div>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-
-              {/* CTA - This will always be at the bottom */}
-              <div className="mt-auto">
-                <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg text-sm font-medium">
-                  Connect with {mentor.name.split(' ')[0]}
-                </button>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* View All CTA */}
-        <div className="text-center">
-          <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-semibold transition-all duration-200">
-            View All Mentors
-          </button>
-        </div>
       </div>
     </section>
   );
