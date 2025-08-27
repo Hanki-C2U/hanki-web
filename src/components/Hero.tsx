@@ -1,5 +1,4 @@
 import { ArrowRight } from 'lucide-react';
-import Button from './ui/Button';
 
 export default function Hero() {
   return (
@@ -28,12 +27,13 @@ export default function Hero() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button variant="primary" size="lg" icon={ArrowRight} className="min-w-[200px]">
+            <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 min-w-[200px]">
               Start Your Journey
-            </Button>
-            <Button variant="secondary" size="lg" className="min-w-[200px]">
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button className="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-600 px-6 py-3 rounded-lg font-semibold transition-all duration-200 min-w-[200px]">
               Become a Mentor
-            </Button>
+            </button>
           </div>
 
           {/* Statistics */}

@@ -2,7 +2,7 @@ import { Users, Target, Rocket } from 'lucide-react';
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="bg-white py-16 lg:py-24">
+    <section id="how-it-works" className="bg-gray-50 py-16 lg:py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">How It Works</h2>
