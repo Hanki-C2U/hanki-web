@@ -1,9 +1,11 @@
+import LandingPage from "./pages/LandingPage";
+
 function App() {
 
   return (
     <>
-     <h1 className="text-amber-500">Hello world</h1>
-    </>
+     <LandingPage />
+     </>
   )
 }
 
