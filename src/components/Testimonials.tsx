@@ -33,7 +33,7 @@ export default function Testimonials() {
   ];
 
   return (
-    <section id="testimonials" className="bg-white py-16 lg:py-24">
+    <section id="testimonials" className="bg-gray-50 py-16 lg:py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">

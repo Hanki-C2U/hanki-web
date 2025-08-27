@@ -137,6 +137,13 @@ export default function MentorShowcase() {
             </div>
           ))}
         </div>
+
+        {/* View All CTA */}
+        <div className="text-center">
+          <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-semibold transition-all duration-200">
+            View All Mentors
+          </button>
+        </div>
       </div>
     </section>
   );
