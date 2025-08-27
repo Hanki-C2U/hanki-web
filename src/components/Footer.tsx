@@ -36,17 +36,17 @@ export default function Footer() {
               <h3 className="font-semibold text-gray-900 mb-4">Platform</h3>
               <ul className="space-y-3">
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                  <a href="#" className="text-gray-600 hover:text-emerald-600">
                     Find Mentors
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                  <a href="#" className="text-gray-600 hover:text-emerald-600">
                     Resources
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                  <a href="#" className="text-gray-600 hover:text-emerald-600">
                     Join Us
                   </a>
                 </li>
@@ -58,17 +58,17 @@ export default function Footer() {
               <h3 className="font-semibold text-gray-900 mb-4">Support</h3>
               <ul className="space-y-3">
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                  <a href="#" className="text-gray-600 hover:text-emerald-600">
                     Help Center
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                  <a href="#" className="text-gray-600 hover:text-emerald-600">
                     Contact Us
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                  <a href="#" className="text-gray-600 hover:text-emerald-600">
                     Community
                   </a>
                 </li>
@@ -80,17 +80,17 @@ export default function Footer() {
               <h3 className="font-semibold text-gray-900 mb-4">Company</h3>
               <ul className="space-y-3">
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                  <a href="#" className="text-gray-600 hover:text-emerald-600">
                     About
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                  <a href="#" className="text-gray-600 hover:text-emerald-600">
                     Privacy
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                  <a href="#" className="text-gray-600 hover:text-emerald-600">
                     Terms
                   </a>
                 </li>

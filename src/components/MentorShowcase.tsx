@@ -45,16 +45,16 @@ export default function MentorShowcase() {
   ];
 
   return (
-    <section id="mentor-showcase" className="bg-white py-16 lg:py-24">
+        <section id="mentor-showcase" className="bg-white py-16 lg:py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Meet Our Expert Mentors
+            Learn from the Best
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Connect with successful Rwandan professionals working at top global companies, 
-            ready to guide your career journey.
+            Connect with successful Rwandan diaspora professionals who are ready 
+            to share their expertise and guide your career journey.
           </p>
         </div>
 
@@ -130,7 +130,7 @@ export default function MentorShowcase() {
 
               {/* CTA - This will always be at the bottom */}
               <div className="mt-auto">
-                <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200">
+                <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg text-sm font-medium">
                   Connect with {mentor.name.split(' ')[0]}
                 </button>
               </div>

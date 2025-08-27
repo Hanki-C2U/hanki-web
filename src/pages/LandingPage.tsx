@@ -8,17 +8,16 @@ import WhoItsFor from "../components/WhoItsFor";
 
 export default function LandingPage() {
   return (
-    <>
-    
-    <Header/>
-    <main>
-    <Hero/>
-    <WhoItsFor />
-    <MentorShowcase />
-    <HowItWorks />
-    <Testimonials />
-    </main>
-    <Footer/>
-    </>
+    <div className="min-h-screen">
+      <Header/>
+      <main>
+        <Hero/>
+        <WhoItsFor />
+        <MentorShowcase />
+        <HowItWorks />
+        <Testimonials />
+      </main>
+      <Footer/>
+    </div>
   )
 }
