@@ -1,12 +1,24 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleNavClick = (e: React.MouseEvent, sectionId?: string, path?: string) => {
+    e.preventDefault();
+    if (sectionId) {
+      scrollToSection(sectionId);
+    } else if (path) {
+      navigate(path);
+      setIsMenuOpen(false);
+    }
+  };
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ 
+      element.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
       });
@@ -21,10 +33,10 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 
-                className="text-2xl font-bold text-emerald-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded px-2 py-1" 
+              <h1
+                className="text-2xl font-bold text-emerald-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded px-2 py-1"
                 onClick={() => scrollToSection('hero')}
-                onKeyDown={(e) => e.key === 'Enter' && scrollToSection('hero')}
+                onKeyDown={e => e.key === 'Enter' && scrollToSection('hero')}
                 tabIndex={0}
                 role="button"
                 aria-label="Go to homepage"
@@ -71,6 +83,15 @@ export default function Header() {
                   aria-label="Navigate to Success Stories section"
                 >
                   Success Stories
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={e => handleNavClick(e, undefined, '/about')}
+                  className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  aria-label="Navigate to About Us page"
+                >
+                  About Us
                 </button>
               </li>
             </ul>
@@ -150,6 +171,15 @@ export default function Header() {
               >
                 Success Stories
               </button>
+              <a
+                href="/about"
+                onClick={e => handleNavClick(e, undefined, '/about')}
+                className="text-gray-700 hover:text-emerald-600 block px-3 py-2 rounded-md text-base font-medium w-full text-left focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                role="menuitem"
+                aria-label="Navigate to About Us page"
+              >
+                About Us
+              </a>
               <div className="pt-4 pb-2 border-t border-gray-200">
                 <div className="flex flex-col space-y-2">
                   <button className="text-emerald-600 hover:text-emerald-700 px-3 py-2 rounded-md text-base font-medium text-left">
