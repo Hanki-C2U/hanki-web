@@ -28,7 +28,7 @@ model Mentee {
   updateAt DateTime @updatedAt
   last_login DateTime @default(now())
   ratings Int @default(0)
-  experience String?
+  experience Int @default(0)
   profile_picture String @default("https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg")
   supabaseId String @unique
   mentor Mentor[] 
@@ -43,7 +43,7 @@ model Mentor {
   first_name String 
   last_name String
   age Int @default(20)
-  experience String[]
+  experience Int
   email String @unique
   phone_number String  @unique
   password String
