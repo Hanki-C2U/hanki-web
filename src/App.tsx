@@ -4,6 +4,7 @@ import MentorDashboard from "./pages/MentorDashboard";
 import MenteeDashboard from "./pages/MenteeDashboard";
 import ResourceLibrary from "./pages/ResourceLibrary";
 import MentorDiscovery from "./pages/MentorDiscovery";
+import MentorProfile from "./pages/MentorProfile";
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
     <Route path="/mentee-dashboard" element={<MenteeDashboard/>} />
     <Route path="/resources" element={<ResourceLibrary/>} />
     <Route path="/discover-mentors" element={<MentorDiscovery/>} />
+    <Route path="/mentor/:id" element={<MentorProfile/>} />
    </Routes>
    </BrowserRouter>
   )
