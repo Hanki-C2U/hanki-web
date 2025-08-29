@@ -9,11 +9,12 @@ import { Textarea } from "../components/ui/textarea";
 import { Users, GraduationCap } from "lucide-react";
 import ChipSelection from "../components/ui/ChipSelectionContext";
 import { supabasase } from "../supabase_creds/supabase";
+import type {User} from "@supabase/supabase-js"
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<"mentor" | "mentee">("mentee");
   
   // Form data for additional profile information
@@ -405,7 +406,7 @@ const Onboarding = () => {
             </form>
           </CardContent>
         </Card>
-        <button onClick={()=>handleSignOut}>Sign Out </button>
+  <button onClick={() => handleSignOut()}>Sign Out</button>
       </div>
     </div>
   );

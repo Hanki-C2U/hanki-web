@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Award, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import type { Mentor } from "../types";
 import { useState } from "react";
@@ -119,3 +120,5 @@ export default function MentorShowcase() {
     </section>
   );
 }
+=======
+>>>>>>> dev

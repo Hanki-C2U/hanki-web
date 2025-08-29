@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Button } from './Button';
+=======
+import { Button } from './button';
+>>>>>>> dev
 
 interface GoogleSignInButtonProps {
   onGoogleSignIn?: () => void;

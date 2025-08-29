@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Users, Target, Rocket } from 'lucide-react';
 
 export default function HowItWorks() {
@@ -56,3 +57,5 @@ export default function HowItWorks() {
     </section>
   );
 }
+=======
+>>>>>>> dev
