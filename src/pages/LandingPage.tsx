@@ -5,6 +5,7 @@ import HowItWorks from "../components/HowItWorks";
 import MentorShowcase from "../components/MentorShowcase";
 import Testimonials from "../components/Testimonials";
 import WhoItsFor from "../components/WhoItsFor";
+import WhyRwandaTeaser from "../components/WhyRwandaTeaser";
 
 export default function LandingPage() {
   return (
@@ -15,6 +16,7 @@ export default function LandingPage() {
         <WhoItsFor />
         <MentorShowcase />
         <HowItWorks />
+        <WhyRwandaTeaser />
         <Testimonials />
       </main>
       <Footer/>

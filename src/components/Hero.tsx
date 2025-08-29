@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import Button from './ui/Button';
 
 export default function Hero() {
@@ -27,13 +28,34 @@ export default function Hero() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button variant="primary" size="lg" icon={ArrowRight} className="min-w-[200px]">
-              Start Your Journey
-            </Button>
-            <Button variant="secondary" size="lg" className="min-w-[200px]">
-              Become a Mentor
-            </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            <NavLink to="/get-started">
+              <Button variant="primary" size="lg" icon={ArrowRight} className="min-w-[200px]">
+                Start Your Journey
+              </Button>
+            </NavLink>
+            <NavLink to="/get-started">
+              <Button variant="secondary" size="lg" className="min-w-[200px]">
+                Become a Mentor
+              </Button>
+            </NavLink>
+          </div>
+
+          {/* Problem teaser */}
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-12 max-w-4xl mx-auto">
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">
+              Why do 60% of Rwandan youth struggle to find meaningful employment?
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Despite remarkable economic growth, a gap exists between talent and opportunity. 
+              Young professionals lack access to mentorship, networks, and industry insights.
+            </p>
+            <NavLink 
+              to="/problem" 
+              className="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-medium"
+            >
+              Learn about the challenge <ArrowRight className="ml-2 w-4 h-4" />
+            </NavLink>
           </div>
 
           {/* Statistics */}
