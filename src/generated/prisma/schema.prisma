@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("VITE_APP_URI")
+}
+
+// @map just aliases the column names like @@map 
+model Mentee {
+  id              Int      @id @default(autoincrement())
+  first_name      String
+  last_name       String
+  age             Int      @default(20)
+  gender          String   @default("Not specified")
+  email           String   @unique
+  phone_number    String   @unique
+  password        String
+  location        String
+  updateAt        DateTime @updatedAt
+  last_login      DateTime @default(now())
+  ratings         Int      @default(0)
+  experience      Int      @default(0)
+  profile_picture String   @default("https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg")
+  supabaseId      String   @unique
+  mentor          Mentor[]
+  bio             String
+  joined          DateTime @default(now())
+  goals           String[] @map("Interests")
+
+  @@map("mentee") // This is decoupling for the db while the code using the Mentor notation
+}
+
+model Mentor {
+  id              Int      @id @default(autoincrement())
+  first_name      String
+  last_name       String
+  age             Int      @default(20)
+  experience      Int
+  email           String   @unique
+  phone_number    String   @unique
+  password        String
+  supabaseId      String   @unique
+  gender          String   @default("Not specified")
+  profile_picture String   @default("https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg")
+  location        String
+  mentee          Mentee[]
+  joined          DateTime @default(now())
+  ratings         Int      @default(0)
+  updateAt        DateTime @updatedAt
+  last_login      DateTime @default(now())
+  expertise       String[]
+  bio             String   @map("Biography")
+
+  @@map("mentor") // This is decoupling for the db while the code using the Mentor notation
+}
