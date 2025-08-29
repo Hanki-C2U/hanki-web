@@ -1,9 +1,11 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabasase } from "../supabase_creds/supabase";
+import useSessionStore from "../stateStore/useSessionStore";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
+  const { setSession, setUser } = useSessionStore();
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -18,6 +20,10 @@ const AuthCallback = () => {
         }
 
         if (session && session.user) {
+          // Update Zustand store with session data
+          setSession(session);
+          setUser(session.user);
+          
           // Check if user already has a profile in our database
           const userId = session.user.id;
           
@@ -48,7 +54,7 @@ const AuthCallback = () => {
     };
 
     handleAuthCallback();
-  }, [navigate]);
+  }, [navigate, setSession, setUser]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">

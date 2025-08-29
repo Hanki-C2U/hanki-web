@@ -3,8 +3,12 @@ import Login from "./pages/Login"
 import Signup from "./pages/SignUp"
 import AuthCallback from "./pages/AuthCallback"
 import Onboarding from "./pages/Onboarding"
+import useAuthInit from "./hooks/useAuthInit"
 
 function RouteLayout() {
+  // Initialize authentication state
+  useAuthInit();
+
   const router = createBrowserRouter(createRoutesFromElements(
     <Route path="/">
           <Route path="/signup" element={<Signup/>}/>

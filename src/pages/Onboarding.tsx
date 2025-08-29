@@ -9,17 +9,23 @@ import { Textarea } from "../components/ui/textarea";
 import { Users, GraduationCap } from "lucide-react";
 import ChipSelection from "../components/ui/ChipSelectionContext";
 import { supabasase } from "../supabase_creds/supabase";
+import useSessionStore from "../stateStore/useSessionStore";
 import _ from 'lodash'
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const [role, setRole] = useState<"mentor" | "mentee">("mentee");
-  const [chosen,setChosen] = useState(true)
-  const [Data, setData] = useState({ results: [] });
+  const [chosen, setChosen] = useState(true);
+  const [Data, setData] = useState<{ results: any[] }>({ results: [] });
 
-  const api_key = import.meta.env.VITE_APP_GEOLOCATION_API_KEY
+  // Use Zustand store for session management
+  // You can now access user session data from anywhere in your app!
+  // Example usage:
+  // const { user, isAuthenticated, getUserId, getUserEmail } = useSessionStore();
+  const { user, setUser, setSession, clearSession } = useSessionStore();
+
+  const api_key = import.meta.env.VITE_APP_GEOLOCATION_API_KEY;
 
 
 
@@ -52,19 +58,28 @@ const Onboarding = () => {
     }
   },[profileData.location])
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProfileData(prev => ({ ...prev, location: e.target.value }))
     setChosen(true)
   }
   
   const [showChipSelection, setShowChipSelection] = useState(false);
 
-  // Get current user on component mount
+  // Get current user on component mount and update Zustand store
   useEffect(() => {
     const getCurrentUser = async () => {
-      const { data: { user } } = await supabasase.auth.getUser();
-      if (user) {
-        setUser(user);
+      const { data: { session }, error } = await supabasase.auth.getSession();
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        navigate('/login');
+        return;
+      }
+
+      if (session && session.user) {
+        // Update Zustand store with session data
+        setSession(session);
+        setUser(session.user);
       } else {
         // Redirect to login if no user
         navigate('/login');
@@ -72,7 +87,7 @@ const Onboarding = () => {
     };
 
     getCurrentUser();
-  }, [navigate]);
+  }, [navigate, setSession, setUser]);
 
 
 
@@ -444,7 +459,16 @@ const Onboarding = () => {
             </form>
           </CardContent>
         </Card>
-        <button onClick={()=>supabasase.auth.signOut()}>Sign Out </button>
+        <button 
+          onClick={async () => {
+            await supabasase.auth.signOut();
+            clearSession();
+            navigate('/login');
+          }}
+          className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+        >
+          Sign Out 
+        </button>
       </div>
     </div>
   );

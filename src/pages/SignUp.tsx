@@ -4,10 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { ArrowLeft } from "lucide-react";
 import GoogleSignInButton from "../components/ui/GoogleSignInButton";
 import { supabasase } from "../supabase_creds/supabase";
+import useSessionStore from "../stateStore/useSessionStore";
 
 const Signup = () => {
   const navigate = useNavigate();
   const [googleLoading, setGoogleLoading] = useState(false);
+  const { setSession, setUser } = useSessionStore();
 
   useEffect(() => {
     // Check for existing session
@@ -15,7 +17,9 @@ const Signup = () => {
       const { data: { session } } = await supabasase.auth.getSession();
       
       if (session) {
-        // User is already logged in, redirect to onboarding
+        // Update Zustand store and redirect to onboarding
+        setSession(session);
+        setUser(session.user);
         navigate('/onboarding');
       }
     };
@@ -25,13 +29,15 @@ const Signup = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabasase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        // Redirect to onboarding with user info
+        // Update Zustand store and redirect to onboarding
+        setSession(session);
+        setUser(session.user);
         navigate('/onboarding');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, setSession, setUser]);
 
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);
