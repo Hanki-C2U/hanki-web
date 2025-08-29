@@ -10,12 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@radix-ui/react-slot": "^1.2.3",
-    "@tailwindcss/vite": "^4.1.12",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-=======
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@material/chips": "^14.0.0",
@@ -28,28 +23,17 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lodash": "^4.17.21",
->>>>>>> dev
     "lucide-react": "^0.542.0",
     "radix-ui": "^1.4.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-<<<<<<< HEAD
-<<<<<<< Updated upstream
     "react-router": "^7.8.2",
-    "tailwindcss": "^4.1.12"
-=======
+    "tailwindcss": "^4.1.12",
     "react-router-dom": "^7.8.2",
     "router": "^2.2.0",
-    "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
-    "zustand": "^5.0.8"
->>>>>>> Stashed changes
-=======
-    "react-router-dom": "^7.8.2",
-    "tailwind-merge": "^3.3.1",
-    "tailwindcss-animate": "^1.0.7",
-    "zustand": "^5.0.8"
->>>>>>> dev
+    "zustand": "^5.0.8",
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
