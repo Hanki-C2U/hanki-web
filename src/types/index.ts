@@ -13,15 +13,11 @@ export interface Testimonial {
 export interface Mentor {
   id: number;
   name: string;
+  photo: string;
   role: string;
-  company: string;
-  location: string;
-  avatar: string;
+  flag: string;
   rating: number;
-  sessionsCompleted: number;
-  expertise: string[];
-  bio: string;
-  mentees: number;
+  certified: boolean;
 }
 
 export interface Statistic {

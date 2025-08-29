@@ -1,29 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../components/ui/button";
+import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Label } from "../components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Textarea } from "../components/ui/textarea";
 import { Users, GraduationCap } from "lucide-react";
 import ChipSelection from "../components/ui/ChipSelectionContext";
 import { supabasase } from "../supabase_creds/supabase";
-import _ from 'lodash'
+import type {User} from "@supabase/supabase-js"
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<"mentor" | "mentee">("mentee");
-  const [chosen,setChosen] = useState(true)
-  const [Data, setData] = useState({ results: [] });
-
-  const api_key = import.meta.env.VITE_APP_GEOLOCATION_API_KEY
-
-
-
-
   
   // Form data for additional profile information
   const [profileData, setProfileData] = useState({
@@ -39,23 +31,6 @@ const Onboarding = () => {
     location: "",
     goals: ""
   });
-
-  useEffect(()=>{
-    const suggestions = async () => {
-      let data = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?type=city&format=json&lang=en&text=${profileData.location}&apiKey=${api_key}`)
-      let data_json = await data.json()
-      setData(data_json)
-    }
-    const debounced_suggestions = _.debounce(suggestions,1000)
-    if(profileData.location){
-      debounced_suggestions()
-    }
-  },[profileData.location])
-
-  const handleChange = (e) => {
-    setProfileData(prev => ({ ...prev, location: e.target.value }))
-    setChosen(true)
-  }
   
   const [showChipSelection, setShowChipSelection] = useState(false);
 
@@ -73,8 +48,6 @@ const Onboarding = () => {
 
     getCurrentUser();
   }, [navigate]);
-
-
 
   // Handle expertise selection from ChipSelection component
   const handleExpertiseChange = (selectedExpertise: string[]) => {
@@ -188,7 +161,9 @@ const Onboarding = () => {
     );
   }
 
-
+  const handleSignOut = () => {
+    return supabasase.auth.signOut()
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center p-4">
@@ -287,7 +262,7 @@ const Onboarding = () => {
                     type="tel"
                     placeholder="+1234567890"
                     value={profileData.number}
-                    onChange={(e)=>{setProfileData(prev=>({...prev,number:e.target.value}))}}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, number: e.target.value }))}
                     required
                   />
                 </div>
@@ -298,22 +273,9 @@ const Onboarding = () => {
                     name="location"
                     placeholder="e.g., Kigali, Rwanda"
                     value={profileData.location}
-                    onChange={handleChange}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
                     required
                   />
-                    {chosen && Data.results.map((x,idx)=>{
-                      return (<div key={idx} className="rounded-md border-2 border-slate-600">
-                        <p  onClick={()=>{
-                          setProfileData(prev => ({ ...prev, location: `${x.state}, ${x.country}`}))
-                          if(profileData.location){
-                          setChosen(false)
-                          }
-                        }}> 
-                      {x.state}, {x.country}
-                        </p>
-                      </div>)
-                    })}
-                  
                 </div>
               </div>
 
@@ -444,7 +406,7 @@ const Onboarding = () => {
             </form>
           </CardContent>
         </Card>
-        <button onClick={()=>supabasase.auth.signOut()}>Sign Out </button>
+  <button onClick={() => handleSignOut()}>Sign Out</button>
       </div>
     </div>
   );
