@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, Session } from '@supabase/supabase-js';
+import { supabasase } from '../supabase_creds/supabase';
 
 interface SessionState {
   // Session data
@@ -14,6 +15,7 @@ interface SessionState {
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   clearSession: () => void;
+  signOut: () => Promise<void>;
   
   // Derived state
   getUserId: () => string | null;
@@ -59,6 +61,30 @@ const useSessionStore = create<SessionState>()(
           isAuthenticated: false,
           isLoading: false,
         });
+      },
+      
+      signOut: async () => {
+        try {
+          // Sign out from Supabase
+          await supabasase.auth.signOut();
+          
+          // Clear the session store
+          set({
+            user: null,
+            session: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        } catch (error) {
+          console.error('Error signing out:', error);
+          // Still clear the store even if Supabase signout fails
+          set({
+            user: null,
+            session: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        }
       },
       
       // Derived state getters

@@ -1,18 +1,32 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import GoogleSignInButton from "../components/ui/GoogleSignInButton";
 import { supabasase } from "../supabase_creds/supabase";
+import useSessionStore from "../stateStore/useSessionStore";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [googleLoading, setGoogleLoading] = useState(false);
+  const { session, isLoading } = useSessionStore();
+
+  // Redirect if already logged in, but not if we're coming from auth callback
+  useEffect(() => {
+    // Don't auto-redirect if we're in the middle of OAuth flow
+    const isFromAuthCallback = location.state?.fromAuthCallback || 
+                               document.referrer.includes('/auth/callback');
+    
+    if (!isLoading && session && !isFromAuthCallback) {
+      navigate('/home', { replace: true });
+    }
+  }, [session, isLoading, navigate, location]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
-      const { data, error } = await supabasase.auth.signInWithOAuth({
+      const { error } = await supabasase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`

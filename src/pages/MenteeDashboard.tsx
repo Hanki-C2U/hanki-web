@@ -9,8 +9,21 @@ import {
   Bell,
   Star
 } from "lucide-react";
-
+import useSessionStore from "../stateStore/useSessionStore";
+import { supabasase } from "../supabase_creds/supabase";
+import { useEffect, useState } from "react";
 const MenteeDashboard = () => {
+  const user = useSessionStore(state => state.user)
+  // console.log(user?.id)
+  const [username,setUserName] = useState('')
+  useEffect(()=>{
+    const gettingUser = async () => {
+      const info = await supabasase.from('mentee').select('*').eq('supabaseId',user?.id)
+      console.log(info?.data[0].first_name)
+      setUserName(info?.data[0].first_name)
+    }
+    gettingUser()
+  },[])
   const upcomingSessions = [
     {
       id: 1,
@@ -87,7 +100,7 @@ const MenteeDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome back, Alice!</h1>
+          <h1 className="text-3xl font-bold mb-2">Welcome back, {username}!</h1>
           <p className="text-muted-foreground">Continue your professional growth journey.</p>
         </div>
 

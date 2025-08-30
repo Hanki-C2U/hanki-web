@@ -9,35 +9,14 @@ import useSessionStore from "../stateStore/useSessionStore";
 const Signup = () => {
   const navigate = useNavigate();
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { setSession, setUser } = useSessionStore();
+  const { session, isLoading } = useSessionStore();
 
+  // Redirect if already logged in
   useEffect(() => {
-    // Check for existing session
-    const getSession = async () => {
-      const { data: { session } } = await supabasase.auth.getSession();
-      
-      if (session) {
-        // Update Zustand store and redirect to onboarding
-        setSession(session);
-        setUser(session.user);
-        navigate('/onboarding');
-      }
-    };
-
-    getSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabasase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        // Update Zustand store and redirect to onboarding
-        setSession(session);
-        setUser(session.user);
-        navigate('/onboarding');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate, setSession, setUser]);
+    if (!isLoading && session) {
+      navigate('/onboarding', { replace: true });
+    }
+  }, [session, isLoading, navigate]);
 
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);
