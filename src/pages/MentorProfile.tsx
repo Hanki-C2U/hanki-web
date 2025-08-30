@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router";
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Star, 
-  Clock, 
-  Calendar, 
+import {
+  ArrowLeft,
+  MapPin,
+  Star,
+  Clock,
+  Calendar,
   MessageCircle,
   Briefcase,
   GraduationCap,
@@ -42,7 +42,7 @@ const MentorProfile = () => {
       {
         role: "Senior Software Engineer",
         company: "Google",
-        period: "2016 - 2019", 
+        period: "2016 - 2019",
         description: "Developed machine learning pipelines for Google Search"
       },
       {
@@ -59,7 +59,7 @@ const MentorProfile = () => {
         year: "2013"
       },
       {
-        degree: "MSc Computer Science", 
+        degree: "MSc Computer Science",
         institution: "University of Rwanda",
         year: "2008"
       }
@@ -143,13 +143,13 @@ const MentorProfile = () => {
                         <span className="text-success font-medium">Responds in {mentor.responseTime}</span>
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-wrap gap-2 mb-4">
                       {mentor.specializations.map((spec, index) => (
                         <span key={index} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-gray-100 text-gray-900">{spec}</span>
                       ))}
                     </div>
-                    
+
                     <p className="text-gray-600">{mentor.bio}</p>
                   </div>
                 </div>
@@ -169,11 +169,10 @@ const MentorProfile = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      activeTab === tab.id
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === tab.id
                         ? 'bg-white text-gray-900 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
-                    }`}
+                      }`}
                   >
                     {tab.label}
                   </button>
@@ -298,11 +297,10 @@ const MentorProfile = () => {
                         {daySlot.slots.map((slot, slotIndex) => (
                           <button
                             key={slotIndex}
-                            className={`inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${
-                              selectedTimeSlot === `${daySlot.day}-${slot}`
+                            className={`inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${selectedTimeSlot === `${daySlot.day}-${slot}`
                                 ? 'bg-orange-500 text-white hover:bg-orange-600'
                                 : 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-900'
-                            }`}
+                              }`}
                             onClick={() => setSelectedTimeSlot(`${daySlot.day}-${slot}`)}
                           >
                             {slot}
@@ -314,18 +312,17 @@ const MentorProfile = () => {
                 </div>
 
                 <div className="pt-4 border-t space-y-3">
-                  <button 
-                    className={`w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${
-                      !selectedTimeSlot
+                  <button
+                    className={`w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!selectedTimeSlot
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-orange-500 text-white hover:bg-orange-600'
-                    }`}
+                      }`}
                     disabled={!selectedTimeSlot}
                     onClick={() => window.location.href = `/book-session/${mentor.id}?slot=${selectedTimeSlot}`}
                   >
                     Book Selected Time
                   </button>
-                  
+
                   <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Send Message
