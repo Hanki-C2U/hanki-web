@@ -7,12 +7,50 @@ import useSessionStore from '../stateStore/useSessionStore';
  * Should be called once at the app root level
  */
 export const useAuthInit = () => {
-  const { setSession, clearSession, setLoading } = useSessionStore();
+  const setSession = useSessionStore((state) => state.setSession);
+  const clearSession = useSessionStore((state) => state.clearSession);
+  const setLoading = useSessionStore((state) => state.setLoading);
+  const setUserRole = useSessionStore((state) => state.setUserRole);
+  const setRoleLoading = useSessionStore((state) => state.setRoleLoading);
+
+  // Function to determine user role from database
+  const determineUserRole = async (userId: string) => {
+    try {
+      console.log('Determining user role for:', userId);
+      
+      // Use a single query to check both tables efficiently
+      const [mentorCheck, menteeCheck] = await Promise.allSettled([
+        supabasase.from('mentor').select('id').eq('supabaseId', userId).maybeSingle(),
+        supabasase.from('mentee').select('id').eq('supabaseId', userId).maybeSingle()
+      ]);
+
+      console.log('Role check results:', { mentorCheck, menteeCheck });
+
+      let userRole: 'mentor' | 'mentee' | null = null;
+
+      if (mentorCheck.status === 'fulfilled' && mentorCheck.value.data) {
+        console.log('User is a mentor');
+        userRole = 'mentor';
+      } else if (menteeCheck.status === 'fulfilled' && menteeCheck.value.data) {
+        console.log('User is a mentee');
+        userRole = 'mentee';
+      } else {
+        console.log('User has no role yet (new user)');
+        userRole = null;
+      }
+
+      setUserRole(userRole);
+    } catch (error) {
+      console.error('Error determining user role:', error);
+      setUserRole(null);
+    } finally {
+      setRoleLoading(false);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
 
-    // Initialize session on app start
     const initSession = async () => {
       setLoading(true);
       
@@ -21,14 +59,31 @@ export const useAuthInit = () => {
         
         if (mounted) {
           if (error) {
-            console.error('Error getting initial session:', error);
+            console.error('Error', error);
             clearSession();
           } else {
             setSession(session);
+            if (session?.user?.id) {
+              // Check if we already have a role from persistence
+              const currentState = useSessionStore.getState();
+              console.log('Current persisted role:', currentState.userRole);
+              
+              if (currentState.userRole) {
+                console.log('Role already exists from persistence, skipping DB check');
+                setRoleLoading(false);
+              } else {
+                console.log('No persisted role, checking database');
+                setRoleLoading(true);
+                await determineUserRole(session.user.id);
+              }
+            } else {
+              // No session, make sure roleLoading is false
+              setRoleLoading(false);
+            }
           }
         }
       } catch (error) {
-        console.error('Error initializing session:', error);
+        console.error('Error', error);
         if (mounted) {
           clearSession();
         }
@@ -39,7 +94,6 @@ export const useAuthInit = () => {
       }
     };
 
-    // Listen for auth state changes
     const { data: { subscription } } = supabasase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
@@ -50,6 +104,10 @@ export const useAuthInit = () => {
           case 'SIGNED_IN':
           case 'TOKEN_REFRESHED':
             setSession(session);
+            if (session?.user?.id) {
+              setRoleLoading(true);
+              await determineUserRole(session.user.id);
+            }
             break;
           case 'SIGNED_OUT':
             clearSession();
@@ -66,7 +124,7 @@ export const useAuthInit = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [setSession, clearSession, setLoading]);
+  }, [setSession, clearSession, setLoading, setUserRole, setRoleLoading]);
 };
 
 export default useAuthInit;

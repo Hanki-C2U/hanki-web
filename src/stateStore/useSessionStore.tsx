@@ -9,11 +9,15 @@ interface SessionState {
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  userRole: 'mentor' | 'mentee' | null;
+  roleLoading: boolean;
   
   // Actions
   setSession: (session: Session | null) => void;
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
+  setUserRole: (role: 'mentor' | 'mentee' | null) => void;
+  setRoleLoading: (loading: boolean) => void;
   clearSession: () => void;
   signOut: () => Promise<void>;
   
@@ -21,6 +25,8 @@ interface SessionState {
   getUserId: () => string | null;
   getUserEmail: () => string | null;
   getUserMetadata: () => any;
+  isMentor: () => boolean;
+  isMentee: () => boolean;
 }
 
 const useSessionStore = create<SessionState>()(
@@ -31,6 +37,8 @@ const useSessionStore = create<SessionState>()(
       session: null,
       isAuthenticated: false,
       isLoading: true,
+      userRole: null,
+      roleLoading: false, // Changed back to false as initial state
       
       // Actions
       setSession: (session) => {
@@ -54,12 +62,22 @@ const useSessionStore = create<SessionState>()(
         set({ isLoading: loading });
       },
       
+      setUserRole: (role) => {
+        set({ userRole: role });
+      },
+      
+      setRoleLoading: (loading) => {
+        set({ roleLoading: loading });
+      },
+      
       clearSession: () => {
         set({
           user: null,
           session: null,
           isAuthenticated: false,
           isLoading: false,
+          userRole: null,
+          roleLoading: false,
         });
       },
       
@@ -74,6 +92,8 @@ const useSessionStore = create<SessionState>()(
             session: null,
             isAuthenticated: false,
             isLoading: false,
+            userRole: null,
+            roleLoading: false,
           });
         } catch (error) {
           console.error('Error signing out:', error);
@@ -83,6 +103,8 @@ const useSessionStore = create<SessionState>()(
             session: null,
             isAuthenticated: false,
             isLoading: false,
+            userRole: null,
+            roleLoading: false,
           });
         }
       },
@@ -102,6 +124,16 @@ const useSessionStore = create<SessionState>()(
         const { user } = get();
         return user?.user_metadata || {};
       },
+      
+      isMentor: () => {
+        const { userRole } = get();
+        return userRole === 'mentor';
+      },
+      
+      isMentee: () => {
+        const { userRole } = get();
+        return userRole === 'mentee';
+      },
     }),
     {
       name: 'session-store', // Storage key
@@ -109,6 +141,7 @@ const useSessionStore = create<SessionState>()(
         user: state.user,
         session: state.session,
         isAuthenticated: state.isAuthenticated,
+        userRole: state.userRole,
       }),
     }
   )

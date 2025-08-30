@@ -12,28 +12,64 @@ import {
 import useSessionStore from "../stateStore/useSessionStore";
 import { supabasase } from "../supabase_creds/supabase";
 import { useEffect, useState ,useLayoutEffect} from "react";
-import usechecker from "../hooks/usechecker";
 
 const MentorDashboard = () => {
-  const user = useSessionStore(state => state.user)
+  const { userRole, roleLoading, user } = useSessionStore()
   const navigate = useNavigate()
-  const {isChecking,isMentee,shouldRedirectToMentor} = usechecker()
-  useLayoutEffect(()=>{
-    if(!isChecking && isMentee && !shouldRedirectToMentor){
+  const [username, setUserName] = useState('')
+
+  // Debug logging
+  console.log('MentorDashboard - userRole:', userRole, 'roleLoading:', roleLoading, 'user:', user?.id)
+
+  // Redirect if explicitly not a mentor (don't redirect on null/unknown role)
+  useLayoutEffect(() => {
+    if (!roleLoading && userRole !== null && userRole !== 'mentor') {
+      console.log('Redirecting to mentee dashboard - userRole:', userRole)
       navigate('/mentee-dashboard')
     }
-  },[isMentee,shouldRedirectToMentor])
+  }, [roleLoading, userRole, navigate])
 
-  // console.log(user?.id)
-  const [username,setUserName] = useState('')
-  useEffect(()=>{
-    const gettingUser = async () => {
-      const info = await supabasase.from('mentor').select('*').eq('supabaseId',user?.id)
-      console.log(info?.data[0].first_name)
-      setUserName(info?.data[0].first_name)
+  // Fetch username when role is confirmed as mentor
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (userRole === 'mentor' && user?.id) {
+        try {
+          const res = await supabasase.from('mentor').select('first_name').eq('supabaseId', user.id).single()
+          if (res?.data?.first_name) {
+            setUserName(res.data.first_name)
+          }
+        } catch (error) {
+          console.error('Error fetching username:', error)
+        }
+      }
     }
-    gettingUser()
-  },[])
+    
+    fetchUsername()
+  }, [userRole, user?.id])
+
+  // Early return while checking role (only if we don't have a role yet)
+  if (roleLoading && userRole === null) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Verifying access...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // If not a mentor, show redirect message
+  if (userRole !== 'mentor') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Redirecting to mentee dashboard...</p>
+        </div>
+      </div>
+    )
+  }
   const upcomingSessions = [
     {
       id: 1,

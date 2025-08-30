@@ -6,6 +6,7 @@ function HomePage() {
     const navigate = useNavigate()
     
     const handleSignOut = async () => {
+        console.log('Logging out')
         await signOut()
         navigate('/login', { replace: true })
     }
