@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link,useNavigate } from "react-router";
 import {
   Calendar,
   Search,
@@ -11,11 +11,21 @@ import {
 } from "lucide-react";
 import useSessionStore from "../stateStore/useSessionStore";
 import { supabasase } from "../supabase_creds/supabase";
-import { useEffect, useState } from "react";
+import { useEffect, useState,useLayoutEffect } from "react";
+import usechecker from "../hooks/usechecker";
 const MenteeDashboard = () => {
   const user = useSessionStore(state => state.user)
+  const navigate = useNavigate()
   // console.log(user?.id)
   const [username,setUserName] = useState('')
+  const {isChecking,isMentee,shouldRedirectToMentor} = usechecker()
+  useLayoutEffect(()=>{
+    if(!isChecking && !isMentee && shouldRedirectToMentor){
+      navigate('/mentor-dashboard')
+    }
+  },[isMentee,shouldRedirectToMentor])
+
+
   useEffect(()=>{
     const gettingUser = async () => {
       const info = await supabasase.from('mentee').select('*').eq('supabaseId',user?.id)
@@ -24,6 +34,7 @@ const MenteeDashboard = () => {
     }
     gettingUser()
   },[])
+
   const upcomingSessions = [
     {
       id: 1,
