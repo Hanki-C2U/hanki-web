@@ -38,6 +38,16 @@ model Mentee {
   @@map("mentee") // This is decoupling for the db while the code using the Mentor notation
 }
 
+model Achievements{
+  id Int @id @default(autoincrement())
+  supabaseId String @unique
+  mentor Mentor  @relation(fields: [supabaseId],references: [supabaseId])
+  experience String[]
+  education String[]
+  accolades String[]
+  reviews String[]
+}
+
 model Mentor {
   id Int @id @default(autoincrement())
   first_name String 
@@ -47,6 +57,7 @@ model Mentor {
   email String @unique
   phone_number String  @unique
   password String
+  achievement Achievements? 
   supabaseId String @unique
   gender String @default("Not specified")
   profile_picture String @default("https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg") 
