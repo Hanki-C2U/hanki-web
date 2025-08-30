@@ -1,6 +1,5 @@
-<<<<<<< HEAD
 import { ArrowRight } from 'lucide-react';
-import Button from './ui/Button';
+import {Button} from './ui/Button';
 
 export default function Hero() {
   return (
@@ -59,5 +58,3 @@ export default function Hero() {
     </section>
   );
 }
-=======
->>>>>>> dev
