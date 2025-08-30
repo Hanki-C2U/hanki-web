@@ -18,7 +18,7 @@ const MentorDashboard = () => {
   const [username,setUserName] = useState('')
   useEffect(()=>{
     const gettingUser = async () => {
-      const info = await supabasase.from('mentee').select('*').eq('supabaseId',user?.id)
+      const info = await supabasase.from('mentor').select('*').eq('supabaseId',user?.id)
       console.log(info?.data[0].first_name)
       setUserName(info?.data[0].first_name)
     }
