@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -6,11 +7,11 @@ export default function Header() {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ 
+      element.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       });
-     
+
     }
     setIsMenuOpen(false); // Close mobile menu after click
   };
@@ -22,8 +23,8 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 
-                className="text-2xl font-bold text-emerald-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded px-2 py-1" 
+              <h1
+                className="text-2xl font-bold text-emerald-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded px-2 py-1"
                 onClick={() => scrollToSection('hero')}
                 onKeyDown={(e) => e.key === 'Enter' && scrollToSection('hero')}
                 tabIndex={0}
@@ -79,12 +80,16 @@ export default function Header() {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <button className="text-emerald-600 hover:text-emerald-700 px-4 py-2 rounded-md text-sm font-medium">
+
+            <Link to='login' className="text-emerald-600 hover:text-emerald-700 px-4 py-2 rounded-md text-sm font-medium">
               Sign In
-            </button>
-            <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-md text-sm font-medium">
+            </Link>
+
+
+            <Link to='signup' className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-md text-sm font-medium">
               Get Started
-            </button>
+            </Link>
+
           </div>
 
           {/* Mobile menu button */}
