@@ -10,11 +10,12 @@ import { Users, GraduationCap } from "lucide-react";
 import ChipSelection from "../components/ui/ChipSelectionContext";
 import { supabasase } from "../supabase_creds/supabase";
 import useSessionStore from "../stateStore/useSessionStore";
-import _ from 'lodash'
+import { getOnboardingErrorMessage } from "../utils/onboardingUtils";
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<"mentor" | "mentee">("mentee");
   const [chosen, setChosen] = useState(true);
   const [Data, setData] = useState<{ results: any[] }>({ results: [] });
@@ -52,10 +53,15 @@ const Onboarding = () => {
       const data_json = await data.json()
       setData(data_json)
     }
-    const debounced_suggestions = _.debounce(suggestions,1000)
-    if(profileData.location){
-      debounced_suggestions()
-    }
+    
+    // Simple debounce implementation
+    const timeoutId = setTimeout(() => {
+      if(profileData.location){
+        suggestions()
+      }
+    }, 1000)
+    
+    return () => clearTimeout(timeoutId)
   },[profileData.location, api_key])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,10 +116,15 @@ const Onboarding = () => {
     if (!user) return;
 
     setLoading(true);
+    setError(null);
+    
     try {
+      console.log('Starting onboarding process for user:', user.id);
+      
       // Handle profile picture upload
       let profilePicUrl = '';
       if (profileData.profilePic) {
+        console.log('Uploading profile picture...');
         const fileExt = profileData.profilePic.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         
@@ -123,7 +134,7 @@ const Onboarding = () => {
 
         if (uploadError) {
           console.error('Error uploading profile picture:', uploadError);
-          throw uploadError;
+          throw new Error(`Failed to upload profile picture: ${uploadError.message}`);
         }
 
         const { data: urlData } = supabasase.storage
@@ -131,6 +142,7 @@ const Onboarding = () => {
           .getPublicUrl(fileName);
         
         profilePicUrl = urlData.publicUrl;
+        console.log('Profile picture uploaded successfully:', profilePicUrl);
       }
 
       // Prepare user data from Google auth + additional profile data
@@ -150,6 +162,8 @@ const Onboarding = () => {
         updateAt: new Date().toISOString(),
       };
 
+      console.log('Inserting user data into database...');
+
       if (role === 'mentor') {
         const { data, error } = await supabasase
           .from('mentor')
@@ -162,11 +176,16 @@ const Onboarding = () => {
 
         if (error) {
           console.error('Error creating mentor profile:', error);
-          throw error;
+          throw new Error(`Failed to create mentor profile: ${error.message || 'Unknown database error'}`);
         }
 
         console.log('Mentor profile created successfully:', data);
-        navigate('/home');
+        
+        // Update the session store with the new role
+        const { setUserRole } = useSessionStore.getState();
+        setUserRole('mentor');
+        
+        navigate('/mentor-dashboard', { replace: true });
       } else {
         const { data, error } = await supabasase
           .from('mentee')
@@ -179,14 +198,20 @@ const Onboarding = () => {
 
         if (error) {
           console.error('Error creating mentee profile:', error);
-          throw error;
+          throw new Error(`Failed to create mentee profile: ${error.message || 'Unknown database error'}`);
         }
 
         console.log('Mentee profile created successfully:', data);
-        navigate('/home');
+        
+        // Update the session store with the new role
+        const { setUserRole } = useSessionStore.getState();
+        setUserRole('mentee');
+        
+        navigate('/mentee-dashboard', { replace: true });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Onboarding error:', error);
+      setError(getOnboardingErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -231,6 +256,53 @@ const Onboarding = () => {
             </Tabs>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Error Display */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">
+                        Onboarding Error
+                      </h3>
+                      <div className="mt-2 text-sm text-red-700">
+                        <p>{error}</p>
+                      </div>
+                      <div className="mt-4">
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => setError(null)}
+                            className="bg-red-100 px-2 py-1 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
+                          >
+                            Try Again
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                await supabasase.auth.signOut();
+                                clearSession();
+                                navigate('/signup');
+                              } catch (e) {
+                                console.error('Error signing out:', e);
+                              }
+                            }}
+                            className="bg-red-100 px-2 py-1 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
+                          >
+                            Start Over
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {/* Common fields for both roles */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

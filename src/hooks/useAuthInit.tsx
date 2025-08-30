@@ -35,11 +35,18 @@ export const useAuthInit = () => {
         console.log('User is a mentee');
         userRole = 'mentee';
       } else {
-        console.log('User has no role yet (new user)');
+        console.log('User has no role yet - needs onboarding or has incomplete signup');
         userRole = null;
       }
 
       setUserRole(userRole);
+      
+      // If user has a session but no role, they need to complete onboarding
+      if (userRole === null) {
+        console.log('User has session but no database record - redirecting to onboarding');
+        // Don't redirect here, let the components handle it
+      }
+      
     } catch (error) {
       console.error('Error determining user role:', error);
       setUserRole(null);

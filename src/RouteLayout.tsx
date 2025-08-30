@@ -6,6 +6,7 @@ import Onboarding from "./pages/Onboarding"
 import useAuthInit from "./hooks/useAuthInit"
 import ProtectedComp from "./components/ProtectedComp"
 import HomePage from "./pages/HomePage"
+import IncompleteOnboardingHandler from "./components/IncompleteOnboardingHandler"
 // import LandingPage from "./pages/LandingPage";
 import MentorDashboard from "./pages/MentorDashboard";
 import MenteeDashboard from "./pages/MenteeDashboard";
@@ -23,18 +24,24 @@ function RouteLayout() {
           <Route path="/onboarding" element={<Onboarding/>}/>
           <Route path='/home' element={
             <ProtectedComp>
-              <HomePage/>
+              <IncompleteOnboardingHandler>
+                <HomePage/>
+              </IncompleteOnboardingHandler>
             </ProtectedComp>
             }/>
           {/* <Route path="/" element={<LandingPage/>} /> */}
           <Route path="/mentor-dashboard" element={
             <ProtectedComp>
-              <MentorDashboard/>
+              <IncompleteOnboardingHandler>
+                <MentorDashboard/>
+              </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
           <Route path="/mentee-dashboard" element={
             <ProtectedComp>
-              <MenteeDashboard/>
+              <IncompleteOnboardingHandler>
+                <MenteeDashboard/>
+              </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
       </Route>
