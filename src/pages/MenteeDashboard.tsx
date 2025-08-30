@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
   Calendar,
   Search,
@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 
 const MenteeDashboard = () => {
+  const navigate = useNavigate()
+
   const upcomingSessions = [
     {
       id: 1,
@@ -249,7 +251,8 @@ const MenteeDashboard = () => {
 
                   <button
                     className="w-full inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                    onClick={() => window.location.href = `/mentor/${mentor.id}`}
+                    onClick={() => navigate(`/mentor/${mentor.id}`)
+                    }
                   >
                     View Profile
                   </button>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
   Search,
   Filter,
@@ -14,6 +14,8 @@ const MentorDiscovery = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedExpertise, setSelectedExpertise] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
+
+  const navigate = useNavigate()
 
   const mentors = [
     {
@@ -264,13 +266,15 @@ const MentorDiscovery = () => {
                 <div className="flex gap-2">
                   <button
                     className="flex-1 inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                    onClick={() => window.location.href = `/mentor/${mentor.id}`}
+                    onClick={() => navigate(`/mentor/${mentor.id}`)
+                    }
                   >
                     View Profile
                   </button>
                   <button
                     className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                    onClick={() => window.location.href = `/book-session/${mentor.id}`}
+                    onClick={() => navigate(`/book-session/${mentor.id}`)
+                    }
                   >
                     Book Session
                   </button>

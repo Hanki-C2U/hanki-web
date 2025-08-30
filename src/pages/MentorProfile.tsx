@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router";
+import { useParams, Link, useNavigate } from "react-router";
 import {
   ArrowLeft,
   MapPin,
@@ -17,6 +17,8 @@ const MentorProfile = () => {
   const { id } = useParams();
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
   const [activeTab, setActiveTab] = useState("experience");
+
+  const navigate = useNavigate()
 
   // Mock data - in real app, this would be fetched based on ID
   const mentor = {
@@ -318,7 +320,7 @@ const MentorProfile = () => {
                         : 'bg-orange-500 text-white hover:bg-orange-600'
                       }`}
                     disabled={!selectedTimeSlot}
-                    onClick={() => window.location.href = `/book-session/${mentor.id}?slot=${selectedTimeSlot}`}
+                    onClick={() => navigate(`/book-session/${mentor.id}?slot=${selectedTimeSlot}`)}
                   >
                     Book Selected Time
                   </button>
