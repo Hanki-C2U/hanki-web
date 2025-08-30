@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../components/ui/button";
+import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Label } from "../components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Tabs, TabsTrigger, TabsList } from "../components/ui/tabs";
 import { Textarea } from "../components/ui/textarea";
 import { Users, GraduationCap } from "lucide-react";
 import ChipSelection from "../components/ui/ChipSelectionContext";
@@ -48,15 +48,15 @@ const Onboarding = () => {
 
   useEffect(()=>{
     const suggestions = async () => {
-      let data = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?type=city&format=json&lang=en&text=${profileData.location}&apiKey=${api_key}`)
-      let data_json = await data.json()
+      const data = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?type=city&format=json&lang=en&text=${profileData.location}&apiKey=${api_key}`)
+      const data_json = await data.json()
       setData(data_json)
     }
     const debounced_suggestions = _.debounce(suggestions,1000)
     if(profileData.location){
       debounced_suggestions()
     }
-  },[profileData.location])
+  },[profileData.location, api_key])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProfileData(prev => ({ ...prev, location: e.target.value }))
