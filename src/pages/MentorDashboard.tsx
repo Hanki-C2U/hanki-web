@@ -121,6 +121,12 @@ const MentorDashboard = () => {
                 <Bell className="h-4 w-4" />
               </button>
               <button className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                <Link to="/chat" className="flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Messages
+                </Link>
+              </button>
+              <button className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
                 <Link to="/resources">Resources</Link>
               </button>
               <button className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">

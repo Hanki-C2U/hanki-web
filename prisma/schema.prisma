@@ -32,6 +32,7 @@ model Mentee {
   profile_picture String @default("https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg")
   supabaseId String @unique
   mentor Mentor[] 
+  conversations Conversation[]
   bio String
   joined DateTime @default(now())
   goals String[] @map("Interests")
@@ -63,6 +64,7 @@ model Mentor {
   profile_picture String @default("https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg") 
   location String
   mentee Mentee[]
+  conversations Conversation[]
   joined DateTime @default(now())
   ratings Int @default(0)
   updateAt DateTime @updatedAt
@@ -70,4 +72,33 @@ model Mentor {
   expertise String[]
   bio String @map("Biography")
   @@map("mentor") // This is decoupling for the db while the code using the Mentor notation
+}
+
+model Conversation {
+  id Int @id @default(autoincrement())
+  menteeId String
+  mentorId String
+  mentor Mentor @relation(fields: [mentorId], references: [supabaseId])
+  mentee Mentee @relation(fields: [menteeId], references: [supabaseId])
+  messages Message[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastMessage String?
+  
+  @@unique([mentorId, menteeId])
+  @@map("conversations")
+}
+
+model Message {
+  id Int @id @default(autoincrement())
+  conversationId Int
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId String // supabaseId of sender
+  senderRole String // "mentor" or "mentee"
+  content String
+  messageType String @default("text") // "text", "image", "file"
+  isRead Boolean @default(false)
+  createdAt DateTime @default(now())
+  
+  @@map("messages")
 }

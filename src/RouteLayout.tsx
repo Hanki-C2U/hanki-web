@@ -10,7 +10,7 @@ import IncompleteOnboardingHandler from "./components/IncompleteOnboardingHandle
 // import LandingPage from "./pages/LandingPage";
 import MentorDashboard from "./pages/MentorDashboard";
 import MenteeDashboard from "./pages/MenteeDashboard";
-
+import ChatPage from "./pages/ChatPage"
 function RouteLayout() {
   // Initialize authentication state
   useAuthInit();
@@ -41,6 +41,20 @@ function RouteLayout() {
             <ProtectedComp>
               <IncompleteOnboardingHandler>
                 <MenteeDashboard/>
+              </IncompleteOnboardingHandler>
+            </ProtectedComp>
+          } />
+          <Route path="/chat" element={
+            <ProtectedComp>
+              <IncompleteOnboardingHandler>
+                <ChatPage/>
+              </IncompleteOnboardingHandler>
+            </ProtectedComp>
+          } />
+          <Route path="/chat/:conversationId" element={
+            <ProtectedComp>
+              <IncompleteOnboardingHandler>
+                <ChatPage/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
