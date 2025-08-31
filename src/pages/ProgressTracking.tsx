@@ -12,10 +12,13 @@ import {
   Video,
   Trophy
 } from "lucide-react";
+import { AddGoalDialog } from "../components/AddGoalDialog";
+import { GoalDetailDialog } from "../components/GoalDetailDialog";
+import { AddSkillDialog } from "../components/AddSkillDialog";
 
 const ProgressTracking = () => {
   const [activeTab, setActiveTab] = useState("goals");
-  const goals = [
+  const [goals, setGoals] = useState([
     {
       id: 1,
       title: "Transition to Software Engineering",
@@ -55,7 +58,7 @@ const ProgressTracking = () => {
         { title: "Present at Industry Conference", completed: false }
       ]
     }
-  ];
+  ]);
 
   const badges = [
     { id: 1, name: "First Session Complete", icon: "🎯", earned: true, date: "Jan 15, 2024" },
@@ -98,30 +101,57 @@ const ProgressTracking = () => {
     }
   ];
 
-  const skills = [
+  const [skills, setSkills] = useState([
     { name: "JavaScript", level: 80 },
     { name: "React", level: 70 },
     { name: "Project Management", level: 65 },
     { name: "Communication", level: 85 },
     { name: "Leadership", level: 60 },
     { name: "Data Analysis", level: 45 }
-  ];
+  ]);
+
+  const [selectedGoal, setSelectedGoal] = useState<typeof goals[0] | null>(null);
+  const [goalDetailOpen, setGoalDetailOpen] = useState(false);
+
+  const handleAddGoal = (newGoal: Omit<typeof goals[0], 'id'>) => {
+    const goal = {
+      id: goals.length + 1,
+      ...newGoal
+    };
+    setGoals([...goals, goal]);
+  };
+
+  const handleUpdateGoal = (goalId: number, updates: Partial<typeof goals[0]>) => {
+    setGoals(goals.map(goal =>
+      goal.id === goalId ? { ...goal, ...updates } : goal
+    ));
+  };
+
+  const handleAddSkill = (newSkill: { name: string; level: number }) => {
+    setSkills([...skills, newSkill]);
+  };
+
+  const handleGoalClick = (goal: typeof goals[0]) => {
+    setSelectedGoal(goal);
+    setGoalDetailOpen(true);
+  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
       {/* Header */}
-      <header className="bg-white shadow-subtle border-b">
+      <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to="/mentee-dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-smooth">
+              <Link to="/mentee-dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Dashboard
               </Link>
-              <div className="h-6 w-px bg-border" />
+              <div className="h-6 w-px bg-gray-300" />
               <h1 className="text-xl font-semibold">Progress Tracking</h1>
             </div>
-            <Link to="/" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
+            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
               SkillsConnect
             </Link>
           </div>
@@ -150,7 +180,7 @@ const ProgressTracking = () => {
                   <p className="text-sm font-medium text-gray-600">Hours of Mentoring</p>
                   <p className="text-2xl font-bold">18</p>
                 </div>
-                <Clock className="h-8 w-8 text-accent" />
+                <Clock className="h-8 w-8 text-amber-500" />
               </div>
             </div>
           </div>
@@ -229,15 +259,12 @@ const ProgressTracking = () => {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Career Goals</h2>
-                <button className="inline-flex items-center gap-2 h-10 px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
-                  <Target className="h-4 w-4" />
-                  Add New Goal
-                </button>
+                <AddGoalDialog onAddGoal={handleAddGoal} />
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {goals.map((goal) => (
-                  <div key={goal.id} className="rounded-lg border border-gray-200 bg-white shadow-sm">
+                  <div key={goal.id} className="rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer hover:shadow-lg transition-all duration-200" onClick={() => handleGoalClick(goal)}>
                     <div className="flex flex-col space-y-1.5 p-6">
                       <div className="flex justify-between items-start">
                         <div>
@@ -299,7 +326,10 @@ const ProgressTracking = () => {
           {/* Skills Tab */}
           {activeTab === "skills" && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold">Skill Development</h2>
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Skill Development</h2>
+                <AddSkillDialog onAddSkill={handleAddSkill} />
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {skills.map((skill, index) => (
@@ -401,6 +431,14 @@ const ProgressTracking = () => {
             </div>
           )}
         </div>
+
+        {/* Goal Detail Dialog */}
+        <GoalDetailDialog
+          goal={selectedGoal}
+          open={goalDetailOpen}
+          onOpenChange={setGoalDetailOpen}
+          onUpdateGoal={handleUpdateGoal}
+        />
       </main>
     </div>
   );
