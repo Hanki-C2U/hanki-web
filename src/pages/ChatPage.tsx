@@ -16,7 +16,9 @@ export default function ChatPage() {
     messages, 
     sendMessage,
     loading,
-    createOrFindConversation
+    createOrFindConversation,
+    error,
+    sendingMessage
   } = useRealtimeChat()
   
   const [newMessage, setNewMessage] = useState('')
@@ -30,12 +32,17 @@ export default function ChatPage() {
 
   console.log('ChatPage loaded with:', { conversationId, mentorId, menteeId, userRole, userId: user?.id })
 
-  // Auto-scroll to bottom when new messages arrive
+  // Real-time connection test
+  useEffect(() => {
+    console.log('🧪 Testing real-time connection...')
+    console.log('📊 Current messages count:', messages.length)
+    console.log('🔄 Active conversation:', activeConversation?.id)
+  }, [messages.length, activeConversation?.id])
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Set active conversation if conversationId is provided
   useEffect(() => {
     if (conversationId && conversations.length > 0) {
       const conversation = conversations.find(c => c.id.toString() === conversationId)
@@ -45,10 +52,8 @@ export default function ChatPage() {
     }
   }, [conversationId, conversations, setActiveConversation])
 
-  // Handle URL parameters (mentorId & menteeId) to create/find conversation
   useEffect(() => {
     const setupConversationFromParams = async () => {
-      // Don't try to setup if still loading conversations
       if (loading) {
         console.log('⏳ Still loading conversations, waiting...')
         return
@@ -60,7 +65,6 @@ export default function ChatPage() {
         setSettingUpChat(true)
         
         try {
-          // Check if conversation already exists in fetched conversations
           const existingConversation = conversations.find(c => 
             (c.mentorId === mentorId && c.menteeId === menteeId) ||
             (c.mentorId === menteeId && c.menteeId === mentorId)
@@ -69,11 +73,10 @@ export default function ChatPage() {
           if (existingConversation) {
             console.log('✅ Found existing conversation in list:', existingConversation.id)
             setActiveConversation(existingConversation)
-            // Update URL to use conversation ID
             navigate(`/chat/${existingConversation.id}`, { replace: true })
           } else {
-            console.log('⚠️ No conversation found in fetched list')
-            console.log('📝 Available conversations:', conversations.map(c => ({ id: c.id, mentorId: c.mentorId, menteeId: c.menteeId })))
+            console.log(' No conversation found in fetched list')
+            console.log(' Available conversations:', conversations.map(c => ({ id: c.id, mentorId: c.mentorId, menteeId: c.menteeId })))
             
             // Try to create a new conversation
             console.log('🔄 Attempting to create new conversation...')
@@ -81,18 +84,17 @@ export default function ChatPage() {
               const newConversation = await createOrFindConversation(mentorId, menteeId)
               
               if (newConversation) {
-                console.log('✅ Successfully created new conversation:', newConversation.id)
+                console.log('Successfully created new conversation:', newConversation.id)
                 setActiveConversation(newConversation)
                 navigate(`/chat/${newConversation.id}`, { replace: true })
                 return
               } else {
-                console.log('❌ Failed to create new conversation')
+                console.log('Failed to create new conversation')
               }
             } catch (createError) {
-              console.error('💥 Error creating conversation:', createError)
+              console.error(' Error creating conversation:', createError)
             }
             
-            // If creation failed, show appropriate message
             if (conversations.length === 0) {
               console.log('📭 No conversations exist yet - creation also failed')
               alert('Unable to start chat. There might be a connection issue. Please try again later.')
@@ -103,7 +105,7 @@ export default function ChatPage() {
             navigate('/mentee-dashboard')
           }
         } catch (error) {
-          console.error('💥 Error setting up conversation:', error)
+          console.error('Error setting up conversation:', error)
           alert('Error starting chat. Please try again.')
           navigate('/mentee-dashboard')
         } finally {
@@ -158,7 +160,6 @@ export default function ChatPage() {
 
   const getOtherUser = () => {
     if (!activeConversation) return null
-    // Determine the other user based on current user ID, not role
     return activeConversation.mentorId === user?.id ? activeConversation.mentee : activeConversation.mentor
   }
 
@@ -260,6 +261,7 @@ export default function ChatPage() {
                     <p className="text-sm text-gray-500 capitalize">
                       {activeConversation?.mentorId === user?.id ? 'Mentee' : 'Mentor'}
                     </p>
+                    <p className="text-xs text-green-500">● Online</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -278,6 +280,16 @@ export default function ChatPage() {
 
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+              {/* Error Message Display */}
+              {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                  <div className="flex items-center">
+                    <span className="text-red-500 mr-2">⚠️</span>
+                    <span>{error}</span>
+                  </div>
+                </div>
+              )}
+              
               {messages.length === 0 ? (
                 <div className="text-center text-gray-500 py-8">
                   <p>Start your conversation!</p>
@@ -304,14 +316,27 @@ export default function ChatPage() {
                             isOwnMessage
                               ? 'bg-green-500 text-white'
                               : 'bg-white text-gray-800 border'
+                          } ${
+                            // Add opacity for optimistic messages (temporary ID > normal message ID)
+                            isOwnMessage && message.id > 1000000000000 ? 'opacity-75' : ''
                           }`}
                         >
                           <p className="break-words">{message.content}</p>
-                          <p className={`text-xs mt-1 ${
-                            isOwnMessage ? 'text-green-100' : 'text-gray-500'
-                          }`}>
-                            {formatTime(message.createdAt)}
-                          </p>
+                          <div className="flex items-center justify-between mt-1">
+                            <p className={`text-xs ${
+                              isOwnMessage ? 'text-green-100' : 'text-gray-500'
+                            }`}>
+                              {formatTime(message.createdAt)}
+                            </p>
+                            {/* Message status indicator for own messages */}
+                            {isOwnMessage && (
+                              <span className={`text-xs ml-2 ${
+                                isOwnMessage ? 'text-green-100' : 'text-gray-500'
+                              }`}>
+                                {message.id > 1000000000000 ? '⏳' : '✓'}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -337,10 +362,14 @@ export default function ChatPage() {
                 </div>
                 <button
                   onClick={handleSendMessage}
-                  disabled={sending || !newMessage.trim()}
+                  disabled={sending || sendingMessage || !newMessage.trim()}
                   className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Send className="h-5 w-5" />
+                  {sendingMessage ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  ) : (
+                    <Send className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>

@@ -26,6 +26,11 @@ model Mentee {
   password String 
   location String
   updateAt DateTime @updatedAt
+  Github String?
+  Twitter String?
+  LinkedIn String? 
+  Instagram String?
+  Website String?
   last_login DateTime @default(now())
   ratings Int @default(0)
   experience Int @default(0)
@@ -49,6 +54,7 @@ model Achievements{
   reviews String[]
 }
 
+
 model Mentor {
   id Int @id @default(autoincrement())
   first_name String 
@@ -59,6 +65,11 @@ model Mentor {
   phone_number String  @unique
   password String
   achievement Achievements? 
+  Github String?
+  Twitter String?
+  LinkedIn String @default("") // Required for mentors - will need to be filled
+  Instagram String?
+  Website String?
   supabaseId String @unique
   gender String @default("Not specified")
   profile_picture String @default("https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg") 

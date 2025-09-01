@@ -39,6 +39,8 @@ function useRealtimeChat() {
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [sendingMessage, setSendingMessage] = useState(false)
 
   // Fetch all conversations for current user
   const fetchConversations = useCallback(async () => {
@@ -105,39 +107,110 @@ function useRealtimeChat() {
 
   // Send a message
   const sendMessage = useCallback(async (conversationId: number, content: string) => {
-    if (!user?.id || !userRole || !content.trim()) return
+    if (!user?.id || !userRole || !content.trim()) return false
+
+    const messageContent = content.trim()
+    const tempId = Date.now() // Temporary ID for optimistic update
 
     try {
-      const { error } = await supabasase
+      setSendingMessage(true)
+      setError(null) // Clear any previous errors
+
+      // Optimistic update: Add message to UI immediately
+      const optimisticMessage: Message = {
+        id: tempId,
+        conversationId,
+        senderId: user.id,
+        senderRole: userRole,
+        content: messageContent,
+        messageType: 'text',
+        isRead: false,
+        createdAt: new Date().toISOString()
+      }
+
+      console.log('📤 Sending message (optimistic update):', optimisticMessage)
+      
+      // Add to UI immediately for instant feedback
+      setMessages(prev => [...prev, optimisticMessage])
+
+      // Send to database
+      const { data, error } = await supabasase
         .from('messages')
         .insert([
           {
             conversationId,
             senderId: user.id,
             senderRole: userRole,
-            content: content.trim(),
+            content: messageContent,
             messageType: 'text'
           }
         ])
+        .select()
+        .single()
 
       if (error) {
-        console.error('Error sending message:', error)
+        console.error('❌ Error sending message to database:', error)
+        
+        // Remove the optimistic message on error
+        setMessages(prev => prev.filter(msg => msg.id !== tempId))
+        
+        // Set user-friendly error message
+        let errorMessage = 'Failed to send message. Please try again.'
+        if (error.code === 'PGRST301') {
+          errorMessage = 'You do not have permission to send messages.'
+        } else if (error.message?.includes('network')) {
+          errorMessage = 'Network error. Check your connection and try again.'
+        } else if (error.message?.includes('timeout')) {
+          errorMessage = 'Request timed out. Please try again.'
+        }
+        
+        setError(errorMessage)
+        
+        // Auto-clear error after 5 seconds
+        setTimeout(() => setError(null), 5000)
+        
         return false
       }
 
+      console.log('✅ Message sent to database:', data)
+
+      // Replace optimistic message with real one from database
+      if (data) {
+        setMessages(prev => 
+          prev.map(msg => msg.id === tempId ? data as Message : msg)
+        )
+      }
+
       // Update conversation's lastMessage and updatedAt
-      await supabasase
-        .from('conversations')
-        .update({
-          lastMessage: content.trim(),
-          updatedAt: new Date().toISOString()
-        })
-        .eq('id', conversationId)
+      try {
+        await supabasase
+          .from('conversations')
+          .update({
+            lastMessage: messageContent,
+            updatedAt: new Date().toISOString()
+          })
+          .eq('id', conversationId)
+      } catch (updateError) {
+        console.warn('⚠️ Failed to update conversation lastMessage:', updateError)
+        // Non-critical error, don't show to user
+      }
 
       return true
     } catch (err) {
-      console.error('Unexpected error:', err)
+      console.error('💥 Unexpected error sending message:', err)
+      
+      // Remove the optimistic message on error
+      setMessages(prev => prev.filter(msg => msg.id !== tempId))
+      
+      // Set generic error message
+      setError('Something went wrong. Please try again.')
+      
+      // Auto-clear error after 5 seconds
+      setTimeout(() => setError(null), 5000)
+      
       return false
+    } finally {
+      setSendingMessage(false)
     }
   }, [user?.id, userRole])
 
@@ -316,36 +389,98 @@ function useRealtimeChat() {
       )
       .subscribe()
 
-    // Subscribe to new messages
+    return () => {
+      console.log('Cleaning up conversation subscription')
+      conversationChannel.unsubscribe()
+    }
+  }, [user?.id, fetchConversations])
+
+  // Separate subscription for messages that depends on active conversation
+  useEffect(() => {
+    if (!user?.id || !activeConversation) return
+
+    console.log('🔌 Setting up message subscription for conversation:', activeConversation.id)
+
+    // Test if real-time is working by subscribing to a simple channel first
+    const testChannel = supabasase
+      .channel('test-connection')
+      .subscribe((status) => {
+        console.log('🧪 Test connection status:', status)
+      })
+
+    // Subscribe to new messages for the active conversation
     const messageChannel = supabasase
-      .channel(`user-messages:${user.id}`)
+      .channel(`conversation-messages:${activeConversation.id}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'messages'
+          table: 'messages',
+          filter: `conversationId=eq.${activeConversation.id}`
         },
         (payload) => {
-          console.log('New message:', payload.new)
+          console.log('🔔 NEW MESSAGE RECEIVED VIA REAL-TIME:', payload.new)
           const newMessage = payload.new as Message
           
-          // Add to messages if it's for the active conversation
-          if (activeConversation && newMessage.conversationId === activeConversation.id) {
-            setMessages(prev => [...prev, newMessage])
-          }
+          // Add to messages immediately for real-time effect
+          setMessages(prev => {
+            // Check if message already exists to avoid duplicates
+            if (prev.find(msg => msg.id === newMessage.id)) {
+              console.log('⚠️ Duplicate message detected, skipping')
+              return prev
+            }
+            console.log('✅ Adding new message to UI')
+            return [...prev, newMessage]
+          })
           
-          // Refresh conversations to update last message
+          // Also refresh conversations to update last message
           fetchConversations()
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('📡 Message subscription status:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Successfully subscribed to real-time messages!')
+        } else if (status === 'CLOSED') {
+          console.log('❌ Real-time subscription closed')
+        } else {
+          console.log('⚠️ Real-time subscription status:', status)
+        }
+      })
+
+    // Fallback: Poll for new messages every 2 seconds if real-time fails
+    const pollInterval = setInterval(async () => {
+      console.log('🔄 Polling for new messages (fallback)')
+      try {
+        const { data: latestMessages } = await supabasase
+          .from('messages')
+          .select('*')
+          .eq('conversationId', activeConversation.id)
+          .order('createdAt', { ascending: true })
+
+        if (latestMessages && latestMessages.length > 0) {
+          setMessages(prevMessages => {
+            // Only update if we have new messages
+            if (latestMessages.length > prevMessages.length) {
+              console.log('📨 Found new messages via polling, updating UI')
+              return latestMessages
+            }
+            return prevMessages
+          })
+        }
+      } catch (error) {
+        console.error('❌ Error polling messages:', error)
+      }
+    }, 2000)
 
     return () => {
-      conversationChannel.unsubscribe()
+      console.log('🧹 Cleaning up message subscription for conversation:', activeConversation.id)
+      testChannel.unsubscribe()
       messageChannel.unsubscribe()
+      clearInterval(pollInterval)
     }
-  }, [user?.id, activeConversation, fetchConversations])
+  }, [user?.id, activeConversation?.id, fetchConversations])
 
   // Initial fetch
   useEffect(() => {
@@ -367,7 +502,9 @@ function useRealtimeChat() {
     loading,
     sendMessage,
     createOrFindConversation,
-    fetchConversations
+    fetchConversations,
+    error,
+    sendingMessage
   }
 }
 
