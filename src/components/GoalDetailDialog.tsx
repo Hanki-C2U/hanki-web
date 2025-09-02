@@ -22,6 +22,10 @@ export function GoalDetailDialog({ goal, open, onOpenChange, onUpdateGoal }: Goa
 
   if (!goal) return null;
 
+  // Calculate current progress dynamically based on milestones
+  const completedCount = goal.milestones.filter(m => m.completed).length;
+  const currentProgress = goal.milestones.length > 0 ? Math.round((completedCount / goal.milestones.length) * 100) : 0;
+
   const handleMilestoneToggle = (milestoneIndex: number) => {
     const updatedMilestones = [...goal.milestones];
     updatedMilestones[milestoneIndex].completed = !updatedMilestones[milestoneIndex].completed;
@@ -88,19 +92,19 @@ export function GoalDetailDialog({ goal, open, onOpenChange, onUpdateGoal }: Goa
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Overall Progress</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">{goal.progress}%</span>
-                    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${goal.status === "Completed"
+                    <span className="text-sm text-gray-600">{currentProgress}%</span>
+                    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${currentProgress === 100
                       ? "border-transparent bg-green-100 text-green-800"
                       : "border-transparent bg-gray-100 text-gray-800"
                       }`}>
-                      {goal.status}
+                      {currentProgress === 100 ? "Completed" : "In Progress"}
                     </span>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
                     className="bg-orange-500 h-3 rounded-full transition-all duration-300"
-                    style={{ width: `${goal.progress}%` }}
+                    style={{ width: `${currentProgress}%` }}
                   />
                 </div>
               </div>
