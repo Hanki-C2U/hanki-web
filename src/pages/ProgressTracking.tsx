@@ -117,8 +117,9 @@ const ProgressTracking = () => {
   const [skillDetailOpen, setSkillDetailOpen] = useState(false);
 
   const handleAddGoal = (newGoal: Omit<typeof goals[0], 'id'>) => {
+    const newId = Math.max(...goals.map(g => g.id), 0) + 1;
     const goal = {
-      id: goals.length + 1,
+      id: newId,
       ...newGoal
     };
     setGoals([...goals, goal]);
