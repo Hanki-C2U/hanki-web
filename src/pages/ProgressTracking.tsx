@@ -15,6 +15,7 @@ import {
 import { AddGoalDialog } from "../components/AddGoalDialog";
 import { GoalDetailDialog } from "../components/GoalDetailDialog";
 import { AddSkillDialog } from "../components/AddSkillDialog";
+import { SkillDetailDialog } from "../components/SkillDetailDialog";
 
 const ProgressTracking = () => {
   const [activeTab, setActiveTab] = useState("goals");
@@ -112,6 +113,8 @@ const ProgressTracking = () => {
 
   const [selectedGoal, setSelectedGoal] = useState<typeof goals[0] | null>(null);
   const [goalDetailOpen, setGoalDetailOpen] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState<typeof skills[0] | null>(null);
+  const [skillDetailOpen, setSkillDetailOpen] = useState(false);
 
   const handleAddGoal = (newGoal: Omit<typeof goals[0], 'id'>) => {
     const goal = {
@@ -134,6 +137,17 @@ const ProgressTracking = () => {
   const handleGoalClick = (goal: typeof goals[0]) => {
     setSelectedGoal(goal);
     setGoalDetailOpen(true);
+  };
+
+  const handleSkillClick = (skill: typeof skills[0]) => {
+    setSelectedSkill(skill);
+    setSkillDetailOpen(true);
+  };
+
+  const handleUpdateSkill = (name: string, updates: Partial<typeof skills[0]>) => {
+    setSkills(skills.map(skill =>
+      skill.name === name ? { ...skill, ...updates } : skill
+    ));
   };
 
 
@@ -215,8 +229,8 @@ const ProgressTracking = () => {
             <button
               onClick={() => setActiveTab("goals")}
               className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 rounded-md ${activeTab === "goals"
-                  ? "bg-white shadow-sm border border-gray-200"
-                  : "text-gray-600 hover:text-gray-900"
+                ? "bg-white shadow-sm border border-gray-200"
+                : "text-gray-600 hover:text-gray-900"
                 }`}
             >
               <Target className="h-4 w-4" />
@@ -225,8 +239,8 @@ const ProgressTracking = () => {
             <button
               onClick={() => setActiveTab("skills")}
               className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 rounded-md ${activeTab === "skills"
-                  ? "bg-white shadow-sm border border-gray-200"
-                  : "text-gray-600 hover:text-gray-900"
+                ? "bg-white shadow-sm border border-gray-200"
+                : "text-gray-600 hover:text-gray-900"
                 }`}
             >
               <TrendingUp className="h-4 w-4" />
@@ -235,8 +249,8 @@ const ProgressTracking = () => {
             <button
               onClick={() => setActiveTab("badges")}
               className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 rounded-md ${activeTab === "badges"
-                  ? "bg-white shadow-sm border border-gray-200"
-                  : "text-gray-600 hover:text-gray-900"
+                ? "bg-white shadow-sm border border-gray-200"
+                : "text-gray-600 hover:text-gray-900"
                 }`}
             >
               <Award className="h-4 w-4" />
@@ -245,8 +259,8 @@ const ProgressTracking = () => {
             <button
               onClick={() => setActiveTab("sessions")}
               className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 rounded-md ${activeTab === "sessions"
-                  ? "bg-white shadow-sm border border-gray-200"
-                  : "text-gray-600 hover:text-gray-900"
+                ? "bg-white shadow-sm border border-gray-200"
+                : "text-gray-600 hover:text-gray-900"
                 }`}
             >
               <Users className="h-4 w-4" />
@@ -272,8 +286,8 @@ const ProgressTracking = () => {
                           <p className="text-sm text-gray-600">Due: {goal.dueDate}</p>
                         </div>
                         <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${goal.status === "Completed"
-                            ? "border-transparent bg-green-100 text-green-800"
-                            : "border-transparent bg-gray-100 text-gray-800"
+                          ? "border-transparent bg-green-100 text-green-800"
+                          : "border-transparent bg-gray-100 text-gray-800"
                           }`}>
                           {goal.status}
                         </span>
@@ -300,14 +314,14 @@ const ProgressTracking = () => {
                             <div key={index} className="flex items-center gap-3">
                               <CheckCircle
                                 className={`h-4 w-4 ${milestone.completed
-                                    ? 'text-green-500'
-                                    : 'text-gray-400'
+                                  ? 'text-green-500'
+                                  : 'text-gray-400'
                                   }`}
                               />
                               <span
                                 className={`text-sm ${milestone.completed
-                                    ? 'text-gray-900 line-through'
-                                    : 'text-gray-600'
+                                  ? 'text-gray-900 line-through'
+                                  : 'text-gray-600'
                                   }`}
                               >
                                 {milestone.title}
@@ -333,7 +347,7 @@ const ProgressTracking = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {skills.map((skill, index) => (
-                  <div key={index} className="rounded-lg border border-gray-200 bg-white shadow-sm">
+                  <div key={index} className="rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer hover:shadow-lg transition-all duration-200" onClick={() => handleSkillClick(skill)}>
                     <div className="p-6">
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
@@ -438,6 +452,14 @@ const ProgressTracking = () => {
           open={goalDetailOpen}
           onOpenChange={setGoalDetailOpen}
           onUpdateGoal={handleUpdateGoal}
+        />
+
+        {/* Skill Detail Dialog */}
+        <SkillDetailDialog
+          skill={selectedSkill}
+          open={skillDetailOpen}
+          onOpenChange={setSkillDetailOpen}
+          onUpdateSkill={handleUpdateSkill}
         />
       </main>
     </div>
