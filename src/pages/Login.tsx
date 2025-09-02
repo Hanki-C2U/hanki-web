@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import GoogleSignInButton from "../components/ui/GoogleSignInButton";
@@ -42,7 +42,7 @@ const Login = () => {
             Back to Home
           </Link>
         </div>
-        
+
         <Card className="shadow-card gradient-card">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
@@ -50,15 +50,15 @@ const Login = () => {
               Sign in to your SkillsConnect account with Google
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             {/* Google Sign-In Button */}
-            <GoogleSignInButton 
+            <GoogleSignInButton
               variant="signin"
               onGoogleSignIn={handleGoogleSignIn}
               loading={googleLoading}
             />
-            
+
             <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
               <Link to="/signup" className="text-primary hover:underline">
