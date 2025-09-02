@@ -15,6 +15,7 @@
     "@material/chips": "^14.0.0",
     "@mui/material": "^7.3.1",
     "@prisma/client": "^6.15.0",
+    "@radix-ui/react-slot": "^1.2.3",
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.56.0",
@@ -27,11 +28,15 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.8.2",
+    "react-router": "^7.8.2",
+    "router": "^2.2.0",
     "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.1.12",
     "tailwindcss-animate": "^1.0.7",
     "zustand": "^5.0.8",
     "react-router": "^7.8.2",
-    "tailwindcss": "^4.1.12"
+    "tailwindcss": "^4.1.12",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

@@ -95,8 +95,6 @@ const Onboarding = () => {
     getCurrentUser();
   }, [navigate, setSession, setUser]);
 
-
-
   // Handle expertise selection from ChipSelection component
   const handleExpertiseChange = (selectedExpertise: string[]) => {
     setProfileData(prev => ({
@@ -228,7 +226,9 @@ const Onboarding = () => {
     );
   }
 
-
+  const handleSignOut = () => {
+    return supabasase.auth.signOut()
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center p-4">
@@ -374,7 +374,7 @@ const Onboarding = () => {
                     type="tel"
                     placeholder="+1234567890"
                     value={profileData.number}
-                    onChange={(e)=>{setProfileData(prev=>({...prev,number:e.target.value}))}}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, number: e.target.value }))}
                     required
                   />
                 </div>
@@ -385,22 +385,9 @@ const Onboarding = () => {
                     name="location"
                     placeholder="e.g., Kigali, Rwanda"
                     value={profileData.location}
-                    onChange={handleChange}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
                     required
                   />
-                    {chosen && Data.results.map((x,idx)=>{
-                      return (<div key={idx} className="rounded-md border-2 border-slate-600">
-                        <p  onClick={()=>{
-                          setProfileData(prev => ({ ...prev, location: `${x.state}, ${x.country}`}))
-                          if(profileData.location){
-                          setChosen(false)
-                          }
-                        }}> 
-                      {x.state}, {x.country}
-                        </p>
-                      </div>)
-                    })}
-                  
                 </div>
               </div>
 
