@@ -13,7 +13,7 @@ interface AddSkillDialogProps {
 export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [level, setLevel] = useState([25]);
+  const [level, setLevel] = useState(25);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,14 +22,14 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
 
     const newSkill = {
       name: name.trim(),
-      level: level[0]
+      level: level
     };
 
     onAddSkill(newSkill);
 
     // Reset form
     setName("");
-    setLevel([25]);
+    setLevel(25);
     setOpen(false);
   };
 
@@ -90,13 +90,13 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
 
               <div className="space-y-4">
                 <label className="text-sm font-medium leading-none">
-                  Current Level: {level[0]}% ({getLevelLabel(level[0])})
+                  Current Level: {level}% ({getLevelLabel(level)})
                 </label>
                 <div className="relative flex w-full touch-none select-none items-center">
                   <div className="relative h-2 w-full grow overflow-hidden rounded-full bg-gray-200">
                     <div
                       className="absolute h-full bg-orange-500 rounded-full transition-all duration-300"
-                      style={{ width: `${level[0]}%` }}
+                      style={{ width: `${level}%` }}
                     />
                   </div>
                   <input
@@ -104,13 +104,13 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
                     min="0"
                     max="100"
                     step="5"
-                    value={level[0]}
-                    onChange={(e) => setLevel([parseInt(e.target.value)])}
+                    value={level}
+                    onChange={(e) => setLevel(parseInt(e.target.value))}
                     className="absolute w-full h-5 opacity-0 cursor-pointer"
                   />
                   <div
                     className="absolute block h-5 w-5 rounded-full border-2 border-orange-500 bg-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
-                    style={{ left: `calc(${level[0]}% - 10px)` }}
+                    style={{ left: `calc(${level}% - 10px)` }}
                   />
                 </div>
                 <div className="flex justify-between text-xs text-gray-600">
