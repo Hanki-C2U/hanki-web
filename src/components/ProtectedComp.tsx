@@ -3,15 +3,14 @@ import { useNavigate } from 'react-router'
 import useSessionStore from '../stateStore/useSessionStore'
 function ProtectedComp({children}:PropsWithChildren) {
     const navigate = useNavigate()
-    const { session, isLoading } = useSessionStore()
+    const { session, isLoading, isAuthenticated } = useSessionStore()
 
-
-    useEffect(()=>{
-        // Only redirect if we're not loading and there's no session
-        if (!isLoading && !session) {
+    useEffect(() => {
+        // Only redirect if we're done loading and user is not authenticated
+        if (!isLoading && !isAuthenticated && !session) {
             navigate('/login', { replace: true })
         }
-    },[navigate, session, isLoading])
+    }, [navigate, session, isLoading, isAuthenticated])
 
     // Show loading while authentication state is being determined
     if (isLoading) {
@@ -25,8 +24,16 @@ function ProtectedComp({children}:PropsWithChildren) {
         )
     }
 
-    if (!session) {
-        return null
+    // If not authenticated after loading is complete, don't render children
+    // (the useEffect will handle navigation)
+    if (!isAuthenticated || !session) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-muted-foreground">Redirecting to login...</p>
+                </div>
+            </div>
+        )
     }
 
     return (

@@ -9,10 +9,10 @@ import {
   Bell,
   MessageCircle
 } from "lucide-react";
-import useSessionStore from "../stateStore/useSessionStore";
 import { supabasase } from "../supabase_creds/supabase";
 import { useEffect, useState,useLayoutEffect } from "react";
 import useRealtimeChat from "../hooks/useRealtimeChat";
+import useSessionStore from "../stateStore/useSessionStore";
 
 const MenteeDashboard = () => {
   const { userRole, roleLoading, user } = useSessionStore()
@@ -49,7 +49,6 @@ const MenteeDashboard = () => {
         }
       }
     }
-    
     fetchUsername()
   }, [userRole, user?.id])
 
