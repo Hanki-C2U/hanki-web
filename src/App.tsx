@@ -14,6 +14,7 @@ import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import MenteeProfile from "./pages/MenteeProfile";
 
 function App() {
   const router = createBrowserRouter(
@@ -25,6 +26,7 @@ function App() {
         <Route path="auth/callback" element={<AuthCallback />} />
         <Route path="onboarding" element={<Onboarding />} />
         <Route path="home" element={<h1>Home Page</h1>} />
+        <Route path="mentee-profile/:id" element={<MenteeProfile />} />
         <Route path="mentor-dashboard" element={
           <ProtectedRoute requiredUserType="mentor">
             <MentorDashboard />
