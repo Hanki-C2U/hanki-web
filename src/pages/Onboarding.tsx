@@ -9,8 +9,8 @@ import { Textarea } from "../components/ui/textarea";
 import { Users, GraduationCap } from "lucide-react";
 import ChipSelection from "../components/ui/ChipSelectionContext";
 import { supabasase } from "../supabase_creds/supabase";
-import useSessionStore from "../stateStore/useSessionStore";
-import { getOnboardingErrorMessage } from "../utils/onboardingUtils";
+import { useAuthStore } from "../store/authStore";
+// import { getOnboardingErrorMessage } from "../utils/onboardingUtils";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -23,8 +23,18 @@ const Onboarding = () => {
   // Use Zustand store for session management
   // You can now access user session data from anywhere in your app!
   // Example usage:
-  // const { user, isAuthenticated, getUserId, getUserEmail } = useSessionStore();
-  const { user, setUser, setSession, clearSession } = useSessionStore();
+  // const { user, isAuthenticated, getUserId, getUserEmail } = useAuthStore();
+  const { user, setUser, setSession, clearSession } = useAuthStore();
+
+  // Debug user state
+  useEffect(() => {
+    console.log('🔍 User state changed:', user);
+    console.log('🔍 User authenticated:', !!user);
+    if (user) {
+      console.log('🔍 User ID:', user.id);
+      console.log('🔍 User email:', user.email);
+    }
+  }, [user]);
 
   const api_key = import.meta.env.VITE_APP_GEOLOCATION_API_KEY;
 
@@ -32,8 +42,21 @@ const Onboarding = () => {
 
 
   
-  // Form data for additional profile information
-  const [profileData, setProfileData] = useState({
+  // Form data for additional profile information - separated by role
+  const [menteeData, setMenteeData] = useState({
+    firstName: "",
+    lastName: "",
+    age: "",
+    experience: "",
+    number: "",
+    gender: "",
+    profilePic: null as File | null,
+    bio: "",
+    location: "",
+    goals: ""
+  });
+
+  const [mentorData, setMentorData] = useState({
     firstName: "",
     lastName: "",
     age: "",
@@ -43,29 +66,44 @@ const Onboarding = () => {
     profilePic: null as File | null,
     bio: "",
     expertise: [] as string[],
-    location: "",
-    goals: ""
+    location: ""
   });
+
+  // Get current profile data based on role
+  const getCurrentProfileData = () => {
+    return role === 'mentee' ? menteeData : mentorData;
+  };
+
+  // Update profile data based on role
+  const updateProfileData = (updates: any) => {
+    if (role === 'mentee') {
+      setMenteeData(prev => ({ ...prev, ...updates }));
+    } else {
+      setMentorData(prev => ({ ...prev, ...updates }));
+    }
+  };
 
   useEffect(()=>{
     const suggestions = async () => {
-      const data = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?type=city&format=json&lang=en&text=${profileData.location}&apiKey=${api_key}`)
+      const currentData = getCurrentProfileData();
+      const data = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?type=city&format=json&lang=en&text=${currentData.location}&apiKey=${api_key}`)
       const data_json = await data.json()
       setData(data_json)
     }
     
     // Simple debounce implementation
     const timeoutId = setTimeout(() => {
-      if(profileData.location){
+      const currentData = getCurrentProfileData();
+      if(currentData.location){
         suggestions()
       }
-    }, 1000)
+    }, 300)
     
     return () => clearTimeout(timeoutId)
-  },[profileData.location, api_key])
+  },[role, menteeData.location, mentorData.location, api_key])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProfileData(prev => ({ ...prev, location: e.target.value }))
+    updateProfileData({ location: e.target.value });
     setChosen(true)
   }
   
@@ -99,10 +137,7 @@ const Onboarding = () => {
 
   // Handle expertise selection from ChipSelection component
   const handleExpertiseChange = (selectedExpertise: string[]) => {
-    setProfileData(prev => ({
-      ...prev,
-      expertise: selectedExpertise
-    }));
+    updateProfileData({ expertise: selectedExpertise });
   };
 
   // Handle role change
@@ -112,28 +147,81 @@ const Onboarding = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
+    e.preventDefault(); // Prevent default form submission
+    
+    console.log('🔥 FORM SUBMITTED - handleSubmit called!');
+    console.log('👤 Current user:', user);
+    console.log('🎯 Current role:', role);
+    console.log('📊 Mentor data:', mentorData);
+    console.log('📊 Mentee data:', menteeData);
+    
+    if (!user) {
+      console.error('❌ User not authenticated');
+      setError("User not authenticated. Please log in again.");
+      return;
+    }
 
+    // Basic validation
+    const currentData = getCurrentProfileData();
+    if (!currentData.firstName || !currentData.lastName) {
+      setError("Please fill in your first and last name");
+      return;
+    }
+
+    if (!currentData.number) {
+      setError("Please enter your phone number");
+      return;
+    }
+
+    if (!currentData.location) {
+      setError("Please enter your location");
+      return;
+    }
+
+    if (!currentData.age || parseInt(currentData.age) < 13 || parseInt(currentData.age) > 120) {
+      setError("Please enter a valid age (13-120)");
+      return;
+    }
+
+    if (!currentData.bio || currentData.bio.trim().length < 10) {
+      setError("Please write a brief bio (at least 10 characters)");
+      return;
+    }
+
+    if (role === 'mentor' && mentorData.expertise.length === 0) {
+      setError("Please select at least one area of expertise");
+      return;
+    }
+
+    if (role === 'mentee' && (!menteeData.goals || menteeData.goals.trim().length < 10)) {
+      setError("Please describe your learning goals (at least 10 characters)");
+      return;
+    }
+
+    console.log('✅ User is authenticated and validation passed, proceeding...');
     setLoading(true);
     setError(null);
     
     try {
-      console.log('Starting onboarding process for user:', user.id);
+      console.log('🚀 Starting onboarding process for user:', user.id);
+      
+      const currentData = getCurrentProfileData();
+      console.log('📋 Current role:', role);
+      console.log('📋 Profile data:', currentData);
       
       // Handle profile picture upload
       let profilePicUrl = '';
-      if (profileData.profilePic) {
-        console.log('Uploading profile picture...');
-        const fileExt = profileData.profilePic.name.split('.').pop();
+      if (currentData.profilePic) {
+        console.log('📸 Uploading profile picture...');
+        const fileExt = currentData.profilePic.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         
         const { error: uploadError } = await supabasase.storage
           .from('Project_Pics')
-          .upload(fileName, profileData.profilePic);
+          .upload(fileName, currentData.profilePic);
 
         if (uploadError) {
-          console.error('Error uploading profile picture:', uploadError);
+          console.error('❌ Error uploading profile picture:', uploadError);
           throw new Error(`Failed to upload profile picture: ${uploadError.message}`);
         }
 
@@ -142,76 +230,96 @@ const Onboarding = () => {
           .getPublicUrl(fileName);
         
         profilePicUrl = urlData.publicUrl;
-        console.log('Profile picture uploaded successfully:', profilePicUrl);
+        console.log('✅ Profile picture uploaded successfully:', profilePicUrl);
       }
 
       // Prepare user data from Google auth + additional profile data
       const userData = {
-        first_name: profileData.firstName || user.user_metadata?.given_name || '',
-        last_name: profileData.lastName || user.user_metadata?.family_name || '',
+        first_name: currentData.firstName || user.user_metadata?.given_name || '',
+        last_name: currentData.lastName || user.user_metadata?.family_name || '',
         email: user.email,
         password: 'OAUTH_USER', // Placeholder for OAuth users
         supabaseId: user.id,
-        age: parseInt(profileData.age) || 20,
-        experience: parseInt(profileData.experience) || 0,
-        phone_number: profileData.number,
-        gender: profileData.gender || 'Not specified',
+        age: parseInt(currentData.age) || 20,
+        experience: parseInt(currentData.experience) || 0,
+        phone_number: currentData.number || `TEMP_${user.id.slice(0, 8)}`, // Fallback to prevent conflicts
+        gender: currentData.gender || 'Not specified',
         profile_picture: profilePicUrl || 
           'https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg',
-        location: profileData.location,
+        location: currentData.location,
         updateAt: new Date().toISOString(),
       };
 
-      console.log('Inserting user data into database...');
+      console.log('💾 Inserting user data into database...');
 
       if (role === 'mentor') {
+        console.log('📝 Creating mentor profile...');
+        
+        const mentorInsertData = {
+          ...userData,
+          expertise: mentorData.expertise,
+          Biography: currentData.bio, // Using 'Biography' field name for mentor table
+        };
+        
+        console.log('📋 Mentor data to insert:', mentorInsertData);
+        
         const { data, error } = await supabasase
           .from('mentor')
-          .insert([{
-            ...userData,
-            expertise: profileData.expertise,
-            Biography: profileData.bio,
-          }])
+          .insert([mentorInsertData])
           .select();
 
         if (error) {
-          console.error('Error creating mentor profile:', error);
-          throw new Error(`Failed to create mentor profile: ${error.message || 'Unknown database error'}`);
+          console.error('❌ Error creating mentor profile:', error);
+          console.error('❌ Error details:', JSON.stringify(error, null, 2));
+          throw new Error(`Failed to create mentor profile: ${error.message || error.details || 'Unknown database error'}`);
         }
 
-        console.log('Mentor profile created successfully:', data);
+        console.log('✅ Mentor profile created successfully:', data);
         
         // Update the session store with the new role
-        const { setUserRole } = useSessionStore.getState();
+        const { setUserRole } = useAuthStore.getState();
         setUserRole('mentor');
         
         navigate('/mentor-dashboard', { replace: true });
       } else {
+        console.log('📝 Creating mentee profile...');
+        
+        const menteeInsertData = {
+          ...userData,
+          Interests: [menteeData.goals], // Using actual DB column name "Interests"
+          bio: currentData.bio,
+        };
+        
+        console.log('📋 Mentee data to insert:', menteeInsertData);
+        console.log('📋 menteeData.goals:', menteeData.goals);
+        console.log('📋 currentData.bio:', currentData.bio);
+        
         const { data, error } = await supabasase
           .from('mentee')
-          .insert([{
-            ...userData,
-            Interests: [profileData.goals],
-            bio: profileData.bio,
-          }])
+          .insert([menteeInsertData])
           .select();
 
+        console.log('📊 Mentee insertion result:', { data, error });
+
         if (error) {
-          console.error('Error creating mentee profile:', error);
-          throw new Error(`Failed to create mentee profile: ${error.message || 'Unknown database error'}`);
+          console.error('❌ Error creating mentee profile:', error);
+          console.error('❌ Error details:', JSON.stringify(error, null, 2));
+          console.error('❌ Error code:', error.code);
+          console.error('❌ Error hint:', error.hint);
+          throw new Error(`Failed to create mentee profile: ${error.message || error.details || 'Unknown database error'}`);
         }
 
-        console.log('Mentee profile created successfully:', data);
+        console.log('✅ Mentee profile created successfully:', data);
         
         // Update the session store with the new role
-        const { setUserRole } = useSessionStore.getState();
+        const { setUserRole } = useAuthStore.getState();
         setUserRole('mentee');
         
         navigate('/mentee-dashboard', { replace: true });
       }
     } catch (error: any) {
-      console.error('Onboarding error:', error);
-      setError(getOnboardingErrorMessage(error));
+      console.error('❌ Onboarding error:', error);
+      setError(error.message || 'An unexpected error occurred during onboarding');
     } finally {
       setLoading(false);
     }
@@ -312,8 +420,8 @@ const Onboarding = () => {
                     name="firstName"
                     type="text"
                     placeholder="John"
-                    value={profileData.firstName}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
+                    value={getCurrentProfileData().firstName}
+                    onChange={(e) => updateProfileData({ firstName: e.target.value })}
                     required
                   />
                 </div>
@@ -324,8 +432,8 @@ const Onboarding = () => {
                     name="lastName"
                     type="text"
                     placeholder="Doe"
-                    value={profileData.lastName}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
+                    value={getCurrentProfileData().lastName}
+                    onChange={(e) => updateProfileData({ lastName: e.target.value })}
                     required
                   />
                 </div>
@@ -339,8 +447,8 @@ const Onboarding = () => {
                     name="age"
                     type="number"
                     placeholder="25"
-                    value={profileData.age}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, age: e.target.value }))}
+                    value={getCurrentProfileData().age}
+                    onChange={(e) => updateProfileData({ age: e.target.value })}
                     min="16"
                     max="100"
                     required
@@ -351,8 +459,8 @@ const Onboarding = () => {
                   <select
                     id="gender"
                     name="gender"
-                    value={profileData.gender}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, gender: e.target.value }))}
+                    value={getCurrentProfileData().gender}
+                    onChange={(e) => updateProfileData({ gender: e.target.value })}
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     required
                   >
@@ -373,8 +481,8 @@ const Onboarding = () => {
                     name="number"
                     type="tel"
                     placeholder="+1234567890"
-                    value={profileData.number}
-                    onChange={(e)=>{setProfileData(prev=>({...prev,number:e.target.value}))}}
+                    value={getCurrentProfileData().number}
+                    onChange={(e)=>{updateProfileData({number:e.target.value})}}
                     required
                   />
                 </div>
@@ -384,15 +492,15 @@ const Onboarding = () => {
                     id="location"
                     name="location"
                     placeholder="e.g., Kigali, Rwanda"
-                    value={profileData.location}
+                    value={getCurrentProfileData().location}
                     onChange={handleChange}
                     required
                   />
                     {chosen && Data.results.map((x,idx)=>{
                       return (<div key={idx} className="rounded-md border-2 border-slate-600">
                         <p  onClick={()=>{
-                          setProfileData(prev => ({ ...prev, location: `${x.state}, ${x.country}`}))
-                          if(profileData.location){
+                          updateProfileData({ location: `${x.state}, ${x.country}` });
+                          if(getCurrentProfileData().location){
                           setChosen(false)
                           }
                         }}> 
@@ -414,7 +522,7 @@ const Onboarding = () => {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      setProfileData(prev => ({ ...prev, profilePic: file }));
+                      updateProfileData({ profilePic: file });
                     }
                   }}
                   className="cursor-pointer"
@@ -432,7 +540,7 @@ const Onboarding = () => {
                       id="expertise"
                       name="expertise"
                       placeholder="Click below to select your areas of expertise"
-                      value={profileData.expertise.join(', ')}
+                      value={role === 'mentor' ? (mentorData.expertise || []).join(', ') : ''}
                       readOnly
                       onClick={() => setShowChipSelection(prev => !prev)}
                       className="cursor-pointer"
@@ -441,7 +549,7 @@ const Onboarding = () => {
                     {showChipSelection && (
                       <div className="mt-2">
                         <ChipSelection 
-                          selectedChips={profileData.expertise}
+                          selectedChips={role === 'mentor' ? mentorData.expertise : []}
                           onSelectionChange={handleExpertiseChange}
                           maxSelections={5}
                         />
@@ -456,8 +564,8 @@ const Onboarding = () => {
                       name="experience"
                       type="number"
                       placeholder="5"
-                      value={profileData.experience}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, experience: e.target.value }))}
+                      value={getCurrentProfileData().experience}
+                      onChange={(e) => updateProfileData({ experience: e.target.value })}
                       min="0"
                       max="50"
                       required
@@ -470,8 +578,8 @@ const Onboarding = () => {
                       id="bio"
                       name="bio"
                       placeholder="Tell us about your professional background and what you can help others with..."
-                      value={profileData.bio}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                      value={getCurrentProfileData().bio}
+                      onChange={(e) => updateProfileData({ bio: e.target.value })}
                       required
                     />
                   </div>
@@ -487,8 +595,8 @@ const Onboarding = () => {
                       name="experience"
                       type="number"
                       placeholder="2"
-                      value={profileData.experience}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, experience: e.target.value }))}
+                      value={getCurrentProfileData().experience}
+                      onChange={(e) => updateProfileData({ experience: e.target.value })}
                       min="0"
                       max="50"
                       required
@@ -501,8 +609,12 @@ const Onboarding = () => {
                       id="goals"
                       name="goals"
                       placeholder="What do you hope to achieve through mentorship? What skills do you want to develop?"
-                      value={profileData.goals}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, goals: e.target.value }))}
+                      value={role === 'mentee' ? menteeData.goals : ''}
+                      onChange={(e) => {
+                        if (role === 'mentee') {
+                          setMenteeData(prev => ({ ...prev, goals: e.target.value }));
+                        }
+                      }}
                       required
                     />
                   </div>
@@ -513,8 +625,8 @@ const Onboarding = () => {
                       id="bio"
                       name="bio"
                       placeholder="Tell us about yourself, your background, and what you're passionate about..."
-                      value={profileData.bio}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                      value={getCurrentProfileData().bio}
+                      onChange={(e) => updateProfileData({ bio: e.target.value })}
                       required
                     />
                   </div>

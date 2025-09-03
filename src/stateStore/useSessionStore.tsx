@@ -20,6 +20,7 @@ interface SessionState {
   setRoleLoading: (loading: boolean) => void;
   clearSession: () => void;
   signOut: () => Promise<void>;
+  checkUserRole: (userId: string) => Promise<'mentor' | 'mentee' | null>;
   
   // Derived state
   getUserId: () => string | null;
@@ -106,6 +107,35 @@ const useSessionStore = create<SessionState>()(
             userRole: null,
             roleLoading: false,
           });
+        }
+      },
+      
+      // Check user role in database
+      checkUserRole: async (userId: string) => {
+        try {
+          set({ roleLoading: true });
+          
+          // Check both mentor and mentee tables
+          const [mentorResult, menteeResult] = await Promise.allSettled([
+            supabasase.from('mentor').select('id').eq('supabaseId', userId).maybeSingle(),
+            supabasase.from('mentee').select('id').eq('supabaseId', userId).maybeSingle()
+          ]);
+          
+          let role: 'mentor' | 'mentee' | null = null;
+          
+          if (mentorResult.status === 'fulfilled' && mentorResult.value.data) {
+            role = 'mentor';
+          } else if (menteeResult.status === 'fulfilled' && menteeResult.value.data) {
+            role = 'mentee';
+          }
+          
+          set({ userRole: role, roleLoading: false });
+          console.log('🔍 User role determined:', role);
+          return role;
+        } catch (error) {
+          console.error('❌ Error checking user role:', error);
+          set({ userRole: null, roleLoading: false });
+          return null;
         }
       },
       

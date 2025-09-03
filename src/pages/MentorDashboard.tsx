@@ -9,12 +9,12 @@ import {
   Star,
   Bell
 } from "lucide-react";
-import useSessionStore from "../stateStore/useSessionStore";
+import { useAuthStore } from "../store/authStore";
 import { supabasase } from "../supabase_creds/supabase";
 import { useEffect, useState ,useLayoutEffect} from "react";
 
 const MentorDashboard = () => {
-  const { userRole, roleLoading, user } = useSessionStore()
+  const { userRole, roleLoading, user } = useAuthStore()
   const navigate = useNavigate()
   const [username, setUserName] = useState('')
 
@@ -23,9 +23,21 @@ const MentorDashboard = () => {
 
   // Redirect if explicitly not a mentor (don't redirect on null/unknown role)
   useLayoutEffect(() => {
-    if (!roleLoading && userRole !== null && userRole !== 'mentor') {
-      console.log('Redirecting to mentee dashboard - userRole:', userRole)
-      navigate('/mentee-dashboard')
+    // If role is loading, don't redirect yet
+    if (roleLoading) return;
+    
+    // If user has no role, redirect to onboarding
+    if (userRole === null) {
+      console.log('No role assigned, redirecting to onboarding');
+      navigate('/onboarding', { replace: true });
+      return;
+    }
+    
+    // If user is a mentee, deny access and redirect
+    if (userRole === 'mentee') {
+      console.log('Access denied: Mentee trying to access mentor dashboard, redirecting to mentee dashboard');
+      navigate('/mentee-dashboard', { replace: true });
+      return;
     }
   }, [roleLoading, userRole, navigate])
 
@@ -102,6 +114,31 @@ const MentorDashboard = () => {
     }
   ];
 
+  // Show loading spinner while checking access permissions
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verifying access permissions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied message if user is not a mentor
+  if (userRole !== 'mentor') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-4">You don't have permission to access the mentor dashboard.</p>
+          <p className="text-sm text-gray-500">Redirecting you to the appropriate page...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
       {/* Header */}
@@ -109,7 +146,7 @@ const MentorDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to="/" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
+              <Link to="/home" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
                 SkillsConnect
               </Link>
               <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-professional-blue-light text-professional-blue">

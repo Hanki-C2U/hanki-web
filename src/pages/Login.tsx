@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -7,29 +7,38 @@ import { Button } from "../components/ui/Button";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import GoogleSignInButton from "../components/ui/GoogleSignInButton";
 import { supabasase } from "../supabase_creds/supabase";
-import useSessionStore from "../stateStore/useSessionStore";
+import { useAuthStore } from "../store/authStore";
 
 const Login = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginError, setLoginError] = useState<string | React.ReactNode | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { session, isLoading, setSession } = useSessionStore();
+  const { user, userRole, isLoading, roleLoading } = useAuthStore();
 
-  // Redirect if already logged in, but not if we're coming from auth callback
+  // Redirect if already logged in
   useEffect(() => {
-    // Don't auto-redirect if we're in the middle of OAuth flow
-    const isFromAuthCallback = location.state?.fromAuthCallback || 
-                               document.referrer.includes('/auth/callback');
+    console.log('🔍 Login redirect check:', { user: user?.id, userRole, isLoading, roleLoading });
     
-    if (!isLoading && session && !isFromAuthCallback) {
-      navigate('/home', { replace: true });
+    // Only redirect if all loading is complete
+    if (!isLoading && !roleLoading && user) {
+      if (userRole === 'mentor') {
+        console.log('✅ Redirecting to mentor dashboard');
+        navigate('/mentor-dashboard', { replace: true });
+      } else if (userRole === 'mentee') {
+        console.log('✅ Redirecting to mentee dashboard');
+        navigate('/mentee-dashboard', { replace: true });
+      } else if (userRole === null) {
+        // Only redirect to onboarding if role check is complete and user has no role
+        console.log('⚠️ No role found after loading complete, redirecting to onboarding');
+        navigate('/onboarding', { replace: true });
+      }
+      // If userRole is undefined or loading, don't redirect yet
     }
-  }, [session, isLoading, navigate, location]);
+  }, [user, userRole, isLoading, roleLoading, navigate]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -58,6 +67,8 @@ const Login = () => {
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('🔥 ATTEMPTING LOGIN:', email);
+    
     // Clear any previous errors
     setLoginError(null);
     
@@ -67,28 +78,43 @@ const Login = () => {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setLoginError('Please enter a valid email address');
+      return;
+    }
+
     setEmailLoading(true);
     
     try {
+      // STEP 1: Check if user exists in Supabase Auth first
+      console.log('🔍 Checking if user exists in auth system...');
+      
       const { data, error } = await supabasase.auth.signInWithPassword({
         email: email,
         password: password
       });
 
+      console.log('📊 Login response:', { data: data?.user?.id, error });
+
       if (error) {
-        // Handle different types of Supabase auth errors
+        console.error('❌ Login error:', error);
+        
+        // Handle specific authentication errors
+        if (error.message === 'Invalid login credentials') {
+          // Check if it's because user doesn't exist
+          await handleUserNotFound(email);
+          return;
+        }
+        
+        // Handle other auth errors
         switch (error.message) {
-          case 'Invalid login credentials':
-            setLoginError('Invalid email or password. Please check your credentials and try again.');
-            break;
           case 'Email not confirmed':
             setLoginError('Please check your email and click the confirmation link to verify your account.');
             break;
           case 'Too many requests':
             setLoginError('Too many login attempts. Please wait a moment before trying again.');
-            break;
-          case 'User not found':
-            setLoginError('No account found with this email. Please sign up first.');
             break;
           default:
             setLoginError(error.message || 'An error occurred during sign in. Please try again.');
@@ -96,18 +122,63 @@ const Login = () => {
         return;
       }
 
-      // Successful login
-      if (data.session) {
-        setSession(data.session);
-        console.log('Sign-in successful!');
-        navigate('/home');
+      // STEP 2: If auth successful, verify user exists in our database
+      if (data.session && data.user) {
+        console.log('✅ Auth successful! Now checking database records...');
+        await verifyUserInDatabase(data.user.id);
       }
 
     } catch (error: any) {
-      console.error('Unexpected sign-in error:', error);
+      console.error('❌ Unexpected sign-in error:', error);
       setLoginError('An unexpected error occurred. Please try again.');
     } finally {
       setEmailLoading(false);
+    }
+  };
+
+  // Helper function to handle when user doesn't exist in auth
+  const handleUserNotFound = async (email: string) => {
+    console.log('🔍 Checking if user might not exist...');
+    setLoginError(
+      <div className="text-sm">
+        <p className="font-medium">Account not found</p>
+        <p className="mt-1">No account exists with this email address.</p>
+        <button 
+          onClick={() => navigate('/signup', { state: { email } })}
+          className="mt-2 text-orange-600 hover:text-orange-700 underline font-medium"
+        >
+          Create an account instead →
+        </button>
+      </div>
+    );
+  };
+
+  // Helper function to verify user exists in our database
+  const verifyUserInDatabase = async (userId: string) => {
+    try {
+      console.log('🔍 Verifying user in database...');
+      
+      // Check if user exists in either mentor or mentee table
+      const [mentorCheck, menteeCheck] = await Promise.all([
+        supabasase.from('mentor').select('id').eq('supabaseId', userId).single(),
+        supabasase.from('mentee').select('id').eq('supabaseId', userId).single()
+      ]);
+
+      const mentorExists = mentorCheck.data && !mentorCheck.error;
+      const menteeExists = menteeCheck.data && !menteeCheck.error;
+
+      if (!mentorExists && !menteeExists) {
+        console.log('⚠️ User authenticated but not in database - needs onboarding');
+        // User is authenticated but hasn't completed onboarding
+        // This will be handled by the auth state listener
+      } else {
+        console.log('✅ User verified in database');
+        // User exists in database - login successful
+        // Navigation will be handled by useEffect
+      }
+    } catch (error) {
+      console.error('❌ Error verifying user in database:', error);
+      // Continue with login flow even if database check fails
     }
   };
 

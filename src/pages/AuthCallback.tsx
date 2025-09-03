@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabasase } from "../supabase_creds/supabase";
+import { useAuthStore } from "../store/authStore";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(true);
+  const { checkUserRole, getDashboardRoute, setUserRole } = useAuthStore();
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
         console.log('AuthCallback: Processing authentication...');
         
-        // Give useAuthInit a moment to process the session
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Give auth state time to settle
+        await new Promise(resolve => setTimeout(resolve, 200));
         
         // Get the current session to check if auth was successful
         const { data: { session: currentSession }, error } = await supabasase.auth.getSession();
@@ -24,35 +26,23 @@ const AuthCallback = () => {
         }
 
         if (currentSession && currentSession.user) {
-          console.log('AuthCallback: Session found, checking user profile...');
+          console.log('AuthCallback: Session found, checking user role...');
           
-          // Check if user already has a profile in our database
           const userId = currentSession.user.id;
+          console.log('AuthCallback: Checking role for user:', userId);
           
-          console.log('AuthCallback: Checking user profile for:', userId);
+          // Use the auth store's role checking method
+          const userRole = await checkUserRole(userId);
           
-          // Check both mentor and mentee tables
-          const [mentorResult, menteeResult] = await Promise.all([
-            supabasase.from('mentor').select('id').eq('supabaseId', userId).single(),
-            supabasase.from('mentee').select('id').eq('supabaseId', userId).single()
-          ]);
-
-          if (mentorResult.data) {
-            // User is a mentor, redirect to home
-            console.log('AuthCallback: User is mentor, redirecting to /home');
-            navigate('/mentor-dashboard', { replace: true });
-          } else if (menteeResult.data) {
-            // User is a mentee, redirect to home
-            console.log('AuthCallback: User is mentee, redirecting to /home');
-            navigate('/mentee-dashboard', { replace: true });
-          } else {
-            // New user, redirect to onboarding
-            console.log('AuthCallback: New user, redirecting to /onboarding');
-            navigate('/onboarding', { replace: true });
-          }
+          // Update the auth store with the role
+          setUserRole(userRole);
+          
+          // Get the appropriate dashboard route
+          const dashboardRoute = getDashboardRoute();
+          console.log('AuthCallback: Redirecting to:', dashboardRoute);
+          navigate(dashboardRoute, { replace: true });
         } else {
-          // No session, redirect to login
-          console.log('AuthCallback: No session found, redirecting to /login');
+          console.log('AuthCallback: No session found, redirecting to login');
           navigate('/login', { replace: true });
         }
       } catch (error) {
@@ -64,7 +54,7 @@ const AuthCallback = () => {
     };
 
     handleAuthCallback();
-  }, [navigate]);
+  }, [navigate, checkUserRole, getDashboardRoute, setUserRole]);
 
   if (isProcessing) {
     return (

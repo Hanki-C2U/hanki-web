@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -7,25 +7,45 @@ import { Button } from "../components/ui/Button";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import GoogleSignInButton from "../components/ui/GoogleSignInButton";
 import { supabasase } from "../supabase_creds/supabase";
-import useSessionStore from "../stateStore/useSessionStore";
+import { useAuthStore } from "../store/authStore";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const location = useLocation();
+  const { user, userRole, isLoading, roleLoading } = useAuthStore();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { session, isLoading,setSession } = useSessionStore();
-  const [password,setPassword] = useState('')
-  const [confirmPassword,setconfirmPassword] = useState('')
-  const [showError,setError] = useState(false)
-  const [emailLoading, setEmailLoading] = useState(false)
-  const [signupError, setSignupError] = useState<string | null>(null)
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [signupError, setSignupError] = useState<string | React.ReactNode | null>(null);
+
+  // Prefill email if redirected from login
+  useEffect(() => {
+    const state = location.state as { email?: string };
+    if (state?.email) {
+      setEmail(state.email);
+    }
+  }, [location.state]);
 
   // Redirect if already logged in
   useEffect(() => {
-    if (!isLoading && session) {
-      navigate('/onboarding', { replace: true });
+    console.log('🔍 Signup redirect check:', { user: user?.id, userRole, isLoading, roleLoading });
+    
+    if (!isLoading && !roleLoading && user) {
+      if (userRole === 'mentor') {
+        console.log('✅ Redirecting to mentor dashboard');
+        navigate('/mentor-dashboard', { replace: true });
+      } else if (userRole === 'mentee') {
+        console.log('✅ Redirecting to mentee dashboard');
+        navigate('/mentee-dashboard', { replace: true });
+      } else {
+        console.log('✅ Redirecting to onboarding (no role)');
+        navigate('/onboarding', { replace: true });
+      }
     }
-  }, [session, isLoading, navigate]);
+  }, [user, userRole, isLoading, roleLoading, navigate]);
 
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);
@@ -50,10 +70,8 @@ const Signup = () => {
     }
   };
 
-  const handleEmailSignUp = async (formData: FormData) => {
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const confirmPassword = formData.get('confirmPassword') as string;
+  const handleEmailSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
 
     // Clear any previous errors
     setSignupError(null);
@@ -61,6 +79,13 @@ const Signup = () => {
     // Client-side validation
     if (!email || !password || !confirmPassword) {
       setSignupError('Please fill in all fields');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setSignupError('Please enter a valid email address');
       return;
     }
 
@@ -91,7 +116,18 @@ const Signup = () => {
         // Handle different types of Supabase auth errors
         switch (error.message) {
           case 'User already registered':
-            setSignupError('An account with this email already exists. Try signing in instead.');
+            setSignupError(
+              <div className="text-sm">
+                <p className="font-medium">Account already exists</p>
+                <p className="mt-1">An account with this email already exists.</p>
+                <button 
+                  onClick={() => navigate('/login', { state: { email } })}
+                  className="mt-2 text-orange-600 hover:text-orange-700 underline font-medium"
+                >
+                  Sign in instead →
+                </button>
+              </div>
+            );
             break;
           case 'Invalid email':
             setSignupError('Please enter a valid email address.');
@@ -108,15 +144,26 @@ const Signup = () => {
         return;
       }
 
-      // Successful signup - go straight to onboarding
+      // Successful signup
       if (data.user) {
-        // Set session if available, otherwise the auth callback will handle it
-        if (data.session) {
-          setSession(data.session);
-        }
+        console.log('✅ Sign-up successful for user:', data.user.id);
         
-        console.log('Sign-up successful!');
-        navigate('/onboarding');
+        // Check if email confirmation is required
+        if (data.session) {
+          console.log('✅ User has immediate session, going to onboarding');
+          // User has immediate session, can go to onboarding
+          navigate('/onboarding', { replace: true });
+        } else {
+          console.log('📧 Email confirmation required');
+          // Email confirmation required
+          setSignupError(
+            <div className="text-sm">
+              <p className="font-medium text-green-600">Account created successfully!</p>
+              <p className="mt-1">Please check your email and click the confirmation link to verify your account.</p>
+              <p className="mt-2 text-gray-600">After confirmation, you'll be redirected to complete your profile.</p>
+            </div>
+          );
+        }
       }
 
     } catch (error: any) {
@@ -153,13 +200,15 @@ const Signup = () => {
               </div>
             )}
 
-            <form className="space-y-4" action={handleEmailSignUp} method="post">
+            <form className="space-y-4" onSubmit={handleEmailSignUp}>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
                   required
                 />
@@ -197,21 +246,14 @@ const Signup = () => {
                   id="confirmPassword"
                   name="confirmPassword"
                   value={confirmPassword}
-                  
-                  onChange={(e)=>{
-                    setconfirmPassword(e.target.value)
-                    const newConfirmPassword = e.target.value;
-                    if(password && newConfirmPassword) {
-                      setError(password !== newConfirmPassword);
-                    } else {
-                      setError(false);
-                    }
-                  }}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   type="password"
                   placeholder="Confirm your password"
                   required
                 />
-                {showError && <span className="text-sm text-red-400">Passwords do not match</span>}
+                {password && confirmPassword && password !== confirmPassword && (
+                  <span className="text-sm text-red-400">Passwords do not match</span>
+                )}
               </div>
 
               

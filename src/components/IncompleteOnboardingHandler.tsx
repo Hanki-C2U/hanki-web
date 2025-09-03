@@ -9,17 +9,32 @@ import useSessionStore from '../stateStore/useSessionStore';
 const IncompleteOnboardingHandler = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, userRole, roleLoading, isAuthenticated } = useSessionStore();
+  const { user, userRole, roleLoading, isAuthenticated, isLoading } = useSessionStore();
 
   useEffect(() => {
     // Only check if we're not already on onboarding or auth-related pages
-    const isOnboardingFlow = ['/onboarding', '/auth/callback', '/login', '/signup'].includes(location.pathname);
+    const isOnboardingFlow = ['/onboarding', '/auth/callback', '/login', '/signup', '/'].includes(location.pathname);
     
-    if (!isOnboardingFlow && isAuthenticated && user && !roleLoading && userRole === null) {
-      console.log('IncompleteOnboardingHandler: User has session but no role, redirecting to onboarding');
+    console.log('🔍 IncompleteOnboardingHandler check:', {
+      isOnboardingFlow,
+      isAuthenticated,
+      user: !!user,
+      userId: user?.id,
+      userRole,
+      roleLoading,
+      isLoading,
+      pathname: location.pathname,
+      willRedirect: !isOnboardingFlow && isAuthenticated && user && !isLoading && !roleLoading && userRole === null
+    });
+    
+    // Wait for both auth and role loading to complete before making redirect decisions
+    // Only redirect if we're certain the user has no role (not just loading)
+    if (!isOnboardingFlow && isAuthenticated && user && !isLoading && !roleLoading && userRole === null) {
+      console.log('🚨 IncompleteOnboardingHandler: User has session but no role (after all loading complete), redirecting to onboarding');
+      console.log('🚨 User ID that has no role:', user.id);
       navigate('/onboarding', { replace: true });
     }
-  }, [user, userRole, roleLoading, isAuthenticated, location.pathname, navigate]);
+  }, [user, userRole, roleLoading, isAuthenticated, isLoading, location.pathname, navigate]);
 
   return <>{children}</>;
 };

@@ -1,20 +1,41 @@
-import React, { useEffect, type PropsWithChildren } from 'react'
+import { useEffect, type PropsWithChildren } from 'react'
 import { useNavigate } from 'react-router'
 import useSessionStore from '../stateStore/useSessionStore'
-function ProtectedComp({children}:PropsWithChildren) {
+
+interface ProtectedCompProps extends PropsWithChildren {
+  allowedRoles?: ('mentor' | 'mentee')[];
+}
+
+function ProtectedComp({ children, allowedRoles }: ProtectedCompProps) {
     const navigate = useNavigate()
-    const { session, isLoading } = useSessionStore()
+    const { isLoading, userRole, roleLoading, isAuthenticated } = useSessionStore()
 
-
-    useEffect(()=>{
+    useEffect(() => {
         // Only redirect if we're not loading and there's no session
-        if (!isLoading && !session) {
+        if (!isLoading && !isAuthenticated) {
             navigate('/login', { replace: true })
+            return;
         }
-    },[navigate, session, isLoading])
+
+        // If we have a session but no role (and not loading), redirect to onboarding
+        if (isAuthenticated && !roleLoading && userRole === null) {
+            console.log('🔄 ProtectedComp: User has session but no role, redirecting to onboarding');
+            navigate('/onboarding', { replace: true })
+            return;
+        }
+
+        // Check role-based access
+        if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
+            // Redirect to appropriate dashboard based on user's actual role
+            const redirectPath = userRole === 'mentor' ? '/mentor-dashboard' : '/mentee-dashboard';
+            console.log('🔄 ProtectedComp: Wrong role for this page, redirecting to:', redirectPath);
+            navigate(redirectPath, { replace: true })
+            return;
+        }
+    }, [navigate, isAuthenticated, isLoading, userRole, roleLoading, allowedRoles])
 
     // Show loading while authentication state is being determined
-    if (isLoading) {
+    if (isLoading || roleLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
@@ -25,7 +46,7 @@ function ProtectedComp({children}:PropsWithChildren) {
         )
     }
 
-    if (!session) {
+    if (!isAuthenticated) {
         return null
     }
 

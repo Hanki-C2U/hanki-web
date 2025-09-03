@@ -9,13 +9,13 @@ import {
   Bell,
   MessageCircle
 } from "lucide-react";
-import useSessionStore from "../stateStore/useSessionStore";
+import { useAuthStore } from "../store/authStore";
 import { supabasase } from "../supabase_creds/supabase";
 import { useEffect, useState,useLayoutEffect } from "react";
 import useRealtimeChat from "../hooks/useRealtimeChat";
 
 const MenteeDashboard = () => {
-  const { userRole, roleLoading, user } = useSessionStore()
+  const { userRole, roleLoading, user } = useAuthStore()
   const navigate = useNavigate()
   const [username, setUserName] = useState('')
   const [mentors, setMentors] = useState<any[]>([])
@@ -29,11 +29,38 @@ const MenteeDashboard = () => {
 
   // Redirect if explicitly not a mentee (don't redirect on null/unknown role)
   useLayoutEffect(() => {
-    if (!roleLoading && userRole !== null && userRole !== 'mentee') {
-      console.log('Redirecting to mentor dashboard - userRole:', userRole)
-      navigate('/mentor-dashboard')
+    // If role is loading, don't redirect yet - wait for it to complete
+    if (roleLoading) {
+      console.log('MenteeDashboard: Role is still loading, waiting...');
+      return;
     }
-  }, [roleLoading, userRole, navigate])
+    
+    // If user has no session, let AuthProvider handle it
+    if (!user) {
+      console.log('MenteeDashboard: No user session, letting AuthProvider handle...');
+      return;
+    }
+    
+    // If user is a mentor, deny access and redirect
+    if (userRole === 'mentor') {
+      console.log('MenteeDashboard: Access denied - Mentor trying to access mentee dashboard, redirecting to mentor dashboard');
+      navigate('/mentor-dashboard', { replace: true });
+      return;
+    }
+    
+    // Only redirect to onboarding if we have confirmed the user has no role
+    // AND they have a valid session (to avoid race conditions)
+    if (userRole === null && user) {
+      console.log('MenteeDashboard: User has session but no role after role check complete, redirecting to onboarding');
+      navigate('/onboarding', { replace: true });
+      return;
+    }
+    
+    // If we reach here and userRole is 'mentee', stay on dashboard
+    if (userRole === 'mentee') {
+      console.log('✅ MenteeDashboard: User confirmed as mentee, staying on dashboard');
+    }
+  }, [roleLoading, userRole, user, navigate])
 
   // Fetch username when role is confirmed as mentee
   useEffect(() => {
@@ -186,6 +213,31 @@ const MenteeDashboard = () => {
     }
   ];
 
+  // Show loading spinner while checking access permissions
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verifying access permissions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied message if user is not a mentee
+  if (userRole !== 'mentee') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-4">You don't have permission to access the mentee dashboard.</p>
+          <p className="text-sm text-gray-500">Redirecting you to the appropriate page...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
       {/* Header */}
@@ -193,7 +245,7 @@ const MenteeDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to="/" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
+              <Link to="/home" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
                 SkillsConnect
               </Link>
               <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-accent/20 text-accent">

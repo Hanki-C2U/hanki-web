@@ -70,9 +70,39 @@ function useRealtimeChat() {
     }
   }, [user?.id, userRole])
 
-  // Fetch messages for specific conversation
+  // Fetch messages for specific conversation (with participant verification)
   const fetchMessages = useCallback(async (conversationId: number) => {
+    if (!user?.id) {
+      console.error('No user ID available for fetching messages')
+      return
+    }
+
     try {
+      // First verify the user is a participant in this conversation
+      const { data: conversation, error: convError } = await supabasase
+        .from('conversations')
+        .select('mentorId, menteeId')
+        .eq('id', conversationId)
+        .single()
+
+      if (convError) {
+        console.error('Error fetching conversation:', convError)
+        return
+      }
+
+      // Check if current user is either the mentor or mentee
+      const isParticipant = conversation && (
+        conversation.mentorId === user.id || 
+        conversation.menteeId === user.id
+      )
+
+      if (!isParticipant) {
+        console.error('Access denied: User is not a participant in this conversation')
+        setMessages([])
+        return
+      }
+
+      // If user is a participant, fetch the messages
       const { data, error } = await supabasase
         .from('messages')
         .select('*')
@@ -88,7 +118,7 @@ function useRealtimeChat() {
     } catch (err) {
       console.error('Unexpected error:', err)
     }
-  }, [])
+  }, [user?.id])
 
   // Send a message
   const sendMessage = useCallback(async (conversationId: number, content: string) => {

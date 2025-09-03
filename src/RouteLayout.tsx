@@ -3,7 +3,7 @@ import Login from "./pages/Login"
 import Signup from "./pages/SignUp"
 import AuthCallback from "./pages/AuthCallback"
 import Onboarding from "./pages/Onboarding"
-import useAuthInit from "./hooks/useAuthInit"
+import { AuthProvider } from "./components/AuthProvider"
 import ProtectedComp from "./components/ProtectedComp"
 import HomePage from "./pages/HomePage"
 import IncompleteOnboardingHandler from "./components/IncompleteOnboardingHandler"
@@ -12,9 +12,6 @@ import MentorDashboard from "./pages/MentorDashboard";
 import MenteeDashboard from "./pages/MenteeDashboard";
 import ChatPage from "./pages/ChatPage"
 function RouteLayout() {
-  // Initialize authentication state
-  useAuthInit();
-
   const router = createBrowserRouter(createRoutesFromElements(
     <Route path="/">
           <Route index element={<Login/>}/>
@@ -31,14 +28,14 @@ function RouteLayout() {
             }/>
           {/* <Route path="/" element={<LandingPage/>} /> */}
           <Route path="/mentor-dashboard" element={
-            <ProtectedComp>
+            <ProtectedComp allowedRoles={['mentor']}>
               <IncompleteOnboardingHandler>
                 <MentorDashboard/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
           <Route path="/mentee-dashboard" element={
-            <ProtectedComp>
+            <ProtectedComp allowedRoles={['mentee']}>
               <IncompleteOnboardingHandler>
                 <MenteeDashboard/>
               </IncompleteOnboardingHandler>
@@ -61,7 +58,9 @@ function RouteLayout() {
       </Route>
   ))
   return (
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   )
 }
 
