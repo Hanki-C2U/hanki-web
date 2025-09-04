@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { supabasase } from '../supabase_creds/supabase'
-import useSessionStore from '../stateStore/useSessionStore'
+import { useAuthStore } from '../store/authStore'
 import useUsers from '../hooks/useUsers'
 import useRealtimeChat from '../hooks/useRealtimeChat'
 
 const ChatSystemDebug: React.FC = () => {
-  const { user, userRole } = useSessionStore()
+  const { user, userRole } = useAuthStore()
   const { mentors, mentees, allUsers, loading } = useUsers()
   const { conversations, loading: chatLoading } = useRealtimeChat()
   const [connectionStatus, setConnectionStatus] = useState<string>('Checking...')

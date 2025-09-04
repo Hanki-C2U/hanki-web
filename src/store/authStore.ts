@@ -79,19 +79,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   initializeAuth: async () => {
     try {
-      console.log('Initializing auth...');
+      console.log('🚀 Initializing auth...');
       set({ isLoading: true });
 
       const { data: { session }, error } = await supabasase.auth.getSession();
       
       if (error) {
-        console.error('Error getting session:', error);
+        console.error('❌ Error getting session:', error);
         set({ isLoading: false });
         return;
       }
 
       if (session?.user) {
-        console.log('Found existing session for user:', session.user.id);
+        console.log('✅ Found existing session for user:', session.user.id);
         set({ 
           session, 
           user: session.user,
@@ -101,13 +101,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // Check user role
         const role = await get().checkUserRole(session.user.id);
         set({ userRole: role, roleLoading: false });
+        console.log('✅ Auth initialization complete. User role:', role);
       } else {
-        console.log('No existing session found');
+        console.log('❌ No existing session found');
       }
 
       set({ isLoading: false });
     } catch (error) {
-      console.error('Error initializing auth:', error);
+      console.error('💥 Error initializing auth:', error);
       set({ 
         isLoading: false,
         roleLoading: false,

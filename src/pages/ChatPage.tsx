@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { ArrowLeft, MoreVertical, Phone, Video, Send } from 'lucide-react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import useSessionStore from '../stateStore/useSessionStore'
+import { useAuthStore } from '../store/authStore'
 import useRealtimeChat  from '../hooks/useRealtimeChat'
 
 export default function ChatPage() {
   const navigate = useNavigate()
   const { conversationId } = useParams<{ conversationId?: string }>()
   const [searchParams] = useSearchParams()
-  const { user, userRole } = useSessionStore()
+  const { user, userRole } = useAuthStore()
   const { 
     conversations, 
     activeConversation, 

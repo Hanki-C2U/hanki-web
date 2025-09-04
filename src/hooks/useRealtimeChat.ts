@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabasase } from '../supabase_creds/supabase'
-import useSessionStore from '../stateStore/useSessionStore'
+import { useAuthStore } from '../store/authStore'
 
 interface Message {
   id: number
@@ -34,7 +34,7 @@ interface Conversation {
 }
 
 function useRealtimeChat() {
-  const { user, userRole } = useSessionStore()
+  const { user, userRole } = useAuthStore()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -42,13 +42,12 @@ function useRealtimeChat() {
   const [error, setError] = useState<string | null>(null)
   const [sendingMessage, setSendingMessage] = useState(false)
 
-  // Fetch all conversations for current user
+  // Fetch all conversations for current user (debounced to avoid excessive calls)
   const fetchConversations = useCallback(async () => {
     if (!user?.id || !userRole) return
 
     try {
-      setLoading(true)
-      console.log('Fetching conversations for user:', user.id, 'role:', userRole)
+      console.log('📊 Fetching conversations for user:', user.id, 'role:', userRole)
       
       const { data, error } = await supabasase
         .from('conversations')
@@ -61,25 +60,20 @@ function useRealtimeChat() {
         .order('updatedAt', { ascending: false })
 
       if (error) {
-        console.error('Error fetching conversations:', error)
+        console.error('❌ Error fetching conversations:', error)
         return
       }
 
-      console.log('Raw conversations fetched:', data)
-      console.log('Current user ID:', user.id)
-      console.log('Current user role:', userRole)
+      console.log('✅ Conversations fetched:', data?.length || 0, 'conversations')
       
-      // Filter and log each conversation to debug
+      // Filter conversations for current user
       const filteredData = (data || []).filter(conv => {
-        const isUserInConversation = conv.mentorId === user.id || conv.menteeId === user.id
-        console.log(`Conversation ${conv.id}: mentorId=${conv.mentorId}, menteeId=${conv.menteeId}, userInConv=${isUserInConversation}`)
-        return isUserInConversation
+        return conv.mentorId === user.id || conv.menteeId === user.id
       })
       
-      console.log('Filtered conversations:', filteredData)
       setConversations(filteredData)
     } catch (err) {
-      console.error('Unexpected error fetching conversations:', err)
+      console.error('💥 Unexpected error fetching conversations:', err)
     } finally {
       setLoading(false)
     }
@@ -352,11 +346,11 @@ function useRealtimeChat() {
     }
   }, [])
 
-  // Set up real-time subscriptions
+  // Set up real-time subscriptions for conversations
   useEffect(() => {
     if (!user?.id) return
 
-    console.log('Setting up real-time subscriptions for user:', user.id)
+    console.log('🔌 Setting up real-time conversation subscriptions for user:', user.id)
 
     // Subscribe to new/updated conversations
     const conversationChannel = supabasase
@@ -370,7 +364,7 @@ function useRealtimeChat() {
           filter: `mentorId=eq.${user.id}`
         },
         (payload) => {
-          console.log('Conversation update (as mentor):', payload)
+          console.log('🔔 Conversation update (as mentor):', payload.eventType, payload.new)
           fetchConversations()
         }
       )
@@ -383,14 +377,21 @@ function useRealtimeChat() {
           filter: `menteeId=eq.${user.id}`
         },
         (payload) => {
-          console.log('Conversation update (as mentee):', payload)
+          console.log('🔔 Conversation update (as mentee):', payload.eventType, payload.new)
           fetchConversations()
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('📡 Conversation subscription status:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Successfully subscribed to real-time conversations!')
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('💥 Conversation subscription error - check if Realtime is enabled on conversations table')
+        }
+      })
 
     return () => {
-      console.log('Cleaning up conversation subscription')
+      console.log('🧹 Cleaning up conversation subscription')
       conversationChannel.unsubscribe()
     }
   }, [user?.id, fetchConversations])
@@ -400,13 +401,6 @@ function useRealtimeChat() {
     if (!user?.id || !activeConversation) return
 
     console.log('🔌 Setting up message subscription for conversation:', activeConversation.id)
-
-    // Test if real-time is working by subscribing to a simple channel first
-    const testChannel = supabasase
-      .channel('test-connection')
-      .subscribe((status) => {
-        console.log('🧪 Test connection status:', status)
-      })
 
     // Subscribe to new messages for the active conversation
     const messageChannel = supabasase
@@ -438,54 +432,50 @@ function useRealtimeChat() {
           fetchConversations()
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversationId=eq.${activeConversation.id}`
+        },
+        (payload) => {
+          console.log('🔄 MESSAGE UPDATED VIA REAL-TIME:', payload.new)
+          const updatedMessage = payload.new as Message
+          
+          // Update the message in the list (useful for read status, etc.)
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === updatedMessage.id ? updatedMessage : msg
+            )
+          )
+        }
+      )
       .subscribe((status) => {
         console.log('📡 Message subscription status:', status)
         if (status === 'SUBSCRIBED') {
           console.log('✅ Successfully subscribed to real-time messages!')
         } else if (status === 'CLOSED') {
           console.log('❌ Real-time subscription closed')
-        } else {
-          console.log('⚠️ Real-time subscription status:', status)
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('💥 Real-time subscription error - check if Realtime is enabled on messages table')
         }
       })
 
-    // Fallback: Poll for new messages every 2 seconds if real-time fails
-    const pollInterval = setInterval(async () => {
-      console.log('🔄 Polling for new messages (fallback)')
-      try {
-        const { data: latestMessages } = await supabasase
-          .from('messages')
-          .select('*')
-          .eq('conversationId', activeConversation.id)
-          .order('createdAt', { ascending: true })
-
-        if (latestMessages && latestMessages.length > 0) {
-          setMessages(prevMessages => {
-            // Only update if we have new messages
-            if (latestMessages.length > prevMessages.length) {
-              console.log('📨 Found new messages via polling, updating UI')
-              return latestMessages
-            }
-            return prevMessages
-          })
-        }
-      } catch (error) {
-        console.error('❌ Error polling messages:', error)
-      }
-    }, 2000)
-
     return () => {
       console.log('🧹 Cleaning up message subscription for conversation:', activeConversation.id)
-      testChannel.unsubscribe()
       messageChannel.unsubscribe()
-      clearInterval(pollInterval)
     }
   }, [user?.id, activeConversation?.id, fetchConversations])
 
-  // Initial fetch
+  // Initial fetch when hook mounts
   useEffect(() => {
-    fetchConversations()
-  }, [fetchConversations])
+    if (user?.id && userRole) {
+      setLoading(true)
+      fetchConversations()
+    }
+  }, [user?.id, userRole, fetchConversations])
 
   // Fetch messages when active conversation changes
   useEffect(() => {

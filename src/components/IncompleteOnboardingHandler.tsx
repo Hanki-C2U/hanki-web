@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import useSessionStore from '../stateStore/useSessionStore';
+import { useAuthStore } from '../store/authStore';
 
 /**
  * Component to handle users who have authentication but incomplete onboarding
@@ -9,7 +9,8 @@ import useSessionStore from '../stateStore/useSessionStore';
 const IncompleteOnboardingHandler = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, userRole, roleLoading, isAuthenticated, isLoading } = useSessionStore();
+  const { user, userRole, roleLoading, isLoading } = useAuthStore();
+  const isAuthenticated = !!user;
 
   useEffect(() => {
     // Only check if we're not already on onboarding or auth-related pages

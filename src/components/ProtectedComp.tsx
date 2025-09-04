@@ -1,6 +1,6 @@
 import { useEffect, type PropsWithChildren } from 'react'
 import { useNavigate } from 'react-router'
-import useSessionStore from '../stateStore/useSessionStore'
+import { useAuthStore } from '../store/authStore'
 
 interface ProtectedCompProps extends PropsWithChildren {
   allowedRoles?: ('mentor' | 'mentee')[];
@@ -8,7 +8,8 @@ interface ProtectedCompProps extends PropsWithChildren {
 
 function ProtectedComp({ children, allowedRoles }: ProtectedCompProps) {
     const navigate = useNavigate()
-    const { isLoading, userRole, roleLoading, isAuthenticated } = useSessionStore()
+    const { isLoading, userRole, roleLoading, user } = useAuthStore()
+    const isAuthenticated = !!user
 
     useEffect(() => {
         // Only redirect if we're not loading and there's no session
