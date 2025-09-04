@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate,useLocation } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -29,7 +29,7 @@ const Signup = () => {
     }
   }, [location.state]);
 
-  // Redirect if already logged in
+  // Redirect if already logged in - but allow signup even if session exists without role
   useEffect(() => {
     console.log('🔍 Signup redirect check:', { 
       user: user?.id, 
@@ -39,18 +39,17 @@ const Signup = () => {
       hasHydrated 
     });
     
-    if (hasHydrated && !isLoading && !roleLoading && user) {
+    if (hasHydrated && !isLoading && !roleLoading && user && userRole) {
+      // Only redirect if user has a valid role
       if (userRole === 'mentor') {
         console.log('✅ Redirecting to mentor dashboard');
         navigate('/mentor-dashboard', { replace: true });
       } else if (userRole === 'mentee') {
         console.log('✅ Redirecting to mentee dashboard');
         navigate('/mentee-dashboard', { replace: true });
-      } else {
-        console.log('✅ Redirecting to onboarding (no role)');
-        navigate('/onboarding', { replace: true });
       }
     }
+    // If user exists but no role, allow them to stay on signup page to create a new account
   }, [user, userRole, isLoading, roleLoading, hasHydrated, navigate]);
 
   const handleGoogleSignUp = async () => {

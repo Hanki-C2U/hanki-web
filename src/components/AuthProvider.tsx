@@ -18,17 +18,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Debounce role checks to prevent rapid firing
   let roleCheckTimeout: NodeJS.Timeout | null = null;
 
-  const debouncedRoleCheck = (userId: string) => {
+  const debouncedRoleCheck = (userId: string, immediate = false) => {
     if (roleCheckTimeout) {
       clearTimeout(roleCheckTimeout);
     }
+    
+    const delay = immediate ? 100 : 1000; // Faster for immediate checks
     
     roleCheckTimeout = setTimeout(async () => {
       console.log('🔍 Fetching user role from database (debounced)...');
       const role = await checkUserRole(userId);
       console.log('✅ Role check complete, result:', role);
       setUserRole(role);
-    }, 1000); // Wait 1 second before checking role
+    }, delay);
   };
 
   useEffect(() => {
@@ -54,10 +56,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { data: { subscription } } = supabasase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔥 Auth state changed:', event, 'User ID:', session?.user?.id);
+        console.log('🔥 Full session object:', session);
+        console.log('🔥 Event details:', { event, hasSession: !!session, hasUser: !!session?.user });
         
         if (session) {
           console.log('✅ Setting session from auth state change');
           setSession(session);
+          
+          // Verify session was set
+          setTimeout(() => {
+            const authState = useAuthStore.getState();
+            console.log('🔍 Auth store after setSession:', {
+              hasUser: !!authState.user,
+              userId: authState.user?.id,
+              hasSession: !!authState.session
+            });
+          }, 100);
           
           // Check user role for sign-ins and token refreshes
           if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
@@ -66,27 +80,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // Get current state to check if we need to fetch role
             const currentState = useAuthStore.getState();
             
-            // For token refresh, check if we have a recent role check
-            if (event === 'TOKEN_REFRESHED' && currentState.userRole && currentState.lastRoleCheck) {
+            // For SIGNED_IN events, always fetch role fresh (don't use cache for new logins)
+            if (event === 'SIGNED_IN') {
+              console.log('🔍 SIGNED_IN event - fetching fresh role immediately...');
+              debouncedRoleCheck(session.user.id, true); // immediate = true
+            } else if (event === 'TOKEN_REFRESHED' && currentState.userRole && currentState.lastRoleCheck) {
               const timeSinceLastCheck = Date.now() - currentState.lastRoleCheck;
               if (timeSinceLastCheck < 10 * 60 * 1000) { // 10 minutes
                 console.log('✅ Using cached role for token refresh (last checked', Math.floor(timeSinceLastCheck / 1000), 'seconds ago):', currentState.userRole);
                 return;
+              } else {
+                console.log('🔍 Need to fetch role for token refresh, cache is stale...');
+                debouncedRoleCheck(session.user.id);
               }
+            } else {
+              console.log('🔍 Need to fetch role, using debounced check...');
+              debouncedRoleCheck(session.user.id);
             }
-            
-            // For SIGNED_IN events, check if we already have a role and it's recent
-            if (event === 'SIGNED_IN' && currentState.userRole && currentState.lastRoleCheck) {
-              const timeSinceLastCheck = Date.now() - currentState.lastRoleCheck;
-              if (timeSinceLastCheck < 5 * 60 * 1000) { // 5 minutes
-                console.log('✅ Using cached role for sign-in (last checked', Math.floor(timeSinceLastCheck / 1000), 'seconds ago):', currentState.userRole);
-                return;
-              }
-            }
-            
-            // Only fetch role if we don't have one or it's stale
-            console.log('🔍 Need to fetch role, using debounced check...');
-            debouncedRoleCheck(session.user.id);
           }
         } else {
           console.log('🚪 User signed out, clearing session');

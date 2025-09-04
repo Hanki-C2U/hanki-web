@@ -133,12 +133,26 @@ exports.Prisma.MenteeScalarFieldEnum = {
   updateAt: 'updateAt',
   last_login: 'last_login',
   ratings: 'ratings',
-  experience: 'experience',
   profile_picture: 'profile_picture',
   supabaseId: 'supabaseId',
   bio: 'bio',
   joined: 'joined',
-  goals: 'goals'
+  goals: 'goals',
+  experience: 'experience',
+  Github: 'Github',
+  Instagram: 'Instagram',
+  LinkedIn: 'LinkedIn',
+  Twitter: 'Twitter',
+  Website: 'Website'
+};
+
+exports.Prisma.AchievementsScalarFieldEnum = {
+  id: 'id',
+  supabaseId: 'supabaseId',
+  experience: 'experience',
+  education: 'education',
+  accolades: 'accolades',
+  reviews: 'reviews'
 };
 
 exports.Prisma.MentorScalarFieldEnum = {
@@ -146,7 +160,6 @@ exports.Prisma.MentorScalarFieldEnum = {
   first_name: 'first_name',
   last_name: 'last_name',
   age: 'age',
-  experience: 'experience',
   email: 'email',
   phone_number: 'phone_number',
   password: 'password',
@@ -159,7 +172,58 @@ exports.Prisma.MentorScalarFieldEnum = {
   updateAt: 'updateAt',
   last_login: 'last_login',
   expertise: 'expertise',
-  bio: 'bio'
+  bio: 'bio',
+  experience: 'experience',
+  Github: 'Github',
+  Instagram: 'Instagram',
+  LinkedIn: 'LinkedIn',
+  Twitter: 'Twitter',
+  Website: 'Website'
+};
+
+exports.Prisma.ConversationScalarFieldEnum = {
+  id: 'id',
+  menteeId: 'menteeId',
+  mentorId: 'mentorId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  lastMessage: 'lastMessage'
+};
+
+exports.Prisma.MessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  senderRole: 'senderRole',
+  content: 'content',
+  createdAt: 'createdAt',
+  isRead: 'isRead',
+  messageType: 'messageType',
+  senderId: 'senderId'
+};
+
+exports.Prisma.SessionsScalarFieldEnum = {
+  id: 'id',
+  menteeId: 'menteeId',
+  mentorId: 'mentorId',
+  title: 'title',
+  description: 'description',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  sessionDate: 'sessionDate',
+  jitsiRoomId: 'jitsiRoomId',
+  meetingUrl: 'meetingUrl',
+  status: 'status',
+  statusUpdatedAt: 'statusUpdatedAt',
+  statusUpdatedBy: 'statusUpdatedBy',
+  additionalParticipants: 'additionalParticipants',
+  notes: 'notes',
+  feedback: 'feedback',
+  createdAt: 'createdAt',
+  cancellationReason: 'cancellationReason',
+  menteeRating: 'menteeRating',
+  menteeReview: 'menteeReview',
+  mentorRating: 'mentorRating',
+  mentorReview: 'mentorReview'
 };
 
 exports.Prisma.SortOrder = {
@@ -172,10 +236,26 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+exports.SessionStatus = exports.$Enums.SessionStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED',
+  COMPLETED: 'COMPLETED',
+  NO_SHOW: 'NO_SHOW'
+};
 
 exports.Prisma.ModelName = {
   Mentee: 'Mentee',
-  Mentor: 'Mentor'
+  Achievements: 'Achievements',
+  Mentor: 'Mentor',
+  Conversation: 'Conversation',
+  Message: 'Message',
+  sessions: 'sessions'
 };
 
 /**

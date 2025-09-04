@@ -19,44 +19,46 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const { user, userRole, isLoading, roleLoading, hasHydrated } = useAuthStore();
 
-  // Redirect if already logged in
+  // Show loading if checking authentication
   useEffect(() => {
-    console.log('🔍 Login redirect check:', { 
+    console.log('🔍 Login state check:', { 
       user: user?.id, 
       userRole, 
       isLoading, 
       roleLoading, 
-      hasHydrated 
+      hasHydrated,
+      timestamp: new Date().toISOString()
     });
     
-    // Only redirect if hydration and all loading is complete
-    if (hasHydrated && !isLoading && !roleLoading && user) {
-      console.log('🔄 Login: All loading complete, checking role for redirect...');
+    // Only redirect if user is already authenticated and has role (returning user)
+    if (hasHydrated && !isLoading && !roleLoading && user && userRole) {
+      console.log('🔄 Returning user detected, redirecting...');
       
       if (userRole === 'mentor') {
-        console.log('✅ Redirecting to mentor dashboard');
+        console.log('✅ Redirecting returning mentor to dashboard');
         navigate('/mentor-dashboard', { replace: true });
       } else if (userRole === 'mentee') {
-        console.log('✅ Redirecting to mentee dashboard');
+        console.log('✅ Redirecting returning mentee to dashboard');
         navigate('/mentee-dashboard', { replace: true });
-      } else if (userRole === null) {
-        // Only redirect to onboarding if role check is complete and user has no role
-        console.log('⚠️ No role found after loading complete, redirecting to onboarding');
-        console.log('⚠️ User details:', { 
-          userId: user.id, 
-          email: user.email, 
-          userRole, 
-          isLoading, 
-          roleLoading 
-        });
-        navigate('/onboarding', { replace: true });
-      } else {
-        console.log('⏳ Role is undefined, waiting for role check to complete...');
       }
-    } else {
-      console.log('⏳ Still loading...', { hasHydrated, isLoading, roleLoading, hasUser: !!user });
     }
   }, [user, userRole, isLoading, roleLoading, hasHydrated, navigate]);
+
+  // Show loading if user is already authenticated but we're still checking role
+  if (hasHydrated && user && (isLoading || roleLoading)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Signing you in...</p>
+          <p className="text-sm text-gray-400 mt-1">
+            {isLoading && "Authenticating..."}
+            {roleLoading && "Checking your account..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -142,8 +144,50 @@ const Login = () => {
 
       // STEP 2: If auth successful, verify user exists in our database
       if (data.session && data.user) {
-        console.log('✅ Auth successful! Now checking database records...');
-        await verifyUserInDatabase(data.user.id);
+        console.log('✅ Auth successful! User logged in:', data.user.id);
+        console.log('📧 User email:', data.user.email);
+        
+        // DEBUG: Check what's actually in the database
+        await debugDatabaseUser(data.user.email!, data.user.id);
+        
+        console.log('🎯 Session created, manually setting in auth store...');
+        
+        // IMPORTANT: Manually set the session in auth store and wait for role check
+        const { setSession, setUser, checkUserRole, setUserRole } = useAuthStore.getState();
+        setSession(data.session);
+        setUser(data.user);
+        
+        console.log('✅ Session manually set in auth store');
+        
+        // Immediately check role and wait for result before any redirects
+        console.log('🔄 Checking user role immediately...');
+        try {
+          const userRole = await checkUserRole(data.user.id);
+          console.log('✅ Role check completed:', userRole);
+          setUserRole(userRole);
+          
+          // Now redirect based on role
+          if (userRole === 'mentor') {
+            console.log('✅ Redirecting mentor to dashboard');
+            navigate('/mentor-dashboard', { replace: true });
+          } else if (userRole === 'mentee') {
+            console.log('✅ Redirecting mentee to dashboard');
+            navigate('/mentee-dashboard', { replace: true });
+          } else {
+            console.log('⚠️ No role found, redirecting to onboarding');
+            navigate('/onboarding', { replace: true });
+          }
+        } catch (error) {
+          console.error('❌ Role check failed:', error);
+          // Fallback to onboarding if role check fails
+          navigate('/onboarding', { replace: true });
+        }
+        
+        console.log('⏳ Waiting for auth store to update and redirect...');
+        
+      } else {
+        console.error('❌ No session or user returned from login');
+        setLoginError('Login failed. Please try again.');
       }
 
     } catch (error: any) {
@@ -200,6 +244,61 @@ const Login = () => {
     }
   };
 
+  // DEBUG: Detailed database checking
+  const debugDatabaseUser = async (email: string, userId: string) => {
+    console.log('🔍 DEBUG: Checking database for user:', { email, userId });
+    
+    try {
+      // Check mentor table by email
+      const { data: mentorData, error: mentorError } = await supabasase
+        .from('mentor')
+        .select('*')
+        .eq('email', email);
+      
+      console.log('👨‍🏫 Mentor table check (by email):', { mentorData, mentorError });
+      
+      // Check mentee table by email
+      const { data: menteeData, error: menteeError } = await supabasase
+        .from('mentee')
+        .select('*')
+        .eq('email', email);
+        
+      console.log('👨‍🎓 Mentee table check (by email):', { menteeData, menteeError });
+      
+      // Check by supabaseId
+      const { data: mentorById, error: mentorByIdError } = await supabasase
+        .from('mentor')
+        .select('*')
+        .eq('supabaseId', userId);
+        
+      console.log('🆔 Mentor by supabaseId:', { mentorById, mentorByIdError });
+      
+      const { data: menteeById, error: menteeByIdError } = await supabasase
+        .from('mentee')
+        .select('*')
+        .eq('supabaseId', userId);
+        
+      console.log('🆔 Mentee by supabaseId:', { menteeById, menteeByIdError });
+      
+      // Get sample records to see what's in the database
+      const { data: sampleMentors } = await supabasase
+        .from('mentor')
+        .select('id, email, supabaseId, first_name, last_name')
+        .limit(3);
+        
+      const { data: sampleMentees } = await supabasase
+        .from('mentee')
+        .select('id, email, supabaseId, first_name, last_name')
+        .limit(3);
+        
+      console.log('📋 Sample mentor records:', sampleMentors);
+      console.log('📋 Sample mentee records:', sampleMentees);
+      
+    } catch (error) {
+      console.error('💥 Database debug error:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -209,7 +308,7 @@ const Login = () => {
             Back to Home
           </Link>
         </div>
-        
+
         <Card className="shadow-card gradient-card">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
@@ -217,7 +316,7 @@ const Login = () => {
               Sign in to your SkillsConnect account
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             {/* Error Display */}
             {loginError && (
@@ -286,12 +385,12 @@ const Login = () => {
             </div>
 
             {/* Google Sign-In Button */}
-            <GoogleSignInButton 
+            <GoogleSignInButton
               variant="signin"
               onGoogleSignIn={handleGoogleSignIn}
               loading={googleLoading}
             />
-            
+
             <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
               <Link to="/signup" className="text-primary hover:underline">

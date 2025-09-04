@@ -41,19 +41,25 @@ export const useAuthStore = create<AuthState>()(
       hasHydrated: false,
 
       setSession: (session) => {
+        console.log('🔥 AuthStore: Setting session', session?.user?.id);
         set({ 
           session, 
           user: session?.user || null 
         });
+        console.log('✅ AuthStore: Session set successfully');
       },
 
       setUser: (user) => set({ user }),
 
-      setUserRole: (userRole) => set({ 
-        userRole, 
-        roleLoading: false,
-        lastRoleCheck: Date.now()
-      }),
+      setUserRole: (userRole) => {
+        console.log('🎯 AuthStore: Setting user role:', userRole);
+        set({ 
+          userRole, 
+          roleLoading: false,
+          lastRoleCheck: Date.now()
+        });
+        console.log('✅ AuthStore: User role set successfully');
+      },
 
       setIsLoading: (isLoading) => set({ isLoading }),
 
@@ -152,51 +158,78 @@ export const useAuthStore = create<AuthState>()(
         setTimeout(() => reject(new Error('Role check timeout')), timeoutMs);
       });
 
-      // Check both tables in parallel with a single query
+      // Check both tables with detailed logging
       const roleCheckPromise = async (): Promise<UserRole> => {
-        console.log('🔍 checkUserRole: Checking both mentor and mentee tables...');
+        console.log('🔍 checkUserRole: Checking both mentor and mentee tables for userId:', userId);
         
         // Check mentor table first
         try {
+          console.log('🔍 Querying mentor table...');
           const { data: mentorData, error: mentorError } = await supabasase
             .from('mentor')
-            .select('id, first_name')
+            .select('id, first_name, email, supabaseId')
             .eq('supabaseId', userId)
-            .maybeSingle(); // Use maybeSingle to avoid errors when no record
+            .maybeSingle();
+
+          console.log('📊 Mentor query result:', { mentorData, mentorError });
+          console.log('🔍 Mentor data details:', {
+            hasData: !!mentorData,
+            dataId: mentorData?.id,
+            dataSupabaseId: mentorData?.supabaseId,
+            searchingForUserId: userId,
+            errorExists: !!mentorError,
+            errorMessage: mentorError?.message
+          });
 
           if (mentorData && !mentorError) {
-            console.log('✅ User is a mentor:', mentorData.first_name);
+            console.log('✅ User is a mentor:', mentorData.first_name, 'Email:', mentorData.email);
             return 'mentor';
           }
           
           if (mentorError) {
-            console.log('ℹ️ Mentor check error (expected if not a mentor):', mentorError.message);
+            console.log('ℹ️ Mentor check error:', mentorError.message, mentorError.code);
+          } else {
+            console.log('ℹ️ No mentor record found for userId:', userId);
           }
         } catch (error) {
-          console.log('ℹ️ Mentor table error:', error);
+          console.error('❌ Mentor table query failed:', error);
         }
 
         // Check mentee table
         try {
+          console.log('🔍 Querying mentee table...');
           const { data: menteeData, error: menteeError } = await supabasase
             .from('mentee')
-            .select('id, first_name')
+            .select('id, first_name, email, supabaseId')
             .eq('supabaseId', userId)
-            .maybeSingle(); // Use maybeSingle to avoid errors when no record
+            .maybeSingle();
+
+          console.log('📊 Mentee query result:', { menteeData, menteeError });
+          console.log('🔍 Mentee data details:', {
+            hasData: !!menteeData,
+            dataId: menteeData?.id,
+            dataSupabaseId: menteeData?.supabaseId,
+            searchingForUserId: userId,
+            errorExists: !!menteeError,
+            errorMessage: menteeError?.message
+          });
 
           if (menteeData && !menteeError) {
-            console.log('✅ User is a mentee:', menteeData.first_name);
+            console.log('✅ User is a mentee:', menteeData.first_name, 'Email:', menteeData.email);
             return 'mentee';
           }
           
           if (menteeError) {
-            console.log('ℹ️ Mentee check error (expected if not a mentee):', menteeError.message);
+            console.log('ℹ️ Mentee check error:', menteeError.message, menteeError.code);
+          } else {
+            console.log('ℹ️ No mentee record found for userId:', userId);
           }
         } catch (error) {
-          console.log('ℹ️ Mentee table error:', error);
+          console.error('❌ Mentee table query failed:', error);
         }
 
         console.log('⚠️ User has no role assigned - needs onboarding');
+        console.log('⚠️ Checked both mentor and mentee tables for userId:', userId);
         return null;
       };
 

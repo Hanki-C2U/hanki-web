@@ -1,4 +1,4 @@
-import { Link,redirect,useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import {
   Calendar,
   Search,
@@ -19,6 +19,8 @@ const MenteeDashboard = () => {
   const [username, setUserName] = useState('')
   const [mentors, setMentors] = useState<any[]>([])
   const [mentorsLoading, setMentorsLoading] = useState(true)
+  const [upcomingSessions, setUpcomingSessions] = useState<any[]>([])
+  const [sessionsLoading, setSessionsLoading] = useState(true)
   
   // Add the chat hook (keeping for future use)
   const { } = useRealtimeChat()
@@ -146,22 +148,43 @@ const MenteeDashboard = () => {
     )
   }
 
-  const upcomingSessions = [
-    {
-      id: 1,
-      mentor: "Dr. John Smith",
-      expertise: "Software Engineering",
-      time: "Tomorrow, 2:00 PM",
-      topic: "Career Path Discussion"
-    },
-    {
-      id: 2,
-      mentor: "Marie Claire Uwimana",
-      expertise: "Digital Marketing",
-      time: "Friday, 11:00 AM",
-      topic: "Marketing Strategy Review"
+  // Fetch upcoming sessions when role is confirmed as mentee
+  useEffect(() => {
+    const fetchUpcomingSessions = async () => {
+      if (userRole === 'mentee' && user?.id) {
+        try {
+          setSessionsLoading(true)
+          const { data: sessions, error } = await supabasase
+            .from('sessions')
+            .select(`
+              *,
+              mentor (
+                first_name,
+                last_name,
+                expertise
+              )
+            `)
+            .eq('menteeId', user.id)
+            .gte('sessionDate', new Date().toISOString())
+            .order('sessionDate', { ascending: true })
+            .order('startTime', { ascending: true })
+            .limit(5)
+
+          if (error) {
+            console.error('Error fetching sessions:', error)
+          } else {
+            setUpcomingSessions(sessions || [])
+          }
+        } catch (error) {
+          console.error('Error fetching sessions:', error)
+        } finally {
+          setSessionsLoading(false)
+        }
+      }
     }
-  ];
+    
+    fetchUpcomingSessions()
+  }, [userRole, user?.id])
 
   // Show loading spinner while checking access permissions
   if (roleLoading) {
@@ -186,10 +209,6 @@ const MenteeDashboard = () => {
         </div>
       </div>
     );
-  }
-
-  const handleJoinSession = () => {
-    redirect('/session-page')
   }
 
   return (
@@ -361,20 +380,67 @@ const MenteeDashboard = () => {
               <p className="text-sm text-gray-600">Your scheduled mentoring sessions</p>
             </div>
             <div className="p-6 pt-0 space-y-4">
-              {upcomingSessions.map((session) => (
-                <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h4 className="font-medium">{session.mentor}</h4>
-                    <p className="text-sm text-professional-blue">{session.expertise}</p>
-                    <p className="text-xs text-muted-foreground">{session.time}</p>
-                    <p className="text-xs text-muted-foreground">{session.topic}</p>
-                  </div>
-                  <button onClick={()=>handleJoinSession} className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
-                    <Video className="h-4 w-4 mr-2" />
-                    Join
-                  </button>
+              {sessionsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading upcoming sessions...</p>
                 </div>
-              ))}
+              ) : upcomingSessions.length > 0 ? (
+                upcomingSessions.map((session) => (
+                  <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <h4 className="font-medium">{session.title}</h4>
+                      <p className="text-sm text-professional-blue">
+                        with {session.mentor?.first_name} {session.mentor?.last_name}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {session.mentor?.expertise?.join(', ') || 'Mentor'}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(session.sessionDate).toLocaleDateString('en-US', { 
+                          weekday: 'long', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })} at {session.startTime}
+                      </p>
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-2 ${
+                        session.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                        session.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                        session.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {session.status}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      {session.status === 'ACCEPTED' && session.meetingUrl && (
+                        <a
+                          href={session.meetingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                          <Video className="h-4 w-4" />
+                          Join
+                        </a>
+                      )}
+                      <button 
+                        onClick={() => navigate(`/chat`)}
+                        className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                      >
+                        <User className="h-4 w-4" />
+                        Chat
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 mb-2">No upcoming sessions</p>
+                  <p className="text-sm text-gray-500">Book a session with a mentor to get started!</p>
+                </div>
+              )}
               <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
                 View All Sessions
               </button>
@@ -439,24 +505,12 @@ const MenteeDashboard = () => {
                       >
                         View Profile
                       </button>
-                      {/* <button
-                        className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                        onClick={() => {
-                          console.log('💬 Chat button clicked for mentor:', mentor.supabaseId)
-                          handleStartChat(mentor.supabaseId)
-                        }}
+                      <button
+                        className="flex-1 inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        onClick={() => navigate(`/book-session/${mentor.supabaseId}`)}
                       >
-                        <MessageCircle className="h-4 w-4" />
-                      </button> */}
-                      <button 
-                        className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                        onClick={() => {
-                          console.log('🎥 Start Session clicked for mentor:', mentor.supabaseId)
-                          navigate('/session-page')
-                        }}
-                      >
-                        <Video className="h-4 w-4" />
-                        Start Session
+                        <Calendar className="h-4 w-4" />
+                        Book Session
                       </button>
                     </div>
                   </div>

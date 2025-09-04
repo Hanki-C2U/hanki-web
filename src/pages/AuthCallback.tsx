@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect,useState } from "react";
+import { useNavigate } from "react-router";
 import { supabasase } from "../supabase_creds/supabase";
 import { useAuthStore } from "../store/authStore";
 

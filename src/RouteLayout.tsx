@@ -1,6 +1,13 @@
 import { createBrowserRouter,createRoutesFromElements,Route,RouterProvider } from "react-router-dom"
 import Login from "./pages/Login"
 import Signup from "./pages/SignUp"
+import LandingPage from "./pages/LandingPage";
+import ResourceLibrary from "./pages/ResourceLibrary";
+import MentorDiscovery from "./pages/MentorDiscovery";
+import MentorProfile from "./pages/MentorProfile";
+import BookSession from "./pages/BookSession";
+import ProgressTracking from "./pages/ProgressTracking";
+import NotFound from "./pages/NotFound";
 import AuthCallback from "./pages/AuthCallback"
 import Onboarding from "./pages/Onboarding"
 import { AuthProvider } from "./components/AuthProvider"
@@ -12,15 +19,21 @@ import IncompleteOnboardingHandler from "./components/IncompleteOnboardingHandle
 import MentorDashboard from "./pages/MentorDashboard";
 import MenteeDashboard from "./pages/MenteeDashboard";
 import ChatPage from "./pages/ChatPage"
-function RouteLayout() {
-  const router = createBrowserRouter(createRoutesFromElements(
+export const router = createBrowserRouter(createRoutesFromElements(
     <Route path="/">
           <Route index element={<Login/>}/>
-          <Route path="/signup" element={<Signup/>}/>
-          <Route path="/login" element={<Login/>}/>
-          <Route path="/auth/callback" element={<AuthCallback/>}/>
-          <Route path="/onboarding" element={<Onboarding/>}/>
-          <Route path='/home' element={
+          <Route path="signup" element={<Signup/>}/>
+          <Route path="landing" element={<LandingPage />} />
+          <Route path="resources" element={<ResourceLibrary />} />
+          <Route path="login" element={<Login/>}/>
+          <Route path="progress" element={<ProgressTracking />} />
+          <Route path="book-session/:mentorId" element={<BookSession />} />
+          <Route path="discover-mentors" element={<MentorDiscovery />} />
+          <Route path="mentor/:id" element={<MentorProfile />} />
+          <Route path="auth/callback" element={<AuthCallback/>}/>
+          <Route path="onboarding" element={<Onboarding/>}/>
+          <Route path="*" element={<NotFound />} />
+          <Route path='home' element={
             <ProtectedComp>
               <IncompleteOnboardingHandler>
                 <HomePage/>
@@ -65,11 +78,5 @@ function RouteLayout() {
           } />
       </Route>
   ))
-  return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
-  )
-}
 
-export default RouteLayout
+
