@@ -9,7 +9,7 @@ import { useAuthStore } from '../store/authStore';
 const IncompleteOnboardingHandler = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, userRole, roleLoading, isLoading } = useAuthStore();
+  const { user, userRole, roleLoading, isLoading, hasHydrated } = useAuthStore();
   const isAuthenticated = !!user;
 
   useEffect(() => {
@@ -24,18 +24,19 @@ const IncompleteOnboardingHandler = ({ children }: { children: React.ReactNode }
       userRole,
       roleLoading,
       isLoading,
+      hasHydrated,
       pathname: location.pathname,
-      willRedirect: !isOnboardingFlow && isAuthenticated && user && !isLoading && !roleLoading && userRole === null
+      shouldRedirect: !isOnboardingFlow && hasHydrated && isAuthenticated && user && !isLoading && !roleLoading && userRole === null
     });
     
-    // Wait for both auth and role loading to complete before making redirect decisions
+    // Wait for hydration, auth loading, and role loading to complete before making redirect decisions
     // Only redirect if we're certain the user has no role (not just loading)
-    if (!isOnboardingFlow && isAuthenticated && user && !isLoading && !roleLoading && userRole === null) {
-      console.log('🚨 IncompleteOnboardingHandler: User has session but no role (after all loading complete), redirecting to onboarding');
+    if (!isOnboardingFlow && hasHydrated && isAuthenticated && user && !isLoading && !roleLoading && userRole === null) {
+      console.log('🚨 IncompleteOnboardingHandler: User has session but no role (after hydration complete), redirecting to onboarding');
       console.log('🚨 User ID that has no role:', user.id);
       navigate('/onboarding', { replace: true });
     }
-  }, [user, userRole, roleLoading, isAuthenticated, isLoading, location.pathname, navigate]);
+  }, [user, userRole, roleLoading, isAuthenticated, isLoading, hasHydrated, location.pathname, navigate]);
 
   return <>{children}</>;
 };

@@ -12,7 +12,7 @@ import { useAuthStore } from "../store/authStore";
 const Signup = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, userRole, isLoading, roleLoading } = useAuthStore();
+  const { user, userRole, isLoading, roleLoading, hasHydrated } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -31,9 +31,15 @@ const Signup = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    console.log('🔍 Signup redirect check:', { user: user?.id, userRole, isLoading, roleLoading });
+    console.log('🔍 Signup redirect check:', { 
+      user: user?.id, 
+      userRole, 
+      isLoading, 
+      roleLoading, 
+      hasHydrated 
+    });
     
-    if (!isLoading && !roleLoading && user) {
+    if (hasHydrated && !isLoading && !roleLoading && user) {
       if (userRole === 'mentor') {
         console.log('✅ Redirecting to mentor dashboard');
         navigate('/mentor-dashboard', { replace: true });
@@ -45,7 +51,7 @@ const Signup = () => {
         navigate('/onboarding', { replace: true });
       }
     }
-  }, [user, userRole, isLoading, roleLoading, navigate]);
+  }, [user, userRole, isLoading, roleLoading, hasHydrated, navigate]);
 
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);

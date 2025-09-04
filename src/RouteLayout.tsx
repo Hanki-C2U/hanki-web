@@ -6,6 +6,7 @@ import Onboarding from "./pages/Onboarding"
 import { AuthProvider } from "./components/AuthProvider"
 import ProtectedComp from "./components/ProtectedComp"
 import HomePage from "./pages/HomePage"
+import SessionPage from "./pages/SessionPage"
 import IncompleteOnboardingHandler from "./components/IncompleteOnboardingHandler"
 // import LandingPage from "./pages/LandingPage";
 import MentorDashboard from "./pages/MentorDashboard";
@@ -41,6 +42,13 @@ function RouteLayout() {
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
+          <Route path="/session-page" element={
+            <ProtectedComp allowedRoles={['mentee']}>
+              <IncompleteOnboardingHandler>
+                <SessionPage/>
+              </IncompleteOnboardingHandler>
+            </ProtectedComp>
+          }/>
           <Route path="/chat" element={
             <ProtectedComp>
               <IncompleteOnboardingHandler>

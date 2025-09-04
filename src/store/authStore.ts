@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabasase } from '../supabase_creds/supabase';
 
@@ -11,6 +12,7 @@ interface AuthState {
   isLoading: boolean;
   roleLoading: boolean;
   lastRoleCheck: number | null; // Timestamp of last role check
+  hasHydrated: boolean; // Track if persistence has loaded
   
   // Actions
   setSession: (session: Session | null) => void;
@@ -18,6 +20,7 @@ interface AuthState {
   setUserRole: (role: UserRole) => void;
   setIsLoading: (loading: boolean) => void;
   setRoleLoading: (loading: boolean) => void;
+  setHasHydrated: (hydrated: boolean) => void;
   clearSession: () => void;
   signOut: () => Promise<void>;
   initializeAuth: () => Promise<void>;
@@ -26,43 +29,49 @@ interface AuthState {
   refreshAuth: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  session: null,
-  userRole: null,
-  isLoading: true,
-  roleLoading: false,
-  lastRoleCheck: null,
-
-  setSession: (session) => {
-    set({ 
-      session, 
-      user: session?.user || null 
-    });
-  },
-
-  setUser: (user) => set({ user }),
-
-  setUserRole: (userRole) => set({ 
-    userRole, 
-    roleLoading: false,
-    lastRoleCheck: Date.now()
-  }),
-
-  setIsLoading: (isLoading) => set({ isLoading }),
-
-  setRoleLoading: (roleLoading) => set({ roleLoading }),
-
-  clearSession: () => {
-    set({
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
       user: null,
       session: null,
       userRole: null,
-      isLoading: false,
+      isLoading: true,
       roleLoading: false,
       lastRoleCheck: null,
-    });
-  },
+      hasHydrated: false,
+
+      setSession: (session) => {
+        set({ 
+          session, 
+          user: session?.user || null 
+        });
+      },
+
+      setUser: (user) => set({ user }),
+
+      setUserRole: (userRole) => set({ 
+        userRole, 
+        roleLoading: false,
+        lastRoleCheck: Date.now()
+      }),
+
+      setIsLoading: (isLoading) => set({ isLoading }),
+
+      setRoleLoading: (roleLoading) => set({ roleLoading }),
+
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
+
+      clearSession: () => {
+        set({
+          user: null,
+          session: null,
+          userRole: null,
+          isLoading: false,
+          roleLoading: false,
+          lastRoleCheck: null,
+          hasHydrated: true, // Keep hydrated as true when clearing
+        });
+      },
 
   signOut: async () => {
     try {
@@ -78,44 +87,57 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   initializeAuth: async () => {
+    const currentState = get();
+    
+    console.log('🚀 initializeAuth called. Current state:', {
+      hasUser: !!currentState.user,
+      hasSession: !!currentState.session,
+      isLoading: currentState.isLoading,
+      hasHydrated: currentState.hasHydrated
+    });
+    
+    // If we already have a valid user and session, and we're not loading, don't re-initialize
+    if (currentState.user && currentState.session && !currentState.isLoading && currentState.hasHydrated) {
+      console.log('✅ Auth already initialized and valid, skipping');
+      return;
+    }
+
     try {
-      console.log('🚀 Initializing auth...');
+      console.log('� Getting fresh session from Supabase...');
       set({ isLoading: true });
 
       const { data: { session }, error } = await supabasase.auth.getSession();
       
       if (error) {
         console.error('❌ Error getting session:', error);
-        set({ isLoading: false });
+        get().clearSession();
         return;
       }
 
       if (session?.user) {
-        console.log('✅ Found existing session for user:', session.user.id);
+        console.log('✅ Found valid session for user:', session.user.id);
         set({ 
           session, 
           user: session.user,
           roleLoading: true 
         });
 
-        // Check user role
+        // Always check role during initialization (don't rely on cache during login)
+        console.log('🔄 Checking user role for session...');
         const role = await get().checkUserRole(session.user.id);
-        set({ userRole: role, roleLoading: false });
         console.log('✅ Auth initialization complete. User role:', role);
+        set({ userRole: role, roleLoading: false });
       } else {
-        console.log('❌ No existing session found');
+        console.log('❌ No valid session found, clearing auth state');
+        get().clearSession();
       }
 
-      set({ isLoading: false });
     } catch (error) {
       console.error('💥 Error initializing auth:', error);
-      set({ 
-        isLoading: false,
-        roleLoading: false,
-        user: null,
-        session: null,
-        userRole: null 
-      });
+      get().clearSession();
+    } finally {
+      // Always ensure loading is set to false
+      set({ isLoading: false });
     }
   },
 
@@ -124,48 +146,78 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.log('🔍 checkUserRole: Starting role check for userId:', userId);
       set({ roleLoading: true });
 
-      // Check if user is a mentor
-      console.log('🔍 checkUserRole: Checking mentor table...');
-      const { data: mentorData, error: mentorError } = await supabasase
-        .from('mentor')
-        .select('id, first_name, supabaseId')
-        .eq('supabaseId', userId)
-        .single();
+      // Use a simple approach with a shorter timeout
+      const timeoutMs = 8000; // 8 seconds
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Role check timeout')), timeoutMs);
+      });
 
-      console.log('🔍 checkUserRole: Mentor query result:', { data: mentorData, error: mentorError });
+      // Check both tables in parallel with a single query
+      const roleCheckPromise = async (): Promise<UserRole> => {
+        console.log('🔍 checkUserRole: Checking both mentor and mentee tables...');
+        
+        // Check mentor table first
+        try {
+          const { data: mentorData, error: mentorError } = await supabasase
+            .from('mentor')
+            .select('id, first_name')
+            .eq('supabaseId', userId)
+            .maybeSingle(); // Use maybeSingle to avoid errors when no record
 
-      if (mentorError && mentorError.code !== 'PGRST116') {
-        console.error('❌ Error checking mentor role:', mentorError);
-      }
+          if (mentorData && !mentorError) {
+            console.log('✅ User is a mentor:', mentorData.first_name);
+            return 'mentor';
+          }
+          
+          if (mentorError) {
+            console.log('ℹ️ Mentor check error (expected if not a mentor):', mentorError.message);
+          }
+        } catch (error) {
+          console.log('ℹ️ Mentor table error:', error);
+        }
 
-      if (mentorData) {
-        console.log('✅ User is a mentor:', mentorData.first_name, 'with supabaseId:', mentorData.supabaseId);
-        return 'mentor';
-      }
+        // Check mentee table
+        try {
+          const { data: menteeData, error: menteeError } = await supabasase
+            .from('mentee')
+            .select('id, first_name')
+            .eq('supabaseId', userId)
+            .maybeSingle(); // Use maybeSingle to avoid errors when no record
 
-      // Check if user is a mentee
-      console.log('🔍 checkUserRole: Checking mentee table...');
-      const { data: menteeData, error: menteeError } = await supabasase
-        .from('mentee')
-        .select('id, first_name, supabaseId')
-        .eq('supabaseId', userId)
-        .single();
+          if (menteeData && !menteeError) {
+            console.log('✅ User is a mentee:', menteeData.first_name);
+            return 'mentee';
+          }
+          
+          if (menteeError) {
+            console.log('ℹ️ Mentee check error (expected if not a mentee):', menteeError.message);
+          }
+        } catch (error) {
+          console.log('ℹ️ Mentee table error:', error);
+        }
 
-      console.log('🔍 checkUserRole: Mentee query result:', { data: menteeData, error: menteeError });
+        console.log('⚠️ User has no role assigned - needs onboarding');
+        return null;
+      };
 
-      if (menteeError && menteeError.code !== 'PGRST116') {
-        console.error('❌ Error checking mentee role:', menteeError);
-      }
+      // Race against timeout
+      const result = await Promise.race([roleCheckPromise(), timeoutPromise]);
+      return result;
 
-      if (menteeData) {
-        console.log('✅ User is a mentee:', menteeData.first_name, 'with supabaseId:', menteeData.supabaseId);
-        return 'mentee';
-      }
-
-      console.log('⚠️ User has no role assigned yet - needs onboarding');
-      return null;
     } catch (error) {
       console.error('💥 Error in checkUserRole:', error);
+      
+      // Try to use cached role if available
+      const currentState = get();
+      if (currentState.userRole && currentState.lastRoleCheck) {
+        const timeSinceLastCheck = Date.now() - currentState.lastRoleCheck;
+        if (timeSinceLastCheck < 60 * 60 * 1000) { // 1 hour
+          console.log('⚡ Using cached role due to error:', currentState.userRole);
+          return currentState.userRole;
+        }
+      }
+      
+      console.log('❌ No cached role available, returning null');
       return null;
     } finally {
       set({ roleLoading: false });
@@ -219,4 +271,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       get().clearSession();
     }
   },
-}));
+    }),
+    {
+      name: 'auth-store', // Storage key
+      partialize: (state) => ({
+        user: state.user,
+        session: state.session,
+        userRole: state.userRole,
+        lastRoleCheck: state.lastRoleCheck,
+      }),
+      onRehydrateStorage: () => (state) => {
+        console.log('🔄 Auth store hydration complete');
+        if (state) {
+          state.setHasHydrated(true);
+        }
+      },
+    }
+  )
+);

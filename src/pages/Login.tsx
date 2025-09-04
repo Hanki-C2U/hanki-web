@@ -17,14 +17,22 @@ const Login = () => {
   const [loginError, setLoginError] = useState<string | React.ReactNode | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { user, userRole, isLoading, roleLoading } = useAuthStore();
+  const { user, userRole, isLoading, roleLoading, hasHydrated } = useAuthStore();
 
   // Redirect if already logged in
   useEffect(() => {
-    console.log('🔍 Login redirect check:', { user: user?.id, userRole, isLoading, roleLoading });
+    console.log('🔍 Login redirect check:', { 
+      user: user?.id, 
+      userRole, 
+      isLoading, 
+      roleLoading, 
+      hasHydrated 
+    });
     
-    // Only redirect if all loading is complete
-    if (!isLoading && !roleLoading && user) {
+    // Only redirect if hydration and all loading is complete
+    if (hasHydrated && !isLoading && !roleLoading && user) {
+      console.log('🔄 Login: All loading complete, checking role for redirect...');
+      
       if (userRole === 'mentor') {
         console.log('✅ Redirecting to mentor dashboard');
         navigate('/mentor-dashboard', { replace: true });
@@ -34,11 +42,21 @@ const Login = () => {
       } else if (userRole === null) {
         // Only redirect to onboarding if role check is complete and user has no role
         console.log('⚠️ No role found after loading complete, redirecting to onboarding');
+        console.log('⚠️ User details:', { 
+          userId: user.id, 
+          email: user.email, 
+          userRole, 
+          isLoading, 
+          roleLoading 
+        });
         navigate('/onboarding', { replace: true });
+      } else {
+        console.log('⏳ Role is undefined, waiting for role check to complete...');
       }
-      // If userRole is undefined or loading, don't redirect yet
+    } else {
+      console.log('⏳ Still loading...', { hasHydrated, isLoading, roleLoading, hasUser: !!user });
     }
-  }, [user, userRole, isLoading, roleLoading, navigate]);
+  }, [user, userRole, isLoading, roleLoading, hasHydrated, navigate]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);

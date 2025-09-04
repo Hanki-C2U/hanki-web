@@ -1,4 +1,4 @@
-import { Link,useNavigate } from "react-router";
+import { Link,redirect,useNavigate } from "react-router";
 import {
   Calendar,
   Search,
@@ -238,6 +238,10 @@ const MenteeDashboard = () => {
     );
   }
 
+  const handleJoinSession = () => {
+    redirect('/session-page')
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
       {/* Header */}
@@ -415,7 +419,7 @@ const MenteeDashboard = () => {
                     <p className="text-xs text-muted-foreground">{session.time}</p>
                     <p className="text-xs text-muted-foreground">{session.topic}</p>
                   </div>
-                  <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                  <button onClick={()=>handleJoinSession} className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
                     <Video className="h-4 w-4 mr-2" />
                     Join
                   </button>
@@ -485,7 +489,7 @@ const MenteeDashboard = () => {
                       >
                         View Profile
                       </button>
-                      <button
+                      {/* <button
                         className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                         onClick={() => {
                           console.log('💬 Chat button clicked for mentor:', mentor.supabaseId)
@@ -493,6 +497,9 @@ const MenteeDashboard = () => {
                         }}
                       >
                         <MessageCircle className="h-4 w-4" />
+                      </button> */}
+                      <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                        Start Session
                       </button>
                     </div>
                   </div>

@@ -8,10 +8,13 @@ interface ProtectedCompProps extends PropsWithChildren {
 
 function ProtectedComp({ children, allowedRoles }: ProtectedCompProps) {
     const navigate = useNavigate()
-    const { isLoading, userRole, roleLoading, user } = useAuthStore()
+    const { isLoading, userRole, roleLoading, user, hasHydrated } = useAuthStore()
     const isAuthenticated = !!user
 
     useEffect(() => {
+        // Only make navigation decisions after hydration is complete
+        if (!hasHydrated) return;
+
         // Only redirect if we're not loading and there's no session
         if (!isLoading && !isAuthenticated) {
             navigate('/login', { replace: true })
@@ -33,10 +36,10 @@ function ProtectedComp({ children, allowedRoles }: ProtectedCompProps) {
             navigate(redirectPath, { replace: true })
             return;
         }
-    }, [navigate, isAuthenticated, isLoading, userRole, roleLoading, allowedRoles])
+    }, [navigate, isAuthenticated, isLoading, userRole, roleLoading, allowedRoles, hasHydrated])
 
-    // Show loading while authentication state is being determined
-    if (isLoading || roleLoading) {
+    // Show loading while authentication state is being determined or during hydration
+    if (!hasHydrated || isLoading || roleLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
