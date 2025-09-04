@@ -6,8 +6,7 @@ import {
   TrendingUp,
   Video,
   User,
-  Bell,
-  MessageCircle
+  Bell
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { supabasase } from "../supabase_creds/supabase";
@@ -122,55 +121,6 @@ const MenteeDashboard = () => {
     
     fetchMentors()
   }, [userRole, user?.id, roleLoading])
-
-  // Handle starting a chat with a mentor
-  const handleStartChat = async (mentorId: string) => {
-    console.log('🔥 CHAT BUTTON CLICKED!')
-    console.log('User ID:', user?.id)
-    console.log('Mentor ID:', mentorId)
-    console.log('User Role:', userRole)
-    
-    if (!user?.id) {
-      console.error('❌ No user ID available')
-      alert('Error: User not logged in')
-      return
-    }
-
-    // TEMPORARY FIX: Navigate directly to chat page with mentor info
-    // We'll pass mentor and mentee IDs as URL params for now
-    console.log('🚀 TEMPORARY: Navigating directly to chat page')
-    const chatUrl = `/chat?mentorId=${mentorId}&menteeId=${user.id}`
-    console.log('📍 Navigating to:', chatUrl)
-    navigate(chatUrl)
-    
-    return
-
-    // OLD CODE - Commented out due to database timeout issues
-    /*
-    try {
-      console.log('📞 Calling createOrFindConversation...')
-      const conversation = await createOrFindConversation(mentorId, user.id)
-      console.log('📊 Conversation result:', conversation)
-      
-      if (conversation) {
-        console.log('✅ Success! Conversation ID:', conversation.id)
-        console.log('🚀 Navigating to:', `/chat/${conversation.id}`)
-        navigate(`/chat/${conversation.id}`)
-        
-        // Check navigation after a brief delay
-        setTimeout(() => {
-          console.log('📍 Current location:', window.location.pathname)
-        }, 500)
-      } else {
-        console.error('❌ Failed to create/find conversation')
-        alert('Error: Could not start chat. Please try again.')
-      }
-    } catch (error) {
-      console.error('💥 Error starting chat:', error)
-      alert('Error: Something went wrong. Please try again.')
-    }
-    */
-  }
 
   // Early return while role is unknown (only if we don't have a role yet)
   if (roleLoading && userRole === null) {
@@ -498,7 +448,14 @@ const MenteeDashboard = () => {
                       >
                         <MessageCircle className="h-4 w-4" />
                       </button> */}
-                      <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                      <button 
+                        className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                        onClick={() => {
+                          console.log('🎥 Start Session clicked for mentor:', mentor.supabaseId)
+                          navigate('/session-page')
+                        }}
+                      >
+                        <Video className="h-4 w-4" />
                         Start Session
                       </button>
                     </div>
