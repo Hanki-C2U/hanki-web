@@ -28,31 +28,31 @@ function App() {
         <Route path="home" element={<h1>Home Page</h1>} />
         <Route path="mentee-profile/:id" element={<MenteeProfile />} />
         <Route path="mentor-dashboard" element={
-          <ProtectedRoute requiredUserType="mentor">
+          // <ProtectedRoute requiredUserType="mentor">
             <MentorDashboard />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         } />
         <Route path="mentee-dashboard" element={
-          <ProtectedRoute requiredUserType="mentee">
+          // <ProtectedRoute requiredUserType="mentee">
             <MenteeDashboard />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         } />
         <Route path="resources" element={
-          <ProtectedRoute>
+          // <ProtectedRoute>
             <ResourceLibrary />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         } />
         <Route path="discover-mentors" element={<MentorDiscovery />} />
         <Route path="mentor/:id" element={<MentorProfile />} />
         <Route path="book-session/:mentorId" element={
-          <ProtectedRoute requiredUserType="mentee">
+          // <ProtectedRoute requiredUserType="mentee">
             <BookSession />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         } />
         <Route path="progress" element={
-          <ProtectedRoute>
+          // <ProtectedRoute>
             <ProgressTracking />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         } />
         <Route path="*" element={<NotFound />} />
       </Route>

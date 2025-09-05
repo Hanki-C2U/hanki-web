@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useParams } from "react-router"
 import getMentee from "../services/getMentee"
 
 export default function MenteeProfile() {
-    const {id} = useParams()
+  const { id } = useParams()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(false)
 
