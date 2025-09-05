@@ -32,7 +32,20 @@ const MenteeDashboard = () => {
       { id: 4, name: "Knowledge Seeker", icon: "📚", earned: true },
     ],
     skills: ["React", "JavaScript", "Node.js", "SQL", "HTML/CSS"],
-    goals: ["Master system design patterns", "Improve problem-solving skills", "Prepare for technical interviews", "Build a professional network"]
+    goals: ["Master system design patterns", "Improve problem-solving skills", "Prepare for technical interviews", "Build a professional network"],
+    professionalBackground: {
+      education: "B.S. Computer Science, African Leadership University, 2025 (Expected)",
+      experience: [
+        { position: "Software Engineering Intern", company: "Andela", duration: "Summer 2024" },
+        { position: "Web Developer", company: "Student Projects", duration: "2023 - Present" }
+      ],
+    },
+    learningPreferences: {
+      mentorshipStyle: "Practical guidance with hands-on examples",
+      preferredSessionFormat: "1:1 video calls with follow-up tasks",
+      learningGoals: "Career development and technical skill improvement",
+      availability: "Evenings and weekends",
+    }
   };
 
   const upcomingSessions = [
@@ -326,27 +339,61 @@ const MenteeDashboard = () => {
               <div className="p-6">
                 {activeTab === 'profile' && (
                   <div>
-                    <h3 className="text-lg font-semibold mb-3">About Me</h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-semibold">About Me</h3>
+                      <button
+                        onClick={() => navigate('/edit-profile')}
+                        className="text-gray-400 hover:text-emerald-600 flex items-center gap-1.5 text-sm"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                        </svg>
+                        Edit profile
+                      </button>
+                    </div>
                     <p className="text-gray-700 mb-6">{menteeData.bio}</p>
 
-                    <div className="mt-6">
-                      <h4 className="font-medium mb-3">Edit Profile Information</h4>
-                      <div className="flex flex-col gap-3">
+                    {/* Professional Background Section */}
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-100">Professional Background</h3>
+                      <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Bio
-                          </label>
-                          <textarea
-                            rows={4}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
-                            placeholder="Tell mentors about yourself..."
-                            defaultValue={menteeData.bio}
-                          />
+                          <h4 className="text-sm font-medium text-gray-700">Education</h4>
+                          <p className="text-gray-600 mt-1">{menteeData.professionalBackground.education}</p>
                         </div>
-                        <div className="mt-2">
-                          <button className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
-                            Save Changes
-                          </button>
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700">Experience</h4>
+                          <ul className="mt-1 space-y-2">
+                            {menteeData.professionalBackground.experience.map((exp, index) => (
+                              <li key={index} className="text-gray-600">
+                                <div className="font-medium">{exp.position}</div>
+                                <div className="text-sm">{exp.company} • {exp.duration}</div>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Learning Preferences Section */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-100">Learning Preferences</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700">Mentorship Style</h4>
+                          <p className="text-gray-600 mt-1">{menteeData.learningPreferences.mentorshipStyle}</p>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700">Session Format</h4>
+                          <p className="text-gray-600 mt-1">{menteeData.learningPreferences.preferredSessionFormat}</p>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700">Learning Focus</h4>
+                          <p className="text-gray-600 mt-1">{menteeData.learningPreferences.learningGoals}</p>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700">Availability</h4>
+                          <p className="text-gray-600 mt-1">{menteeData.learningPreferences.availability}</p>
                         </div>
                       </div>
                     </div>
