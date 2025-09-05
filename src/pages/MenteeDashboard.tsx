@@ -7,8 +7,7 @@ import {
   TrendingUp,
   Video,
   Star,
-  Target,
-  Code
+  Target
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
 
@@ -25,10 +24,12 @@ const MenteeDashboard = () => {
     organization: "African Leadership University",
     profilePicture: "/professional-headshot-of-confident-hispanic-sales-.png",
     bio: "I'm a software engineering student passionate about building web applications. I'm currently focused on full-stack development using JavaScript, React, and SQL. I'm seeking mentorship to strengthen my system design, problem-solving, and career navigation skills.",
-    languages: ["English", "français, langue française", "Ikinyarwanda"],
-    badges: [
-      { name: "Coding Enthusiast", icon: "Code" },
-      { name: "Fast Learner", icon: "Zap" },
+    languages: ["English", "Français", "Ikinyarwanda"],
+    achievementBadges: [
+      { id: 1, name: "First Session Complete", icon: "🎯", earned: true },
+      { id: 2, name: "Goal Setter", icon: "📋", earned: true },
+      { id: 3, name: "Network Builder", icon: "🤝", earned: true },
+      { id: 4, name: "Knowledge Seeker", icon: "📚", earned: true },
     ],
     skills: ["React", "JavaScript", "Node.js", "SQL", "HTML/CSS"],
     goals: ["Master system design patterns", "Improve problem-solving skills", "Prepare for technical interviews", "Build a professional network"]
@@ -91,30 +92,64 @@ const MenteeDashboard = () => {
     }
   ];
 
-  const renderBadge = (name: string) => {
-    const icons = {
-      Code: <Code className="h-4 w-4 text-purple-500" />,
-      Zap: <TrendingUp className="h-4 w-4 text-yellow-500" />
-    };
-
-    return (
-      <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full text-xs">
-        {name === "Coding Enthusiast" ? icons.Code : icons.Zap}
-        <span>{name}</span>
-      </div>
-    );
-  };
+  // Achievement badge hover state
+  const [_, setHoveredBadge] = useState<number | null>(null);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <AuthHeader />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Quick Actions (Top Section on Mobile, Right Side on Desktop) */}
+        <div className="grid grid-cols-3 md:hidden gap-3 mb-6">
+          <button
+            onClick={() => navigate('/discover-mentors')}
+            className="flex flex-col items-center justify-center gap-1 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-orange-50 mb-1">
+              <Search className="h-4 w-4 text-orange-500" />
+            </div>
+            <span className="text-xs font-medium">Find Mentors</span>
+            <span className="text-[10px] text-gray-500 sr-only">Browse experts</span>
+          </button>
+
+          <button
+            onClick={() => navigate('/resources')}
+            className="flex flex-col items-center justify-center gap-1 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-50 mb-1">
+              <BookOpen className="h-4 w-4 text-emerald-500" />
+            </div>
+            <span className="text-xs font-medium">Resources</span>
+            <span className="text-[10px] text-gray-500 sr-only">Career tools</span>
+          </button>
+
+          <button
+            onClick={() => navigate('/progress')}
+            className="flex flex-col items-center justify-center gap-1 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-50 mb-1">
+              <TrendingUp className="h-4 w-4 text-blue-500" />
+            </div>
+            <span className="text-xs font-medium">Progress</span>
+            <span className="text-[10px] text-gray-500 sr-only">Track growth</span>
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Left Column - Profile Information */}
           <div className="md:col-span-1 space-y-6">
             {/* Profile Card */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="bg-white rounded-lg shadow-sm p-6 relative">
+              <button
+                onClick={() => navigate('/edit-profile')}
+                className="absolute top-3 right-3 p-2 text-gray-500 hover:text-emerald-600 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                aria-label="Edit profile"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                </svg>
+              </button>
               <div className="flex flex-col items-center text-center">
                 <div className="w-24 h-24 rounded-full overflow-hidden mb-4">
                   <img
@@ -137,46 +172,123 @@ const MenteeDashboard = () => {
                   ))}
                 </div>
 
-                <div className="flex flex-wrap justify-center gap-2 mt-4">
-                  {menteeData.badges.map((badge, index) => (
-                    <div key={index}>
-                      {renderBadge(badge.name)}
+                {/* Sessions and Mentors count */}
+                <div className="flex justify-center gap-8 mt-4 w-full border-t border-gray-100 pt-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-semibold text-emerald-600">6</div>
+                    <div className="text-xs text-gray-600">Sessions</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-semibold text-emerald-600">3</div>
+                    <div className="text-xs text-gray-600">Mentors</div>
+                  </div>
+                </div>
+
+                {/* Skills */}
+                <div className="w-full mt-4 border-t border-gray-100 pt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-gray-700">Skills</h3>
+                    <button
+                      onClick={() => navigate('/progress')}
+                      className="text-xs text-emerald-600 hover:underline cursor-pointer"
+                    >
+                      View All
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {menteeData.skills.slice(0, 3).map((skill, index) => (
+                      <div key={index} className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">
+                        {skill}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Goals */}
+                <div className="w-full mt-4 border-t border-gray-100 pt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-gray-700">Goals</h3>
+                    <button
+                      onClick={() => navigate('/progress')}
+                      className="text-xs text-emerald-600 hover:underline cursor-pointer"
+                    >
+                      Manage Goals
+                    </button>
+                  </div>
+                  <ul className="text-left text-sm pl-5 space-y-1">
+                    {menteeData.goals.slice(0, 2).map((goal, index) => (
+                      <li key={index} className="list-disc text-gray-700">{goal}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Achievement Badges */}
+                <h3 className="text-sm font-medium text-gray-600 mt-4">Achievement Badges</h3>
+                <div className="flex flex-wrap justify-center gap-4 mt-2">
+                  {menteeData.achievementBadges.filter(badge => badge.earned).map((badge) => (
+                    <div
+                      key={badge.id}
+                      className="relative group cursor-pointer"
+                      onMouseEnter={() => setHoveredBadge(badge.id)}
+                      onMouseLeave={() => setHoveredBadge(null)}
+                    >
+                      <div className="w-10 h-10 flex items-center justify-center text-2xl bg-gradient-to-br from-orange-50 to-blue-50 rounded-lg border border-gray-200 shadow-sm">
+                        {badge.icon}
+                      </div>
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-32 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none text-center">
+                        {badge.name}
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 gap-3">
-              <button
-                onClick={() => navigate('/discover-mentors')}
-                className="flex items-center justify-center gap-2 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
-              >
-                <Search className="h-5 w-5 text-emerald-600" />
-                <span>Find a Mentor</span>
-              </button>
-
-              <button
-                onClick={() => navigate('/resources')}
-                className="flex items-center justify-center gap-2 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
-              >
-                <BookOpen className="h-5 w-5 text-emerald-600" />
-                <span>Learning Resources</span>
-              </button>
-
-              <button
-                onClick={() => navigate('/progress')}
-                className="flex items-center justify-center gap-2 p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
-              >
-                <TrendingUp className="h-5 w-5 text-emerald-600" />
-                <span>Track Progress</span>
-              </button>
-            </div>
           </div>
 
           {/* Middle Column - Content Area */}
           <div className="md:col-span-2 space-y-6">
+            {/* Quick Actions - Desktop */}
+            <div className="hidden md:grid md:grid-cols-3 gap-4 mb-6">
+              <button
+                onClick={() => navigate('/discover-mentors')}
+                className="flex items-center px-6 py-5 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-orange-50 mr-3">
+                  <Search className="h-5 w-5 text-orange-500" />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-medium">Find Mentors</div>
+                  <div className="text-xs text-gray-500">Browse experts</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate('/resources')}
+                className="flex items-center px-6 py-5 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-50 mr-3">
+                  <BookOpen className="h-5 w-5 text-emerald-500" />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-medium">Resources</div>
+                  <div className="text-xs text-gray-500">Career tools</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate('/progress')}
+                className="flex items-center px-6 py-5 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 mr-3">
+                  <TrendingUp className="h-5 w-5 text-blue-500" />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-medium">Progress</div>
+                  <div className="text-xs text-gray-500">Track growth</div>
+                </div>
+              </button>
+            </div>
+
             {/* Tabs */}
             <div className="bg-white rounded-lg shadow-sm">
               <div className="border-b">
@@ -184,8 +296,8 @@ const MenteeDashboard = () => {
                   <button
                     onClick={() => setActiveTab('profile')}
                     className={`px-4 py-4 text-sm font-medium border-b-2 ${activeTab === 'profile'
-                        ? 'border-emerald-500 text-emerald-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-emerald-500 text-emerald-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                   >
                     Profile
@@ -193,8 +305,8 @@ const MenteeDashboard = () => {
                   <button
                     onClick={() => setActiveTab('goals')}
                     className={`px-4 py-4 text-sm font-medium border-b-2 ${activeTab === 'goals'
-                        ? 'border-emerald-500 text-emerald-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-emerald-500 text-emerald-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                   >
                     Goals
@@ -202,8 +314,8 @@ const MenteeDashboard = () => {
                   <button
                     onClick={() => setActiveTab('skills')}
                     className={`px-4 py-4 text-sm font-medium border-b-2 ${activeTab === 'skills'
-                        ? 'border-emerald-500 text-emerald-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-emerald-500 text-emerald-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                   >
                     Skills
