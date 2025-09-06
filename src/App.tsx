@@ -13,6 +13,7 @@ import Signup from "./pages/SignUp";
 import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
 import InspirationPage from "./pages/InspirationPage";
+import EditProfile from "./pages/EditProfile";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MenteeProfile from "./pages/MenteeProfile";
@@ -58,6 +59,11 @@ function App() {
         <Route path="inspiration" element={
           // <ProtectedRoute>
           <InspirationPage />
+          // </ProtectedRoute>
+        } />
+        <Route path="edit-profile" element={
+          // <ProtectedRoute>
+          <EditProfile />
           // </ProtectedRoute>
         } />
         <Route path="*" element={<NotFound />} />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import {
   Calendar,
@@ -17,8 +17,8 @@ const MenteeDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'profile' | 'goals' | 'skills' | 'inspiration'>('profile');
 
-  // Mock mentee data
-  const menteeData = {
+  // Default mentee data - wrapped in useMemo to prevent recreating on each render
+  const defaultMenteeData = useMemo(() => ({
     id: 1,
     firstName: "Bienvenu",
     lastName: "Cyuzuzo",
@@ -48,7 +48,43 @@ const MenteeDashboard = () => {
       learningGoals: "Career development and technical skill improvement",
       availability: "Evenings and weekends",
     }
-  };
+  }), []);
+
+  // State to store mentee data
+  const [menteeData, setMenteeData] = useState(defaultMenteeData);
+
+  // Load mentee data from localStorage if available
+  useEffect(() => {
+    // This simulates fetching user data from a backend
+    // In a real app, this would be replaced with an API call to Supabase
+    const savedProfile = localStorage.getItem("menteeProfile");
+
+    if (savedProfile) {
+      try {
+        const profileData = JSON.parse(savedProfile);
+
+        // Merge with default data to ensure all required fields exist
+        // This ensures backwards compatibility if the data structure changes
+        setMenteeData({
+          ...defaultMenteeData,
+          ...profileData,
+          // Make sure nested objects are properly merged
+          professionalBackground: {
+            ...defaultMenteeData.professionalBackground,
+            ...profileData.professionalBackground
+          },
+          learningPreferences: {
+            ...defaultMenteeData.learningPreferences,
+            ...profileData.learningPreferences
+          },
+          // Keep achievement badges from default data
+          achievementBadges: defaultMenteeData.achievementBadges
+        });
+      } catch (error) {
+        console.error("Error parsing profile data:", error);
+      }
+    }
+  }, [defaultMenteeData]);
 
   const upcomingSessions = [
     {
