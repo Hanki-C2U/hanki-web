@@ -169,7 +169,7 @@ const MenteeDashboard = () => {
   ];
 
   // Achievement badge hover state
-  const [_, setHoveredBadge] = useState<number | null>(null);
+  const [, setHoveredBadge] = useState<number | null>(null);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -560,50 +560,84 @@ const MenteeDashboard = () => {
 
                 {activeTab === 'inspiration' && (
                   <div className="py-4">
-                    <h3 className="text-xl font-semibold mb-6 text-gray-800 flex items-center">
-                      <Lightbulb className="h-5 w-5 mr-2" />
-                      Success Stories
-                    </h3>
-                    <p className="text-gray-600 mb-6">Read inspiring stories from mentees who have achieved their goals with the help of their mentors.</p>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-semibold text-gray-800 flex items-center">
+                        <Lightbulb className="h-5 w-5 mr-2" />
+                        Success Stories
+                      </h3>
+                      <button
+                        onClick={() => navigate('/inspiration')}
+                        className="text-sm px-3 py-1.5 text-emerald-600 border border-emerald-600 rounded-md hover:bg-emerald-50">
+                        Browse All Stories
+                      </button>
+                    </div>
+                    <p className="text-gray-600 mb-5">Read inspiring stories from mentees who have achieved their goals with the help of their mentors.</p>
 
-                    <div className="grid grid-cols-1 gap-6">
-                      {successStories.map((story) => (
-                        <div key={story.id} className={`bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow ${story.featured ? 'border-blue-300' : ''}`}>
-                          <div className="p-5">
-                            {story.featured && (
-                              <div className="inline-block bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-medium mb-3">
-                                Featured Story
-                              </div>
-                            )}
-                            <div className="flex flex-col md:flex-row md:items-start gap-4 mb-4">
-                              <div className="flex-1">
-                                <h4 className="font-medium text-lg mb-2">{story.mentee.name}</h4>
-                                <p className="text-sm text-gray-600">{story.mentee.role} • {story.mentee.location}</p>
-                                <div className="mt-2 text-sm text-gray-500">Mentored by <span className="font-medium">{story.mentor.name}</span>, {story.mentor.role} in {story.mentor.location}</div>
-                              </div>
-                              <div className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 self-start">
-                                {story.industry}
-                              </div>
-                            </div>
-
-                            <div className="text-gray-700 mt-3 mb-4">
-                              "{story.story}"
-                            </div>
-
-                            <div className="mt-4">
-                              <h5 className="text-sm font-medium text-gray-700 mb-2">Key Outcomes:</h5>
-                              <div className="flex flex-wrap gap-2">
-                                {story.outcomes.map((outcome, index) => (
-                                  <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    <CheckCircle className="h-3 w-3 mr-1" />
-                                    {outcome}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
+                    {/* Featured story - always show the first featured story */}
+                    {successStories.filter(story => story.featured)[0] && (
+                      <div className="mb-6 bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border-blue-300">
+                        <div className="p-5">
+                          <div className="inline-block bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-medium mb-3">
+                            Featured Story
                           </div>
+                          {(() => {
+                            const story = successStories.filter(story => story.featured)[0];
+                            return (
+                              <>
+                                <div className="flex flex-col md:flex-row md:items-start gap-4 mb-4">
+                                  <div className="flex-1">
+                                    <h4 className="font-medium text-lg mb-2">{story.mentee.name}</h4>
+                                    <p className="text-sm text-gray-600">{story.mentee.role} • {story.mentee.location}</p>
+                                    <div className="mt-2 text-sm text-gray-500">Mentored by <span className="font-medium">{story.mentor.name}</span>, {story.mentor.role} in {story.mentor.location}</div>
+                                  </div>
+                                  <div className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 self-start">
+                                    {story.industry}
+                                  </div>
+                                </div>
+
+                                <div className="text-gray-700 mt-3 mb-4">
+                                  "{story.story}"
+                                </div>
+
+                                <div className="mt-4">
+                                  <h5 className="text-sm font-medium text-gray-700 mb-2">Key Outcomes:</h5>
+                                  <div className="flex flex-wrap gap-2">
+                                    {story.outcomes.map((outcome, index) => (
+                                      <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                        {outcome}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              </>
+                            );
+                          })()}
                         </div>
-                      ))}
+                      </div>
+                    )}
+
+                    {/* More stories summary */}
+                    <div className="flex items-center justify-between mt-6 border-t pt-4 border-gray-100">
+                      <div>
+                        <h4 className="font-medium">More Success Stories</h4>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {successStories.length - 1} more stories from various industries including
+                          {" "}
+                          {successStories
+                            .filter(story => !story.featured)
+                            .map(story => story.industry)
+                            .filter((industry, index, self) => self.indexOf(industry) === index)
+                            .slice(0, 2)
+                            .join(", ")}
+                          {successStories.filter(story => !story.featured).length > 2 ? " and more" : ""}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => navigate('/inspiration')}
+                        className="px-3 py-1.5 bg-emerald-50 text-emerald-600 text-sm rounded-md hover:bg-emerald-100">
+                        View All
+                      </button>
                     </div>
                   </div>
                 )}

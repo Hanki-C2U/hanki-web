@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/SignUp";
 import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
+import InspirationPage from "./pages/InspirationPage";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MenteeProfile from "./pages/MenteeProfile";
@@ -29,29 +30,34 @@ function App() {
         <Route path="mentee-profile/:id" element={<MenteeProfile />} />
         <Route path="mentor-dashboard" element={
           // <ProtectedRoute requiredUserType="mentor">
-            <MentorDashboard />
+          <MentorDashboard />
           // </ProtectedRoute>
         } />
         <Route path="mentee-dashboard" element={
           // <ProtectedRoute requiredUserType="mentee">
-            <MenteeDashboard />
+          <MenteeDashboard />
           // </ProtectedRoute>
         } />
         <Route path="resources" element={
           // <ProtectedRoute>
-            <ResourceLibrary />
+          <ResourceLibrary />
           // </ProtectedRoute>
         } />
         <Route path="discover-mentors" element={<MentorDiscovery />} />
         <Route path="mentor/:id" element={<MentorProfile />} />
         <Route path="book-session/:mentorId" element={
           // <ProtectedRoute requiredUserType="mentee">
-            <BookSession />
+          <BookSession />
           // </ProtectedRoute>
         } />
         <Route path="progress" element={
           // <ProtectedRoute>
-            <ProgressTracking />
+          <ProgressTracking />
+          // </ProtectedRoute>
+        } />
+        <Route path="inspiration" element={
+          // <ProtectedRoute>
+          <InspirationPage />
           // </ProtectedRoute>
         } />
         <Route path="*" element={<NotFound />} />
