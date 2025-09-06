@@ -14,6 +14,7 @@ import AuthCallback from "./pages/AuthCallback";
 import Onboarding from "./pages/Onboarding";
 import InspirationPage from "./pages/InspirationPage";
 import EditProfile from "./pages/EditProfile";
+import EditMentorProfile from "./pages/EditMentorProfile";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MenteeProfile from "./pages/MenteeProfile";
@@ -64,6 +65,11 @@ function App() {
         <Route path="edit-profile" element={
           // <ProtectedRoute>
           <EditProfile />
+          // </ProtectedRoute>
+        } />
+        <Route path="edit-mentor-profile" element={
+          // <ProtectedRoute requiredUserType="mentor">
+          <EditMentorProfile />
           // </ProtectedRoute>
         } />
         <Route path="*" element={<NotFound />} />

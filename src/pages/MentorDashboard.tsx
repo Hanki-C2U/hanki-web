@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import {
   Calendar,
   Users,
@@ -8,17 +9,89 @@ import {
   Star,
   Linkedin,
   Globe,
-  MessageSquare
+  MessageSquare,
+  Edit,
+  Briefcase,
+  GraduationCap
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
+
+// Define types for mentor profile data - matching EditMentorProfile
+interface Experience {
+  position: string;
+  company: string;
+  duration: string;
+  description?: string;
+}
+
+interface Education {
+  degree: string;
+  institution: string;
+  year: string;
+}
+
+interface ExpertiseArea {
+  name: string;
+}
+
+interface MentorAvailability {
+  day: string;
+  startTime: string;
+  endTime: string;
+}
+
+interface MentorProfile {
+  firstName: string;
+  lastName: string;
+  role: string;
+  organization: string;
+  profilePicture: string;
+  bio: string;
+  languages: string[];
+  expertiseAreas: ExpertiseArea[];
+  professionalBackground: {
+    education: Education[];
+    experience: Experience[];
+  };
+  location: string;
+  timezone: string;
+  linkedIn?: string;
+  website?: string;
+  availability: MentorAvailability[];
+  mentorshipStyle: string;
+  sessionPreference: string;
+}
+
+interface Review {
+  id: number;
+  mentee: string;
+  rating: number;
+  date: string;
+  comment: string;
+}
+
+interface Session {
+  id: number;
+  mentee: string;
+  topic: string;
+  time: string;
+  duration: string;
+}
+
+interface Request {
+  id: number;
+  mentee: string;
+  topic: string;
+  message: string;
+}
 
 const MentorDashboard = () => {
   // Tabs for the profile view
   const [activeTab, setActiveTab] = useState<'bio' | 'reviews' | 'schedule'>('bio');
+  const navigate = useNavigate();
 
-  // Mock data
-  const mentorData = {
-    id: 1,
+  // Default mentor data
+  const defaultMentorData: MentorProfile = {
     firstName: "Denys",
     lastName: "Pavlenko",
     role: "Engineering Leader",
@@ -26,11 +99,71 @@ const MentorDashboard = () => {
     profilePicture: "/professional-headshot-of-young-hispanic-freelancer.png",
     bio: "Denys Pavlenko is an Engineering Leader, former Engineering Manager of Platform Engineering at Personio SE & Co. KG, former Domain Quality Lead at Magento Commerce as a part of eBay Inc. QA Coach at StartIT Training Center for IT Specialists, where he helps talented people to start their new careers in IT.",
     languages: ["English", "Deutsch", "русский язык", "українська мова"],
+    expertiseAreas: [
+      { name: "Engineering Leadership" },
+      { name: "System Architecture" },
+      { name: "Team Management" },
+      { name: "Quality Assurance" },
+      { name: "Career Guidance" }
+    ],
+    professionalBackground: {
+      education: [
+        {
+          degree: "MSc Computer Science",
+          institution: "Technical University of Munich",
+          year: "2015"
+        },
+        {
+          degree: "BSc Software Engineering",
+          institution: "Kyiv Polytechnic Institute",
+          year: "2012"
+        }
+      ],
+      experience: [
+        {
+          position: "Engineering Manager",
+          company: "Personio SE & Co. KG",
+          duration: "2020 - Present",
+          description: "Led a team of 15 engineers, implementing agile methodologies and improving deployment frequency by 40%"
+        },
+        {
+          position: "Domain Quality Lead",
+          company: "Magento Commerce (eBay Inc.)",
+          duration: "2016 - 2020",
+          description: "Established QA processes and mentored junior team members on best practices"
+        }
+      ]
+    },
+    location: "Berlin, Germany",
+    timezone: "Europe/Berlin",
     linkedIn: "https://linkedin.com/in/denyspavlenko",
-    website: "https://denys-portfolio.dev"
+    website: "https://denys-portfolio.dev",
+    availability: [
+      { day: "Monday", startTime: "18:00", endTime: "21:00" },
+      { day: "Wednesday", startTime: "18:00", endTime: "21:00" },
+      { day: "Saturday", startTime: "10:00", endTime: "15:00" },
+    ],
+    mentorshipStyle: "I believe in a practical, hands-on approach to mentoring. I focus on real-world applications and solving actual problems, rather than just theoretical discussions. I help mentees develop both technical skills and professional soft skills necessary for career advancement.",
+    sessionPreference: "Video calls with screen sharing for code reviews and collaborative problem solving"
   };
 
-  const reviews = [
+  // State to hold mentor data, initially populated with default
+  const [mentorData, setMentorData] = useState<MentorProfile>(defaultMentorData);
+
+  // Load mentor data from localStorage on component mount
+  useEffect(() => {
+    const storedMentorData = localStorage.getItem('mentorProfile');
+    if (storedMentorData) {
+      try {
+        const parsedData = JSON.parse(storedMentorData);
+        setMentorData(parsedData);
+      } catch (error) {
+        console.error("Failed to parse mentor data from localStorage:", error);
+      }
+    }
+  }, []);
+
+  const reviews: Review[] = [
     {
       id: 1,
       mentee: "Alice Mukamana",
@@ -47,7 +180,7 @@ const MentorDashboard = () => {
     }
   ];
 
-  const upcomingSessions = [
+  const upcomingSessions: Session[] = [
     {
       id: 1,
       mentee: "Alice Mukamana",
@@ -64,7 +197,7 @@ const MentorDashboard = () => {
     }
   ];
 
-  const pendingRequests = [
+  const pendingRequests: Request[] = [
     {
       id: 1,
       mentee: "Sarah Uwimana",
@@ -86,6 +219,11 @@ const MentorDashboard = () => {
         className={`h-4 w-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
       />
     ));
+  };
+
+  // Handle edit profile button click
+  const handleEditProfile = () => {
+    navigate("/edit-mentor-profile");
   };
 
   return (
@@ -142,6 +280,14 @@ const MentorDashboard = () => {
                     </a>
                   )}
                 </div>
+
+                <button
+                  onClick={handleEditProfile}
+                  className="mt-4 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                >
+                  <Edit className="h-3.5 w-3.5 mr-1" />
+                  Edit Profile
+                </button>
               </div>
             </div>
 
@@ -186,8 +332,8 @@ const MentorDashboard = () => {
                   <button
                     onClick={() => setActiveTab('bio')}
                     className={`px-4 py-4 text-sm font-medium border-b-2 ${activeTab === 'bio'
-                        ? 'border-emerald-500 text-emerald-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-emerald-500 text-emerald-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                   >
                     Bio
@@ -195,8 +341,8 @@ const MentorDashboard = () => {
                   <button
                     onClick={() => setActiveTab('reviews')}
                     className={`px-4 py-4 text-sm font-medium border-b-2 ${activeTab === 'reviews'
-                        ? 'border-emerald-500 text-emerald-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-emerald-500 text-emerald-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                   >
                     Reviews
@@ -204,8 +350,8 @@ const MentorDashboard = () => {
                   <button
                     onClick={() => setActiveTab('schedule')}
                     className={`px-4 py-4 text-sm font-medium border-b-2 ${activeTab === 'schedule'
-                        ? 'border-emerald-500 text-emerald-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-emerald-500 text-emerald-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                   >
                     Schedule
@@ -215,53 +361,93 @@ const MentorDashboard = () => {
 
               <div className="p-6">
                 {activeTab === 'bio' && (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">About Me</h3>
-                    <p className="text-gray-700 mb-6">{mentorData.bio}</p>
-
-                    <div className="mt-6">
-                      <h4 className="font-medium mb-3">Edit Profile Information</h4>
-                      <div className="flex flex-col gap-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            LinkedIn Profile
-                          </label>
-                          <input
-                            type="url"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
-                            placeholder="https://linkedin.com/in/yourprofile"
-                            defaultValue={mentorData.linkedIn}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Personal Website (optional)
-                          </label>
-                          <input
-                            type="url"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
-                            placeholder="https://yourwebsite.com"
-                            defaultValue={mentorData.website}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Bio
-                          </label>
-                          <textarea
-                            rows={4}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
-                            placeholder="Tell mentees about yourself..."
-                            defaultValue={mentorData.bio}
-                          />
-                        </div>
-                        <div className="mt-2">
-                          <button className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
-                            Save Changes
-                          </button>
-                        </div>
+                  <div className="space-y-8">
+                    {/* About Me */}
+                    <section>
+                      <h3 className="text-lg font-semibold mb-3">About Me</h3>
+                      <p className="text-gray-700">{mentorData.bio}</p>
+                      <div className="mt-2 flex items-center text-sm text-gray-500">
+                        <span className="mr-2">Location:</span> {mentorData.location} ({mentorData.timezone})
                       </div>
-                    </div>
+                    </section>
+
+                    {/* Expertise Areas */}
+                    <section>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <Briefcase className="h-5 w-5 mr-2 text-emerald-600" />
+                        Expertise Areas
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {mentorData.expertiseAreas?.map((area, index) => (
+                          <div
+                            key={index}
+                            className="px-3 py-1 rounded-full text-sm bg-emerald-100 text-emerald-800"
+                          >
+                            {area.name}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* Work Experience */}
+                    <section>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <Briefcase className="h-5 w-5 mr-2 text-emerald-600" />
+                        Work Experience
+                      </h3>
+                      <div className="space-y-4">
+                        {mentorData.professionalBackground?.experience?.map((exp, index) => (
+                          <div key={index} className="border-l-2 border-emerald-200 pl-4">
+                            <h4 className="font-medium">{exp.position}</h4>
+                            <p className="text-sm text-gray-600">{exp.company} • {exp.duration}</p>
+                            {exp.description && <p className="text-sm text-gray-600 mt-1">{exp.description}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* Education */}
+                    <section>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <GraduationCap className="h-5 w-5 mr-2 text-emerald-600" />
+                        Education
+                      </h3>
+                      <div className="space-y-4">
+                        {mentorData.professionalBackground?.education?.map((edu, index) => (
+                          <div key={index} className="border-l-2 border-emerald-200 pl-4">
+                            <h4 className="font-medium">{edu.degree}</h4>
+                            <p className="text-sm text-gray-600">{edu.institution} • {edu.year}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* Mentorship Approach */}
+                    <section>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <Users className="h-5 w-5 mr-2 text-emerald-600" />
+                        Mentorship Approach
+                      </h3>
+                      <p className="text-gray-700 mb-2">{mentorData.mentorshipStyle}</p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Preferred session format:</span> {mentorData.sessionPreference}
+                      </p>
+                    </section>
+
+                    {/* Availability */}
+                    <section>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center">
+                        <Calendar className="h-5 w-5 mr-2 text-emerald-600" />
+                        Regular Availability
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                        {mentorData.availability?.map((slot, index) => (
+                          <div key={index} className="bg-gray-50 p-3 rounded-md text-sm">
+                            <span className="font-medium">{slot.day}:</span> {slot.startTime} - {slot.endTime}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
                   </div>
                 )}
 
