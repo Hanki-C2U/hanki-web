@@ -25,6 +25,7 @@ interface MentorAvailability {
   day: string;
   startTime: string;
   endTime: string;
+  isRecurring: boolean; // Whether this repeats weekly
 }
 
 interface MentorProfile {
@@ -99,9 +100,9 @@ const EditMentorProfile = () => {
     linkedIn: "https://linkedin.com/in/denyspavlenko",
     website: "https://denys-portfolio.dev",
     availability: [
-      { day: "Monday", startTime: "18:00", endTime: "21:00" },
-      { day: "Wednesday", startTime: "18:00", endTime: "21:00" },
-      { day: "Saturday", startTime: "10:00", endTime: "15:00" },
+      { day: "Monday", startTime: "18:00", endTime: "21:00", isRecurring: true },
+      { day: "Wednesday", startTime: "18:00", endTime: "21:00", isRecurring: true },
+      { day: "Saturday", startTime: "10:00", endTime: "15:00", isRecurring: true },
     ]
   };
 
@@ -162,7 +163,8 @@ const EditMentorProfile = () => {
   const [newAvailability, setNewAvailability] = useState<MentorAvailability>({
     day: "Monday",
     startTime: "09:00",
-    endTime: "10:00"
+    endTime: "10:00",
+    isRecurring: true
   });
 
   // Handle simple field changes
@@ -288,7 +290,7 @@ const EditMentorProfile = () => {
       ...prev,
       availability: [...prev.availability, { ...newAvailability }]
     }));
-    setNewAvailability({ day: "Monday", startTime: "09:00", endTime: "10:00" });
+    setNewAvailability({ day: "Monday", startTime: "09:00", endTime: "10:00", isRecurring: true });
   };
 
   const removeAvailability = (index: number) => {
@@ -868,8 +870,15 @@ const EditMentorProfile = () => {
                   {formData.availability.map((slot, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-md">
                       <div>
-                        <span className="font-medium">{slot.day}:</span>{" "}
-                        <span className="text-gray-600">{slot.startTime} - {slot.endTime}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{slot.day}:</span>{" "}
+                          <span className="text-gray-600">{slot.startTime} - {slot.endTime}</span>
+                          {slot.isRecurring && (
+                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-emerald-50 text-emerald-700">
+                              Weekly
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <button
                         type="button"
@@ -885,7 +894,7 @@ const EditMentorProfile = () => {
                 {/* Add new availability */}
                 <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
                   <h4 className="font-medium mb-4">Add Availability</h4>
-                  <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="grid grid-cols-3 gap-4 mb-2">
                     <div>
                       <label htmlFor="day" className="block text-sm text-gray-700 mb-1">
                         Day
@@ -932,6 +941,19 @@ const EditMentorProfile = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
                       />
                     </div>
+                  </div>
+                  <div className="flex items-center mb-4">
+                    <input
+                      id="isRecurring"
+                      name="isRecurring"
+                      type="checkbox"
+                      checked={newAvailability.isRecurring}
+                      onChange={(e) => setNewAvailability(prev => ({ ...prev, isRecurring: e.target.checked }))}
+                      className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="isRecurring" className="ml-2 block text-sm text-gray-700">
+                      Repeats weekly
+                    </label>
                   </div>
                   <button
                     type="button"

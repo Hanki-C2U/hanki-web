@@ -15,6 +15,9 @@ import {
   GraduationCap
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
+import { DayPicker } from "react-day-picker";
+import { format, isToday, isSameDay, parseISO } from "date-fns";
+import "react-day-picker/dist/style.css";
 
 // Define types for mentor profile data - matching EditMentorProfile
 interface Experience {
@@ -38,6 +41,7 @@ interface MentorAvailability {
   day: string;
   startTime: string;
   endTime: string;
+  isRecurring: boolean; // Whether this repeats weekly
 }
 
 interface MentorProfile {
@@ -70,10 +74,14 @@ interface Review {
 
 interface Session {
   id: number;
+  menteeId: number;
   mentee: string;
   topic: string;
-  time: string;
+  date: string; // ISO format date
+  startTime: string;
+  endTime: string;
   duration: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
 }
 
 interface Request {
@@ -86,7 +94,14 @@ interface Request {
 const MentorDashboard = () => {
   // Tabs for the profile view
   const [activeTab, setActiveTab] = useState<'bio' | 'reviews' | 'schedule'>('bio');
+  // State for the selected date in the calendar
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const navigate = useNavigate();
+
+  // Helper function to identify days that have sessions
+  const getDaysWithSessions = (sessions: Session[]) => {
+    return sessions.map(session => parseISO(session.date));
+  };
 
   // Default mentor data
   const defaultMentorData: MentorProfile = {
@@ -137,9 +152,9 @@ const MentorDashboard = () => {
     linkedIn: "https://linkedin.com/in/denyspavlenko",
     website: "https://denys-portfolio.dev",
     availability: [
-      { day: "Monday", startTime: "18:00", endTime: "21:00" },
-      { day: "Wednesday", startTime: "18:00", endTime: "21:00" },
-      { day: "Saturday", startTime: "10:00", endTime: "15:00" },
+      { day: "Monday", startTime: "18:00", endTime: "21:00", isRecurring: true },
+      { day: "Wednesday", startTime: "18:00", endTime: "21:00", isRecurring: true },
+      { day: "Saturday", startTime: "10:00", endTime: "15:00", isRecurring: true },
     ]
   };
 
@@ -179,17 +194,36 @@ const MentorDashboard = () => {
   const upcomingSessions: Session[] = [
     {
       id: 1,
+      menteeId: 101,
       mentee: "Alice Mukamana",
       topic: "Career Transition to Tech",
-      time: "Today, 2:00 PM",
-      duration: "1 hour"
+      date: "2025-09-06", // Today
+      startTime: "14:00",
+      endTime: "15:00",
+      duration: "1 hour",
+      status: 'scheduled'
     },
     {
       id: 2,
+      menteeId: 102,
       mentee: "David Nshuti",
       topic: "Startup Strategy Review",
-      time: "Tomorrow, 10:00 AM",
-      duration: "45 minutes"
+      date: "2025-09-07", // Tomorrow
+      startTime: "10:00",
+      endTime: "10:45",
+      duration: "45 minutes",
+      status: 'scheduled'
+    },
+    {
+      id: 3,
+      menteeId: 103,
+      mentee: "Maria Uwase",
+      topic: "Technical Interview Prep",
+      date: "2025-09-12", // Next Friday
+      startTime: "15:00",
+      endTime: "16:00",
+      duration: "1 hour",
+      status: 'scheduled'
     }
   ];
 
@@ -429,7 +463,15 @@ const MentorDashboard = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                         {mentorData.availability?.map((slot, index) => (
                           <div key={index} className="bg-gray-50 p-3 rounded-md text-sm">
-                            <span className="font-medium">{slot.day}:</span> {slot.startTime} - {slot.endTime}
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium">{slot.day}:</span>
+                              <span>{slot.startTime} - {slot.endTime}</span>
+                              {slot.isRecurring && (
+                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-emerald-50 text-emerald-700">
+                                  Weekly
+                                </span>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -467,31 +509,167 @@ const MentorDashboard = () => {
 
                 {activeTab === 'schedule' && (
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">Upcoming Sessions</h3>
+                    {/* Calendar and sessions section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
+                      {/* Calendar */}
+                      <div className="lg:col-span-3 border rounded-lg p-4">
+                        <div className="mb-4">
+                          <h3 className="text-lg font-semibold flex items-center gap-2">
+                            <Calendar className="h-5 w-5 text-emerald-600" />
+                            Calendar
+                          </h3>
+                          <p className="text-sm text-gray-500">Select a date to view sessions</p>
+                        </div>
 
-                    {upcomingSessions.length > 0 ? (
-                      <div className="space-y-4">
-                        {upcomingSessions.map((session) => (
-                          <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg">
-                            <div>
-                              <h4 className="font-medium">{session.mentee}</h4>
-                              <p className="text-sm text-gray-600">{session.topic}</p>
-                              <p className="text-xs text-gray-500">{session.time} • {session.duration}</p>
+                        {/* React Day Picker Calendar */}
+                        <div className="calendar-container">
+                          <style>
+                            {`
+                              .rdp {
+                                --rdp-cell-size: 40px;
+                                --rdp-accent-color: #10b981;
+                                --rdp-background-color: #e2f8f0;
+                                margin: 0;
+                              }
+                              .rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
+                                background-color: var(--rdp-accent-color);
+                                color: white;
+                              }
+                              .rdp-day_has_session:not(.rdp-day_selected) {
+                                border: 1px solid var(--rdp-accent-color);
+                                color: var(--rdp-accent-color);
+                              }
+                            `}
+                          </style>
+
+                          <DayPicker
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={(date) => setSelectedDate(date || new Date())}
+                            modifiersClassNames={{
+                              selected: 'rdp-day_selected',
+                              today: 'rdp-day_today',
+                              hasSession: 'rdp-day_has_session',
+                            }}
+                            modifiers={{
+                              hasSession: getDaysWithSessions(upcomingSessions),
+                            }}
+                            modifiersStyles={{
+                              hasSession: {
+                                fontWeight: 'bold',
+                              },
+                              today: {
+                                fontWeight: 'bold',
+                              }
+                            }}
+                          />
+
+                          <div className="mt-4 flex gap-4">
+                            <div className="flex items-center gap-1">
+                              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                              <span className="text-xs">Today</span>
                             </div>
-                            <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700">
-                              <Video className="h-4 w-4" />
-                              <span>Join</span>
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <div className="w-3 h-3 rounded-full border border-emerald-500"></div>
+                              <span className="text-xs">Has sessions</span>
+                            </div>
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <Calendar className="h-12 w-12 mx-auto text-gray-300 mb-3" />
-                        <p className="text-gray-500">No upcoming sessions</p>
-                      </div>
-                    )}
 
+                      {/* Selected day sessions */}
+                      <div className="lg:col-span-2 border rounded-lg p-4">
+                        <div className="mb-4">
+                          <h3 className="text-lg font-semibold">
+                            {isToday(selectedDate) ? "Today's Sessions" : "Selected Day Sessions"}
+                          </h3>
+                          <p className="text-sm text-gray-500">{format(selectedDate, 'MMMM d, yyyy')}</p>
+                        </div>
+
+                        <div className="space-y-3">
+                          {upcomingSessions
+                            .filter(session => isSameDay(parseISO(session.date), selectedDate))
+                            .map((session) => (
+                              <div key={session.id} className="border rounded-lg p-3">
+                                <div className="flex justify-between">
+                                  <span className="text-sm font-medium">{session.startTime} - {session.endTime}</span>
+                                  <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                                    {session.duration}
+                                  </span>
+                                </div>
+                                <h4 className="font-medium mt-1">{session.mentee}</h4>
+                                <p className="text-sm text-gray-600">{session.topic}</p>
+                                <button className="mt-2 inline-flex items-center text-xs text-emerald-600 hover:text-emerald-800">
+                                  <Video className="h-3.5 w-3.5 mr-1" />
+                                  Join Session
+                                </button>
+                              </div>
+                            ))}
+
+                          {upcomingSessions.filter(session => isSameDay(parseISO(session.date), selectedDate)).length === 0 && (
+                            <div className="text-center py-8 text-gray-500">
+                              <Clock className="h-10 w-10 mx-auto text-gray-300 mb-2" />
+                              <p>No sessions scheduled for this day</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Upcoming sessions */}
+                    <div className="mb-8">
+                      <h3 className="text-lg font-semibold mb-4">Upcoming Sessions</h3>
+
+                      {upcomingSessions.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {upcomingSessions
+                            .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime())
+                            .map((session) => {
+                              // Format date
+                              const sessionDate = parseISO(session.date);
+                              const formattedDate = format(sessionDate, 'EEE, MMM d');
+
+                              const isTodaySession = isToday(sessionDate);
+                              const isTomorrowSession = isSameDay(sessionDate, new Date(new Date().setDate(new Date().getDate() + 1)));
+                              const isSelectedDay = isSameDay(sessionDate, selectedDate);
+
+                              let displayDate = formattedDate;
+                              if (isTodaySession) displayDate = "Today";
+                              if (isTomorrowSession) displayDate = "Tomorrow";
+
+                              return (
+                                <div
+                                  key={session.id}
+                                  className={`flex items-center justify-between p-4 border rounded-lg ${isSelectedDay ? 'bg-emerald-50 border-emerald-300' : ''} cursor-pointer hover:bg-gray-50`}
+                                  onClick={() => {
+                                    setSelectedDate(sessionDate);
+                                    setActiveTab('schedule');
+                                  }}
+                                >
+                                  <div>
+                                    <h4 className="font-medium">{session.mentee}</h4>
+                                    <p className="text-sm text-gray-600">{session.topic}</p>
+                                    <p className="text-xs text-gray-500">
+                                      {displayDate}, {session.startTime} • {session.duration}
+                                    </p>
+                                  </div>
+                                  <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700">
+                                    <Video className="h-4 w-4" />
+                                    <span>Join</span>
+                                  </button>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <Calendar className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+                          <p className="text-gray-500">No upcoming sessions</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Pending requests */}
                     <div className="mt-8">
                       <h3 className="text-lg font-semibold mb-4">Pending Requests</h3>
 
