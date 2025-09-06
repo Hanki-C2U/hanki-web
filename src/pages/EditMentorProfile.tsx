@@ -45,8 +45,6 @@ interface MentorProfile {
   linkedIn?: string;
   website?: string;
   availability: MentorAvailability[];
-  mentorshipStyle: string;
-  sessionPreference: string;
 }
 
 const EditMentorProfile = () => {
@@ -104,9 +102,7 @@ const EditMentorProfile = () => {
       { day: "Monday", startTime: "18:00", endTime: "21:00" },
       { day: "Wednesday", startTime: "18:00", endTime: "21:00" },
       { day: "Saturday", startTime: "10:00", endTime: "15:00" },
-    ],
-    mentorshipStyle: "I believe in a practical, hands-on approach to mentoring. I focus on real-world applications and solving actual problems, rather than just theoretical discussions. I help mentees develop both technical skills and professional soft skills necessary for career advancement.",
-    sessionPreference: "Video calls with screen sharing for code reviews and collaborative problem solving"
+    ]
   };
 
   // Initialize form with existing mentor data from localStorage or default data
@@ -143,7 +139,7 @@ const EditMentorProfile = () => {
   });
 
   // UI state
-  const [activeSection, setActiveSection] = useState<'basic' | 'professional' | 'availability' | 'mentorship'>('basic');
+  const [activeSection, setActiveSection] = useState<'basic' | 'professional' | 'availability'>('basic');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
@@ -405,22 +401,12 @@ const EditMentorProfile = () => {
               <button
                 type="button"
                 onClick={() => setActiveSection('availability')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm mr-8 ${activeSection === 'availability'
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeSection === 'availability'
                   ? 'border-emerald-500 text-emerald-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
               >
                 Availability
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveSection('mentorship')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeSection === 'mentorship'
-                  ? 'border-emerald-500 text-emerald-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-              >
-                Mentorship Approach
               </button>
             </nav>
           </div>
@@ -960,65 +946,7 @@ const EditMentorProfile = () => {
             </div>
           )}
 
-          {/* Mentorship Approach Section */}
-          {activeSection === 'mentorship' && (
-            <div className="space-y-6">
-              {/* Mentorship Style */}
-              <div>
-                <label htmlFor="mentorshipStyle" className="block text-sm font-medium text-gray-700 mb-1">
-                  Your Mentorship Approach
-                </label>
-                <textarea
-                  id="mentorshipStyle"
-                  name="mentorshipStyle"
-                  rows={4}
-                  value={formData.mentorshipStyle}
-                  onChange={handleChange}
-                  placeholder="Describe your approach to mentoring..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  Describe your mentorship philosophy and how you help mentees achieve their goals.
-                </p>
-              </div>
 
-              {/* Session Preference */}
-              <div>
-                <label htmlFor="sessionPreference" className="block text-sm font-medium text-gray-700 mb-1">
-                  Preferred Session Format
-                </label>
-                <select
-                  id="sessionPreference"
-                  name="sessionPreference"
-                  value={formData.sessionPreference}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                >
-                  <option value="Video calls with screen sharing for code reviews and collaborative problem solving">
-                    Video calls with screen sharing
-                  </option>
-                  <option value="Audio calls supplemented with document sharing">
-                    Audio calls with document sharing
-                  </option>
-                  <option value="Chat-based mentoring with occasional calls">
-                    Chat-based mentoring with occasional calls
-                  </option>
-                  <option value="Project-based mentoring with code reviews">
-                    Project-based mentoring with code reviews
-                  </option>
-                  <option value="Career guidance discussions">
-                    Career guidance discussions
-                  </option>
-                  <option value="Flexible format based on mentee needs">
-                    Flexible format based on mentee needs
-                  </option>
-                </select>
-                <p className="mt-1 text-xs text-gray-500">
-                  How do you prefer to conduct your mentoring sessions?
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Form Actions */}
           <div className="mt-8 pt-5 border-t border-gray-200 flex justify-between">

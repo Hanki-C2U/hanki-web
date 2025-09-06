@@ -58,8 +58,6 @@ interface MentorProfile {
   linkedIn?: string;
   website?: string;
   availability: MentorAvailability[];
-  mentorshipStyle: string;
-  sessionPreference: string;
 }
 
 interface Review {
@@ -142,9 +140,7 @@ const MentorDashboard = () => {
       { day: "Monday", startTime: "18:00", endTime: "21:00" },
       { day: "Wednesday", startTime: "18:00", endTime: "21:00" },
       { day: "Saturday", startTime: "10:00", endTime: "15:00" },
-    ],
-    mentorshipStyle: "I believe in a practical, hands-on approach to mentoring. I focus on real-world applications and solving actual problems, rather than just theoretical discussions. I help mentees develop both technical skills and professional soft skills necessary for career advancement.",
-    sessionPreference: "Video calls with screen sharing for code reviews and collaborative problem solving"
+    ]
   };
 
   // State to hold mentor data, initially populated with default
@@ -422,17 +418,7 @@ const MentorDashboard = () => {
                       </div>
                     </section>
 
-                    {/* Mentorship Approach */}
-                    <section>
-                      <h3 className="text-lg font-semibold mb-3 flex items-center">
-                        <Users className="h-5 w-5 mr-2 text-emerald-600" />
-                        Mentorship Approach
-                      </h3>
-                      <p className="text-gray-700 mb-2">{mentorData.mentorshipStyle}</p>
-                      <p className="text-sm text-gray-600">
-                        <span className="font-medium">Preferred session format:</span> {mentorData.sessionPreference}
-                      </p>
-                    </section>
+
 
                     {/* Availability */}
                     <section>
