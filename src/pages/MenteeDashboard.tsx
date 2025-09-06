@@ -7,13 +7,15 @@ import {
   TrendingUp,
   Video,
   Star,
-  Target
+  Target,
+  Lightbulb,
+  CheckCircle
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
 
 const MenteeDashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'profile' | 'goals' | 'skills'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'goals' | 'skills' | 'inspiration'>('profile');
 
   // Mock mentee data
   const menteeData = {
@@ -102,6 +104,67 @@ const MenteeDashboard = () => {
       location: "Bucharest, Romania",
       sessions: 24,
       image: null
+    }
+  ];
+
+  // Success stories for Inspiration tab
+  const successStories = [
+    {
+      id: 1,
+      mentee: {
+        name: "Jean Claude Mutoni",
+        role: "Software Developer",
+        location: "Kigali, Rwanda",
+        image: null
+      },
+      mentor: {
+        name: "Dr. Emmanuel Ntagungira",
+        role: "CTO",
+        location: "Berlin, Germany",
+        image: null
+      },
+      story: "As a self-taught developer in Kigali, I struggled to find opportunities in the global tech market. Through Skills Connect, I was matched with Dr. Emmanuel, a Rwandan tech leader now working in Europe. His guidance helped me improve my coding practices and understand international tech standards. After 6 months of mentorship, I secured a remote position with a European startup, doubling my income while staying in Rwanda.",
+      outcomes: ["Secured remote job with European company", "Improved coding standards", "Built international network"],
+      industry: "Technology",
+      featured: true
+    },
+    {
+      id: 2,
+      mentee: {
+        name: "Alice Ishimwe",
+        role: "Digital Marketing Specialist",
+        location: "Huye, Rwanda",
+        image: null
+      },
+      mentor: {
+        name: "Marie Claire Uwimana",
+        role: "Marketing Director",
+        location: "Toronto, Canada",
+        image: null
+      },
+      story: "Living in Huye, my marketing knowledge was limited to local businesses. Marie Claire, who grew up nearby but built her career in North America, helped me understand global digital marketing strategies. She guided me through international certifications and helped me build an online portfolio. I now manage campaigns for clients across East Africa and have started training other young marketers in my community.",
+      outcomes: ["Expanded client base across East Africa", "Completed international certifications", "Started local training program"],
+      industry: "Marketing",
+      featured: true
+    },
+    {
+      id: 3,
+      mentee: {
+        name: "Eric Mugabo",
+        role: "Agricultural Entrepreneur",
+        location: "Musanze, Rwanda",
+        image: null
+      },
+      mentor: {
+        name: "James Karemera",
+        role: "Agricultural Tech Consultant",
+        location: "Amsterdam, Netherlands",
+        image: null
+      },
+      story: "My family has farmed the same way for generations in northern Rwanda. Through Skills Connect, I met James who introduced me to agricultural technologies being used across Europe that could work in Rwanda's climate. With his guidance, I implemented data-driven farming methods and secured funding to expand. Our crop yield has increased by 40%, and we now export organic produce to three countries.",
+      outcomes: ["Increased crop yield by 40%", "Secured international export partnerships", "Implemented sustainable farming methods"],
+      industry: "Agriculture",
+      featured: false
     }
   ];
 
@@ -343,6 +406,15 @@ const MenteeDashboard = () => {
                   >
                     Skills
                   </button>
+                  <button
+                    onClick={() => setActiveTab('inspiration')}
+                    className={`px-4 py-4 text-sm font-medium border-b-2 ${activeTab === 'inspiration'
+                      ? 'border-emerald-500 text-emerald-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                  >
+                    Inspiration
+                  </button>
                 </nav>
               </div>
 
@@ -485,6 +557,56 @@ const MenteeDashboard = () => {
                     </div>
                   </div>
                 )}
+
+                {activeTab === 'inspiration' && (
+                  <div className="py-4">
+                    <h3 className="text-xl font-semibold mb-6 text-gray-800 flex items-center">
+                      <Lightbulb className="h-5 w-5 mr-2" />
+                      Success Stories
+                    </h3>
+                    <p className="text-gray-600 mb-6">Read inspiring stories from mentees who have achieved their goals with the help of their mentors.</p>
+
+                    <div className="grid grid-cols-1 gap-6">
+                      {successStories.map((story) => (
+                        <div key={story.id} className={`bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow ${story.featured ? 'border-blue-300' : ''}`}>
+                          <div className="p-5">
+                            {story.featured && (
+                              <div className="inline-block bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-medium mb-3">
+                                Featured Story
+                              </div>
+                            )}
+                            <div className="flex flex-col md:flex-row md:items-start gap-4 mb-4">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-lg mb-2">{story.mentee.name}</h4>
+                                <p className="text-sm text-gray-600">{story.mentee.role} • {story.mentee.location}</p>
+                                <div className="mt-2 text-sm text-gray-500">Mentored by <span className="font-medium">{story.mentor.name}</span>, {story.mentor.role} in {story.mentor.location}</div>
+                              </div>
+                              <div className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 self-start">
+                                {story.industry}
+                              </div>
+                            </div>
+
+                            <div className="text-gray-700 mt-3 mb-4">
+                              "{story.story}"
+                            </div>
+
+                            <div className="mt-4">
+                              <h5 className="text-sm font-medium text-gray-700 mb-2">Key Outcomes:</h5>
+                              <div className="flex flex-wrap gap-2">
+                                {story.outcomes.map((outcome, index) => (
+                                  <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    {outcome}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -525,9 +647,18 @@ const MenteeDashboard = () => {
           </div>
         </div>
 
-        {/* Similar Industry Mentees */}
+        {/* Connect with Peers Section */}
         <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Featured Mentees in Similar Industries</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold">Connect with Peers in Your Field</h3>
+            <button
+              onClick={() => navigate('/discover-mentees')}
+              className="text-sm px-3 py-1.5 text-emerald-600 border border-emerald-600 rounded-md hover:bg-emerald-50"
+            >
+              View More
+            </button>
+          </div>
+          <p className="text-gray-600 mb-4">Mentees with similar skills and learning goals</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredMentees.map(mentee => (
               <div key={mentee.id} className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
@@ -549,7 +680,7 @@ const MenteeDashboard = () => {
                   <p className="text-sm text-gray-600">{mentee.role}</p>
                   <p className="text-xs text-gray-500">{mentee.company}</p>
 
-                  <div className="flex flex-wrap justify-center gap-1 mt-3">
+                  <div className="flex flex-wrap justify-center gap-1 mt-3 mb-3">
                     {mentee.skills.slice(0, 2).map((skill, i) => (
                       <span key={i} className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">
                         {skill}
@@ -561,6 +692,13 @@ const MenteeDashboard = () => {
                       </span>
                     )}
                   </div>
+
+                  <button
+                    className="text-xs w-full mt-1 px-3 py-1.5 border border-emerald-500 text-emerald-600 rounded-md hover:bg-emerald-50"
+                    onClick={() => navigate(`/mentee/${mentee.id}`)}
+                  >
+                    Message
+                  </button>
                 </div>
               </div>
             ))}
