@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import {
   TrendingUp,
@@ -19,6 +19,17 @@ import { SkillDetailDialog } from "../components/SkillDetailDialog";
 
 const ProgressTracking = () => {
   const [activeTab, setActiveTab] = useState("goals");
+
+  // Check for tab parameter in URL and set active tab accordingly
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+
+    if (tabParam && ['goals', 'skills', 'badges', 'sessions'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, []);
+
   const [goals, setGoals] = useState([
     {
       id: 1,

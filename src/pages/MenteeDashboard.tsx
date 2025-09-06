@@ -202,7 +202,7 @@ const MenteeDashboard = () => {
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm font-medium text-gray-700">Skills</h3>
                     <button
-                      onClick={() => navigate('/progress')}
+                      onClick={() => navigate('/progress?tab=skills')}
                       className="text-xs text-emerald-600 hover:underline cursor-pointer"
                     >
                       View All
@@ -222,7 +222,7 @@ const MenteeDashboard = () => {
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm font-medium text-gray-700">Goals</h3>
                     <button
-                      onClick={() => navigate('/progress')}
+                      onClick={() => navigate('/progress?tab=goals')}
                       className="text-xs text-emerald-600 hover:underline cursor-pointer"
                     >
                       Manage Goals
@@ -236,23 +236,33 @@ const MenteeDashboard = () => {
                 </div>
 
                 {/* Achievement Badges */}
-                <h3 className="text-sm font-medium text-gray-600 mt-4">Achievement Badges</h3>
-                <div className="flex flex-wrap justify-center gap-4 mt-2">
-                  {menteeData.achievementBadges.filter(badge => badge.earned).map((badge) => (
-                    <div
-                      key={badge.id}
-                      className="relative group cursor-pointer"
-                      onMouseEnter={() => setHoveredBadge(badge.id)}
-                      onMouseLeave={() => setHoveredBadge(null)}
+                <div className="w-full mt-4 border-t border-gray-100 pt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-gray-700">Achievement Badges</h3>
+                    <button
+                      onClick={() => navigate('/progress?tab=badges')}
+                      className="text-xs text-emerald-600 hover:underline cursor-pointer"
                     >
-                      <div className="w-10 h-10 flex items-center justify-center text-2xl bg-gradient-to-br from-orange-50 to-blue-50 rounded-lg border border-gray-200 shadow-sm">
-                        {badge.icon}
+                      View All
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-4 mt-2">
+                    {menteeData.achievementBadges.filter(badge => badge.earned).map((badge) => (
+                      <div
+                        key={badge.id}
+                        className="relative group cursor-pointer"
+                        onMouseEnter={() => setHoveredBadge(badge.id)}
+                        onMouseLeave={() => setHoveredBadge(null)}
+                      >
+                        <div className="w-10 h-10 flex items-center justify-center text-2xl bg-gradient-to-br from-orange-50 to-blue-50 rounded-lg border border-gray-200 shadow-sm">
+                          {badge.icon}
+                        </div>
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-32 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none text-center">
+                          {badge.name}
+                        </div>
                       </div>
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-32 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none text-center">
-                        {badge.name}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -404,8 +414,10 @@ const MenteeDashboard = () => {
                   <div>
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold">My Learning Goals</h3>
-                      <button className="text-sm px-3 py-1.5 text-emerald-600 border border-emerald-600 rounded-md hover:bg-emerald-50">
-                        Add Goal
+                      <button
+                        onClick={() => navigate('/progress?tab=goals')}
+                        className="text-sm px-3 py-1.5 text-emerald-600 border border-emerald-600 rounded-md hover:bg-emerald-50">
+                        Manage Goals
                       </button>
                     </div>
 
@@ -422,8 +434,10 @@ const MenteeDashboard = () => {
                   <div>
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold">My Skills</h3>
-                      <button className="text-sm px-3 py-1.5 text-emerald-600 border border-emerald-600 rounded-md hover:bg-emerald-50">
-                        Add Skill
+                      <button
+                        onClick={() => navigate('/progress?tab=skills')}
+                        className="text-sm px-3 py-1.5 text-emerald-600 border border-emerald-600 rounded-md hover:bg-emerald-50">
+                        Manage Skills
                       </button>
                     </div>
 
