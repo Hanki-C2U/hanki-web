@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Save, X, Plus, Trash2, Camera } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
+import TimezoneDropdown from "../components/ui/TimezoneDropdown";
 
 // Define types for mentor profile data
 interface Experience {
@@ -96,7 +97,7 @@ const EditMentorProfile = () => {
       ],
     },
     location: "Berlin, Germany",
-    timezone: "Europe/Berlin",
+    timezone: "GMT+01:00",
     linkedIn: "https://linkedin.com/in/denyspavlenko",
     website: "https://denys-portfolio.dev",
     availability: [
@@ -531,18 +532,17 @@ const EditMentorProfile = () => {
                   <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 mb-1">
                     Timezone*
                   </label>
-                  <input
-                    id="timezone"
-                    name="timezone"
-                    type="text"
-                    required
-                    placeholder="e.g., GMT+2, Europe/Berlin, EST"
+                  <TimezoneDropdown
                     value={formData.timezone}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                    onChange={(value) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        timezone: value
+                      }));
+                    }}
                   />
                   <p className="mt-1 text-xs text-gray-500">
-                    Enter your timezone in any format (e.g., GMT+2, Europe/Berlin, EST)
+                    Select your timezone for accurate meeting scheduling
                   </p>
                 </div>
               </div>

@@ -12,12 +12,15 @@ import {
   MessageSquare,
   Edit,
   Briefcase,
-  GraduationCap
+  GraduationCap,
+  MapPin,
+  Clock3
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
 import { DayPicker } from "react-day-picker";
 import { format, isToday, isSameDay, parseISO } from "date-fns";
 import "react-day-picker/dist/style.css";
+import { getCurrentTimeInTimezone, getTimezoneOffset } from "../utils/timezones";
 
 // Define types for mentor profile data - matching EditMentorProfile
 interface Experience {
@@ -96,7 +99,11 @@ const MentorDashboard = () => {
   const [activeTab, setActiveTab] = useState<'bio' | 'reviews' | 'schedule'>('bio');
   // State for the selected date in the calendar
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  // State to track current time for display
+  const [currentTime, setCurrentTime] = useState<string>(format(new Date(), 'h:mm a'));
   const navigate = useNavigate();
+
+  // We'll update this after mentorData is defined
 
   // Helper function to identify days that have sessions
   const getDaysWithSessions = (sessions: Session[]) => {
@@ -148,7 +155,7 @@ const MentorDashboard = () => {
       ]
     },
     location: "Berlin, Germany",
-    timezone: "Europe/Berlin",
+    timezone: "GMT+01:00",
     linkedIn: "https://linkedin.com/in/denyspavlenko",
     website: "https://denys-portfolio.dev",
     availability: [
@@ -173,6 +180,22 @@ const MentorDashboard = () => {
       }
     }
   }, []);
+
+  // Update the current time every minute
+  useEffect(() => {
+    // Helper function to update the time
+    const updateTime = () => {
+      // Use the timezone utility to get correct time in the mentor's timezone
+      setCurrentTime(getCurrentTimeInTimezone(mentorData.timezone));
+    };
+
+    // Set the current time immediately
+    updateTime();
+
+    const timer = setInterval(updateTime, 60000); // Update every minute
+
+    return () => clearInterval(timer);
+  }, [mentorData.timezone]);
 
   const reviews: Review[] = [
     {
@@ -277,6 +300,7 @@ const MentorDashboard = () => {
                 <h1 className="text-2xl font-bold">{mentorData.firstName} {mentorData.lastName}</h1>
                 <p className="text-gray-600">{mentorData.role} at {mentorData.organization}</p>
 
+
                 <div className="flex flex-wrap justify-center gap-1 mt-3">
                   {mentorData.languages.map((language, index) => (
                     <span
@@ -288,27 +312,41 @@ const MentorDashboard = () => {
                   ))}
                 </div>
 
-                <div className="flex justify-center mt-4 space-x-3">
-                  {mentorData.linkedIn && (
-                    <a
-                      href={mentorData.linkedIn}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-600 hover:text-blue-600"
-                    >
-                      <Linkedin className="h-5 w-5" />
-                    </a>
-                  )}
-                  {mentorData.website && (
-                    <a
-                      href={mentorData.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-600 hover:text-emerald-600"
-                    >
-                      <Globe className="h-5 w-5" />
-                    </a>
-                  )}
+                {/* Location and Timezone - GitHub Style */}
+                <div className="mt-3 flex flex-col gap-1.5 items-center">
+                  <div className="flex items-center gap-1.5 text-gray-600">
+                    <MapPin className="h-4 w-4" />
+                    <span className="text-sm">{mentorData.location}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-gray-600">
+                    <Clock3 className="h-4 w-4" />
+                    <span className="text-sm">{currentTime} {getTimezoneOffset(mentorData.timezone)}</span>
+                  </div>
+                </div>
+
+                <div className="w-full mt-4 pt-4 border-t border-gray-100">
+                  <div className="flex justify-center space-x-3">
+                    {mentorData.linkedIn && (
+                      <a
+                        href={mentorData.linkedIn}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 hover:text-blue-600"
+                      >
+                        <Linkedin className="h-5 w-5" />
+                      </a>
+                    )}
+                    {mentorData.website && (
+                      <a
+                        href={mentorData.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 hover:text-emerald-600"
+                      >
+                        <Globe className="h-5 w-5" />
+                      </a>
+                    )}
+                  </div>
                 </div>
 
                 <button
@@ -396,9 +434,6 @@ const MentorDashboard = () => {
                     <section>
                       <h3 className="text-lg font-semibold mb-3">About Me</h3>
                       <p className="text-gray-700">{mentorData.bio}</p>
-                      <div className="mt-2 flex items-center text-sm text-gray-500">
-                        <span className="mr-2">Location:</span> {mentorData.location} ({mentorData.timezone})
-                      </div>
                     </section>
 
                     {/* Expertise Areas */}
