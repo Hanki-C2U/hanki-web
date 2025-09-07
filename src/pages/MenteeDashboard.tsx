@@ -17,6 +17,8 @@ const MenteeDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'profile' | 'goals' | 'skills' | 'inspiration'>('profile');
 
+  // Default mentee data follows
+
   // Default mentee data - wrapped in useMemo to prevent recreating on each render
   const defaultMenteeData = useMemo(() => ({
     id: 1,
@@ -233,10 +235,8 @@ const MenteeDashboard = () => {
               <BookOpen className="h-4 w-4 text-emerald-500" />
             </div>
             <span className="text-xs font-medium">Resources</span>
-            <span className="text-[10px] text-gray-500 sr-only">Career tools</span>
-          </button>
-
-          <button
+            <span className="text-[10px] text-gray-500">& Opportunities</span>
+          </button>          <button
             onClick={() => navigate('/progress')}
             className="flex flex-col items-center justify-center gap-1 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
           >
@@ -392,8 +392,8 @@ const MenteeDashboard = () => {
                   <BookOpen className="h-5 w-5 text-emerald-500" />
                 </div>
                 <div className="text-left">
-                  <div className="text-sm font-medium">Resources</div>
-                  <div className="text-xs text-gray-500">Career tools</div>
+                  <div className="text-sm font-medium">Resources & Opportunities</div>
+                  <div className="text-xs text-gray-500">Career tools and job listings</div>
                 </div>
               </button>
 

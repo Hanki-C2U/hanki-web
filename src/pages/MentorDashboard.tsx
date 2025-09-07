@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import { v4 as uuidv4 } from 'uuid';
 import {
   Calendar,
   Users,
@@ -17,6 +18,8 @@ import {
   Clock3
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
+import OpportunityList from "../components/OpportunityList";
+import type { Opportunity } from "../components/OpportunityCard";
 import { DayPicker } from "react-day-picker";
 import { format, isToday, isSameDay, parseISO } from "date-fns";
 import "react-day-picker/dist/style.css";
@@ -96,7 +99,7 @@ interface Request {
 
 const MentorDashboard = () => {
   // Tabs for the profile view
-  const [activeTab, setActiveTab] = useState<'bio' | 'reviews' | 'schedule'>('bio');
+  const [activeTab, setActiveTab] = useState<'bio' | 'reviews' | 'schedule' | 'opportunities'>('bio');
   // State for the selected date in the calendar
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   // State to track current time for display
@@ -108,6 +111,72 @@ const MentorDashboard = () => {
   // Helper function to identify days that have sessions
   const getDaysWithSessions = (sessions: Session[]) => {
     return sessions.map(session => parseISO(session.date));
+  };
+
+  // Sample opportunities data
+  const initialOpportunities: Opportunity[] = [
+    {
+      id: "1",
+      title: "Frontend Developer Position",
+      organization: "Tech Rwanda Ltd",
+      type: "job",
+      location: "Kigali, Rwanda",
+      deadline: "2025-10-15",
+      link: "https://example.com/job",
+      description: "Exciting opportunity for a frontend developer with React experience to join our growing team in Kigali."
+    },
+    {
+      id: "2",
+      title: "Web Development Bootcamp Scholarship",
+      organization: "Code Academy Rwanda",
+      type: "education",
+      location: "Remote",
+      deadline: "2025-09-30",
+      link: "https://example.com/bootcamp",
+      description: "12-week intensive bootcamp covering full-stack web development. Scholarships available for promising students."
+    },
+    {
+      id: "3",
+      title: "Junior Backend Developer",
+      organization: "Fintech Startup",
+      type: "job",
+      location: "Hybrid - Kigali, Rwanda",
+      deadline: "2025-10-20",
+      link: "https://example.com/backend-job",
+      description: "Looking for a skilled backend developer with Node.js experience to help scale our financial services platform."
+    }
+  ];
+
+  // State to store opportunities
+  const [opportunities, setOpportunities] = useState<Opportunity[]>(initialOpportunities);
+
+  // Load opportunities from localStorage
+  useEffect(() => {
+    const storedOpportunities = localStorage.getItem('mentorOpportunities');
+    if (storedOpportunities) {
+      try {
+        setOpportunities(JSON.parse(storedOpportunities));
+      } catch (error) {
+        console.error("Failed to parse opportunities from localStorage:", error);
+      }
+    }
+  }, []);
+
+  // Save opportunities to localStorage when they change
+  useEffect(() => {
+    // Save to both mentorOpportunities and opportunities (shared with mentees)
+    localStorage.setItem('mentorOpportunities', JSON.stringify(opportunities));
+    localStorage.setItem('opportunities', JSON.stringify(opportunities));
+  }, [opportunities]);
+
+  // Function to handle adding new opportunities
+  const handleAddOpportunity = (newOpportunity: Omit<Opportunity, 'id'>) => {
+    const opportunityWithId: Opportunity = {
+      ...newOpportunity,
+      id: uuidv4()
+    };
+
+    setOpportunities(prev => [opportunityWithId, ...prev]);
   };
 
   // Default mentor data
@@ -424,6 +493,15 @@ const MentorDashboard = () => {
                   >
                     Schedule
                   </button>
+                  <button
+                    onClick={() => setActiveTab('opportunities')}
+                    className={`px-4 py-4 text-sm font-medium border-b-2 ${activeTab === 'opportunities'
+                      ? 'border-emerald-500 text-emerald-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                  >
+                    Opportunities
+                  </button>
                 </nav>
               </div>
 
@@ -539,6 +617,15 @@ const MentorDashboard = () => {
                         <p className="text-gray-500">No reviews yet</p>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {activeTab === 'opportunities' && (
+                  <div>
+                    <OpportunityList
+                      opportunities={opportunities}
+                      onAddOpportunity={handleAddOpportunity}
+                    />
                   </div>
                 )}
 
