@@ -285,13 +285,56 @@ const EditMentorProfile = () => {
     }));
   };
 
+  // Helper function to check if two time ranges overlap
+  const doTimeSlotsOverlap = (
+    day1: string,
+    start1: string,
+    end1: string,
+    day2: string,
+    start2: string,
+    end2: string
+  ) => {
+    // Different days don't overlap
+    if (day1 !== day2) return false;
+
+    // Check for overlap - if one slot starts after another ends, they don't overlap
+    return !(end1 <= start2 || end2 <= start1);
+  };
+
   // Availability
   const addAvailability = () => {
-    setFormData((prev: MentorProfile) => ({
-      ...prev,
-      availability: [...prev.availability, { ...newAvailability }]
-    }));
-    setNewAvailability({ day: "Monday", startTime: "09:00", endTime: "10:00", isRecurring: true });
+    // Check for exact duplicate availability slots
+    const isExactDuplicate = formData.availability.some(
+      slot =>
+        slot.day === newAvailability.day &&
+        slot.startTime === newAvailability.startTime &&
+        slot.endTime === newAvailability.endTime
+    );
+
+    // Check for overlapping slots on the same day
+    const hasOverlap = formData.availability.some(
+      slot => doTimeSlotsOverlap(
+        slot.day,
+        slot.startTime,
+        slot.endTime,
+        newAvailability.day,
+        newAvailability.startTime,
+        newAvailability.endTime
+      )
+    );
+
+    // Add only if no duplicates or overlaps
+    if (isExactDuplicate) {
+      alert("This exact time slot already exists. Please choose different times or a different day.");
+    } else if (hasOverlap) {
+      alert("This time slot overlaps with an existing slot on the same day. Please choose non-overlapping times.");
+    } else {
+      setFormData((prev: MentorProfile) => ({
+        ...prev,
+        availability: [...prev.availability, { ...newAvailability }]
+      }));
+      setNewAvailability({ day: "Monday", startTime: "09:00", endTime: "10:00", isRecurring: true });
+    }
   };
 
   const removeAvailability = (index: number) => {
@@ -303,10 +346,27 @@ const EditMentorProfile = () => {
 
   const handleAvailabilityChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setNewAvailability((prev) => ({
-      ...prev,
+
+    // Create updated availability state
+    const updatedAvailability = {
+      ...newAvailability,
       [name]: value
-    }));
+    };
+
+    // If changing start or end time, validate them
+    if (name === 'startTime' || name === 'endTime') {
+      const startTime = name === 'startTime' ? value : newAvailability.startTime;
+      const endTime = name === 'endTime' ? value : newAvailability.endTime;
+
+      // Check if end time is after start time
+      if (startTime >= endTime) {
+        alert("End time must be after start time.");
+        return; // Don't update state if times are invalid
+      }
+    }
+
+    // Update state with valid changes
+    setNewAvailability(updatedAvailability);
   };
 
   // Handle image upload
