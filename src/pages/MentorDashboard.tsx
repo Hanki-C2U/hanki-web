@@ -527,17 +527,29 @@ const MentorDashboard = () => {
                             {`
                               .rdp {
                                 --rdp-cell-size: 40px;
-                                --rdp-accent-color: #10b981;
-                                --rdp-background-color: #e2f8f0;
                                 margin: 0;
                               }
                               .rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
-                                background-color: var(--rdp-accent-color);
-                                color: white;
+                                background-color: #10b981 !important; /* emerald-500 */
+                                color: white !important;
+                              }
+                              .rdp-day_today:not(.rdp-day_selected) {
+                                font-weight: bold;
+                                color: #10b981;
                               }
                               .rdp-day_has_session:not(.rdp-day_selected) {
-                                border: 1px solid var(--rdp-accent-color);
-                                color: var(--rdp-accent-color);
+                                border: 1px solid #10b981 !important;
+                                color: #10b981 !important;
+                              }
+                              .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+                                background-color: #e2f8f0 !important;
+                              }
+                              .rdp-chevron {
+                                fill: #10b981;
+                              }
+                              .rdp-caption_label {
+                                color: #238b69;
+                                font-size: 1rem;
                               }
                             `}
                           </style>
@@ -557,20 +569,22 @@ const MentorDashboard = () => {
                             modifiersStyles={{
                               hasSession: {
                                 fontWeight: 'bold',
+                                color: '#10b981',
                               },
                               today: {
                                 fontWeight: 'bold',
+                                color: '#10b981',
                               }
                             }}
                           />
 
                           <div className="mt-4 flex gap-4">
                             <div className="flex items-center gap-1">
-                              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                              <div className="w-3 h-3 bg-emerald-500"></div>
                               <span className="text-xs">Today</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <div className="w-3 h-3 rounded-full border border-emerald-500"></div>
+                              <div className="w-3 h-3 border border-emerald-500"></div>
                               <span className="text-xs">Has sessions</span>
                             </div>
                           </div>
