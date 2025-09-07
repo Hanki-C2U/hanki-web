@@ -223,7 +223,7 @@ const ResourceLibrary = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-subtle border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -259,7 +259,7 @@ const ResourceLibrary = () => {
               placeholder="Search resources..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
           </div>
         </div>
@@ -275,8 +275,8 @@ const ResourceLibrary = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === tab.id
-                      ? 'bg-orange-500 text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-emerald-500 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -316,7 +316,7 @@ const ResourceLibrary = () => {
                         ))}
                       </div>
 
-                      <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+                      <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-emerald-500 text-white hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors">
                         <FileText className="h-4 w-4" />
                         Read Article
                       </button>
@@ -357,7 +357,7 @@ const ResourceLibrary = () => {
                         ))}
                       </div>
 
-                      <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+                      <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-emerald-500 text-white hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors">
                         <Download className="h-4 w-4" />
                         Download Template
                       </button>
@@ -401,7 +401,7 @@ const ResourceLibrary = () => {
                         ))}
                       </div>
 
-                      <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+                      <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-emerald-500 text-white hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors">
                         <Video className="h-4 w-4" />
                         Watch Video
                       </button>
@@ -444,7 +444,7 @@ const ResourceLibrary = () => {
                         ))}
                       </div>
 
-                      <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+                      <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-emerald-500 text-white hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors">
                         <ExternalLink className="h-4 w-4" />
                         Use Tool
                       </button>
@@ -466,8 +466,8 @@ const ResourceLibrary = () => {
                 <div className="flex gap-2">
                   <button
                     className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${!searchTerm || searchTerm.includes('job')
-                        ? 'bg-blue-100 border-blue-300 text-blue-800'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                      ? 'bg-blue-100 border-blue-300 text-blue-800'
+                      : 'border-gray-300 text-gray-700 hover:bg-gray-100'
                       }`}
                     onClick={() => setSearchTerm('job')}
                   >
@@ -478,8 +478,8 @@ const ResourceLibrary = () => {
                   </button>
                   <button
                     className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${searchTerm && searchTerm.includes('education')
-                        ? 'bg-emerald-100 border-emerald-300 text-emerald-800'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                      ? 'bg-emerald-100 border-emerald-300 text-emerald-800'
+                      : 'border-gray-300 text-gray-700 hover:bg-gray-100'
                       }`}
                     onClick={() => setSearchTerm('education')}
                   >

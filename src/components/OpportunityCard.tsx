@@ -1,15 +1,14 @@
 import React from 'react';
-import { Calendar, Briefcase, GraduationCap, Clock, MapPin, ArrowUpRight } from 'lucide-react';
+import { Briefcase, GraduationCap } from 'lucide-react';
 
 export interface Opportunity {
   id: string;
   title: string;
   organization: string;
   type: 'job' | 'education';
-  location: string;
-  deadline?: string;
   link?: string;
   description: string;
+  postedBy?: string;
 }
 
 interface OpportunityCardProps {
@@ -18,47 +17,45 @@ interface OpportunityCardProps {
 
 const OpportunityCard: React.FC<OpportunityCardProps> = ({ opportunity }) => {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="font-medium text-gray-900">{opportunity.title}</h3>
-          <p className="text-sm text-gray-600">{opportunity.organization}</p>
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200">
+      <div className="p-6">
+        <div className="mb-2">
+          <div className="flex justify-between items-start">
+            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border-transparent ${opportunity.type === 'job'
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-blue-100 text-blue-700'
+              }`}>
+              {opportunity.type === 'job' ? 'Job Opportunity' : 'Educational Program'}
+            </span>
+            <div className="flex-shrink-0">
+              {opportunity.type === 'job' ? (
+                <Briefcase className="h-5 w-5 text-emerald-600" />
+              ) : (
+                <GraduationCap className="h-5 w-5 text-blue-600" />
+              )}
+            </div>
+          </div>
         </div>
-        <div className="flex items-center justify-center rounded-full w-8 h-8 bg-emerald-50 text-emerald-600">
-          {opportunity.type === 'job' ? (
-            <Briefcase className="h-4 w-4" />
-          ) : (
-            <GraduationCap className="h-4 w-4" />
+
+        <h3 className="text-lg font-semibold text-gray-900">{opportunity.title}</h3>
+        <p className="text-sm text-gray-600 mt-1">{opportunity.description}</p>
+      </div>
+
+      <div className="p-6 pt-0">
+        <div className="space-y-4">
+          <p className="text-sm text-blue-600 font-medium">{opportunity.organization}</p>
+
+          {opportunity.postedBy && (
+            <p className="text-xs text-gray-500">Posted by {opportunity.postedBy}</p>
+          )}
+
+          {opportunity.link && (
+            <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors">
+              {opportunity.type === 'job' ? 'Apply Now' : 'Learn More'}
+            </button>
           )}
         </div>
       </div>
-
-      <div className="mt-2 space-y-1">
-        <div className="flex items-center text-xs text-gray-500">
-          <MapPin className="h-3.5 w-3.5 mr-1" />
-          <span>{opportunity.location}</span>
-        </div>
-
-        {opportunity.deadline && (
-          <div className="flex items-center text-xs text-gray-500">
-            <Clock className="h-3.5 w-3.5 mr-1" />
-            <span>Deadline: {opportunity.deadline}</span>
-          </div>
-        )}
-      </div>
-
-      <p className="mt-3 text-sm text-gray-700 line-clamp-2">{opportunity.description}</p>
-
-      {opportunity.link && (
-        <a
-          href={opportunity.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center text-xs font-medium text-emerald-600 hover:text-emerald-800"
-        >
-          View details <ArrowUpRight className="ml-1 h-3 w-3" />
-        </a>
-      )}
     </div>
   );
 };

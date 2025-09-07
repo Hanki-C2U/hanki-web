@@ -6,19 +6,19 @@ interface AddOpportunityModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (opportunity: Omit<Opportunity, 'id'>) => void;
+  mentorName?: string;
 }
 
 const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
   isOpen,
   onClose,
   onAdd,
+  mentorName = '',
 }) => {
   const [opportunityType, setOpportunityType] = useState<'job' | 'education'>('job');
-  const [formData, setFormData] = useState<Omit<Opportunity, 'id' | 'type'>>({
+  const [formData, setFormData] = useState<Omit<Opportunity, 'id' | 'type' | 'postedBy'>>({
     title: '',
     organization: '',
-    location: '',
-    deadline: '',
     link: '',
     description: '',
   });
@@ -37,14 +37,13 @@ const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
     onAdd({
       ...formData,
       type: opportunityType,
+      postedBy: mentorName,
     });
 
     // Reset form
     setFormData({
       title: '',
       organization: '',
-      location: '',
-      deadline: '',
       link: '',
       description: '',
     });
@@ -78,8 +77,8 @@ const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
                 type="button"
                 onClick={() => setOpportunityType('job')}
                 className={`flex items-center justify-center gap-2 py-2 px-4 rounded-md ${opportunityType === 'job'
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                    : 'bg-gray-50 text-gray-500 border border-gray-200'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'bg-gray-50 text-gray-500 border border-gray-200'
                   }`}
               >
                 <Briefcase className="h-4 w-4" />
@@ -89,8 +88,8 @@ const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
                 type="button"
                 onClick={() => setOpportunityType('education')}
                 className={`flex items-center justify-center gap-2 py-2 px-4 rounded-md ${opportunityType === 'education'
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                    : 'bg-gray-50 text-gray-500 border border-gray-200'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'bg-gray-50 text-gray-500 border border-gray-200'
                   }`}
               >
                 <GraduationCap className="h-4 w-4" />
@@ -135,38 +134,6 @@ const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
               />
             </div>
 
-            {/* Location */}
-            <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-                Location*
-              </label>
-              <input
-                id="location"
-                name="location"
-                type="text"
-                required
-                value={formData.location}
-                onChange={handleInputChange}
-                placeholder="e.g., Kigali, Rwanda (or Remote)"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-              />
-            </div>
-
-            {/* Deadline */}
-            <div>
-              <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-1">
-                Deadline
-              </label>
-              <input
-                id="deadline"
-                name="deadline"
-                type="date"
-                value={formData.deadline}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-              />
-            </div>
-
             {/* Link */}
             <div>
               <label htmlFor="link" className="block text-sm font-medium text-gray-700 mb-1">
@@ -181,6 +148,7 @@ const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
                 placeholder="https://"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
               />
+              <p className="mt-1 text-xs text-gray-500">Direct link to application page or more information</p>
             </div>
 
             {/* Description */}
@@ -199,6 +167,12 @@ const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
               />
             </div>
+
+            {mentorName && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-500">This opportunity will be posted by: <span className="font-medium">{mentorName}</span></p>
+              </div>
+            )}
           </div>
 
           {/* Actions */}

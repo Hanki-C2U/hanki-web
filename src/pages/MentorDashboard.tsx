@@ -120,30 +120,27 @@ const MentorDashboard = () => {
       title: "Frontend Developer Position",
       organization: "Tech Rwanda Ltd",
       type: "job",
-      location: "Kigali, Rwanda",
-      deadline: "2025-10-15",
       link: "https://example.com/job",
-      description: "Exciting opportunity for a frontend developer with React experience to join our growing team in Kigali."
+      description: "Exciting opportunity for a frontend developer with React experience to join our growing team in Kigali.",
+      postedBy: "Dr. Emmanuel Ntagungira"
     },
     {
       id: "2",
       title: "Web Development Bootcamp Scholarship",
       organization: "Code Academy Rwanda",
       type: "education",
-      location: "Remote",
-      deadline: "2025-09-30",
       link: "https://example.com/bootcamp",
-      description: "12-week intensive bootcamp covering full-stack web development. Scholarships available for promising students."
+      description: "12-week intensive bootcamp covering full-stack web development. Scholarships available for promising students.",
+      postedBy: "Sarah Mukamana"
     },
     {
       id: "3",
       title: "Junior Backend Developer",
       organization: "Fintech Startup",
       type: "job",
-      location: "Hybrid - Kigali, Rwanda",
-      deadline: "2025-10-20",
       link: "https://example.com/backend-job",
-      description: "Looking for a skilled backend developer with Node.js experience to help scale our financial services platform."
+      description: "Looking for a skilled backend developer with Node.js experience to help scale our financial services platform.",
+      postedBy: "David Nkurunziza"
     }
   ];
 
