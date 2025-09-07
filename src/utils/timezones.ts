@@ -142,13 +142,22 @@ export const getCurrentTimeInTimezone = (timezoneValue: string): string => {
   const targetTime = new Date(utcTime + offsetTotalMinutes * 60000);
 
   return targetTime.toLocaleTimeString([], {
-    hour: "numeric",
+    hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   });
 };
 
-// Function to get timezone offset in format "UTC +02:00"
+// Function to get timezone offset in format "UTC +02:00" or just "UTC" for UTC+0
 export const getTimezoneOffset = (timezoneValue: string): string => {
   const timezone = timezones.find((tz) => tz.value === timezoneValue);
-  return timezone ? timezone.offset : "UTC";
+
+  if (!timezone) return "UTC";
+
+  // Special case for UTC+00:00 - just return "UTC"
+  if (timezone.value === "GMT+00:00") {
+    return "UTC";
+  }
+
+  return timezone.offset;
 };

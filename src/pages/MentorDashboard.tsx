@@ -313,14 +313,14 @@ const MentorDashboard = () => {
                 </div>
 
                 {/* Location and Timezone - GitHub Style */}
-                <div className="mt-3 flex flex-col gap-1.5 items-center">
+                <div className="mt-3 flex flex-col gap-1.5 items-start">
                   <div className="flex items-center gap-1.5 text-gray-600">
                     <MapPin className="h-4 w-4" />
                     <span className="text-sm">{mentorData.location}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-gray-600">
                     <Clock3 className="h-4 w-4" />
-                    <span className="text-sm">{currentTime} {getTimezoneOffset(mentorData.timezone)}</span>
+                    <span className="text-sm">{currentTime} ({getTimezoneOffset(mentorData.timezone)})</span>
                   </div>
                 </div>
 
