@@ -455,10 +455,94 @@ const MentorDashboard = () => {
                 </div>
               </div>
             </div>
+
+            {/* Pending Requests Card - Always visible */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Pending Requests</h3>
+                {pendingRequests.length > 0 && (
+                  <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">
+                    {pendingRequests.length}
+                  </span>
+                )}
+              </div>
+
+              {pendingRequests.length > 0 ? (
+                <div className="space-y-4">
+                  {pendingRequests.map((request) => (
+                    <div key={request.id} className="p-3 border rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">{request.mentee}</h4>
+                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800">New</span>
+                      </div>
+                      <p className="text-sm font-medium text-emerald-600 mb-1">{request.topic}</p>
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{request.message}</p>
+                      <div className="flex gap-2">
+                        <button className="flex-1 px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
+                          Accept
+                        </button>
+                        <button className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 text-sm">
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <MessageCircle className="h-10 w-10 mx-auto text-gray-300 mb-2" />
+                  <p className="text-gray-500 text-sm">No pending requests</p>
+                </div>
+              )}
+            </div>
+
+
           </div>
 
           {/* Right Column - Content Area */}
           <div className="md:col-span-2 space-y-6">
+            {/* Upcoming Sessions Preview Card */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-emerald-600" />
+                  Next Session
+                </h3>
+                <button
+                  onClick={() => setActiveTab('schedule')}
+                  className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline"
+                >
+                  View all sessions
+                </button>
+              </div>
+
+              {upcomingSessions.length > 0 ? (
+                <div
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                  <div>
+                    <h4 className="font-medium">{upcomingSessions[0].mentee}</h4>
+                    <p className="text-sm text-gray-600">{upcomingSessions[0].topic}</p>
+                    <p className="text-xs text-gray-500">
+                      {isToday(parseISO(upcomingSessions[0].date)) ? "Today" : format(parseISO(upcomingSessions[0].date), 'EEE, MMM d')},
+                      {upcomingSessions[0].startTime} • {upcomingSessions[0].duration}
+                    </p>
+                  </div>
+                  <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 hover:scale-105 cursor-pointer">
+                    <Video className="h-4 w-4" />
+                    <span>Join</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center py-4 bg-gray-50 rounded-lg">
+                  <Clock className="h-8 w-8 mx-auto text-gray-300 mb-2" />
+                  <p className="text-gray-500">No upcoming sessions</p>
+                  <button className="mt-2 px-4 py-1.5 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
+                    Set Availability
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* Tabs */}
             <div className="bg-white rounded-lg shadow-sm">
               <div className="border-b">
@@ -802,40 +886,56 @@ const MentorDashboard = () => {
                       )}
                     </div>
 
-                    {/* Pending requests */}
-                    <div className="mt-8">
-                      <h3 className="text-lg font-semibold mb-4">Pending Requests</h3>
-
-                      {pendingRequests.length > 0 ? (
-                        <div className="space-y-4">
-                          {pendingRequests.map((request) => (
-                            <div key={request.id} className="p-4 border rounded-lg">
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-medium">{request.mentee}</h4>
-                                <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800">New</span>
-                              </div>
-                              <p className="text-sm font-medium text-emerald-600 mb-1">{request.topic}</p>
-                              <p className="text-sm text-gray-600 mb-3">{request.message}</p>
-                              <div className="flex gap-2">
-                                <button className="px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
-                                  Accept
-                                </button>
-                                <button className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50">
-                                  Decline
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8">
-                          <MessageCircle className="h-12 w-12 mx-auto text-gray-300 mb-3" />
-                          <p className="text-gray-500">No pending requests</p>
-                        </div>
-                      )}
-                    </div>
+                    {/* We've moved Pending Requests to a separate card in the left column */}
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Featured Mentees Card */}
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <h3 className="text-lg font-semibold mb-4">Featured Mentees</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-3 border border-gray-200 rounded-lg hover:border-emerald-200 hover:bg-emerald-50 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
+                      <img src="/professional-headshot-of-african-woman-hr-professi.png" alt="Alice Mukamana" className="h-full w-full object-cover" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium">Alice Mukamana</h4>
+                      <p className="text-xs text-gray-500">Software Engineer • 3 sessions</p>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex justify-between">
+                    <div className="flex">
+                      {renderStars(5)}
+                    </div>
+                    <button className="text-xs text-emerald-600 hover:text-emerald-800">
+                      View Progress
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3 border border-gray-200 rounded-lg hover:border-emerald-200 hover:bg-emerald-50 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
+                      <img src="/professional-headshot-of-confident-hispanic-sales-.png" alt="David Nshuti" className="h-full w-full object-cover" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium">David Nshuti</h4>
+                      <p className="text-xs text-gray-500">Product Manager • 2 sessions</p>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex justify-between">
+                    <div className="flex">
+                      {renderStars(5)}
+                    </div>
+                    <button className="text-xs text-emerald-600 hover:text-emerald-800">
+                      View Progress
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
