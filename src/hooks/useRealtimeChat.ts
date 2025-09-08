@@ -15,21 +15,21 @@ interface Message {
 
 interface Conversation {
   id: number
-  mentorId: string
-  menteeId: string
+  participant1Id: string
+  participant2Id: string
+  type: string
   createdAt: string
   updatedAt: string
   lastMessage: string | null
+  isActive: boolean
   messages?: Message[]
-  mentor?: {
+  // Dynamic fields based on participants
+  otherParticipant?: {
+    id: string
     first_name: string
     last_name: string
     profile_picture: string
-  }
-  mentee?: {
-    first_name: string
-    last_name: string
-    profile_picture: string
+    role: 'mentor' | 'mentee'
   }
 }
 
@@ -51,12 +51,9 @@ function useRealtimeChat() {
       
       const { data, error } = await supabasase
         .from('conversations')
-        .select(`
-          *,
-          mentor:mentor(first_name, last_name, profile_picture, expertise, location),
-          mentee:mentee(first_name, last_name, profile_picture, Interests, location)
-        `)
-        .or(`mentorId.eq.${user.id},menteeId.eq.${user.id}`)
+        .select('*')
+        .or(`participant1Id.eq.${user.id},participant2Id.eq.${user.id}`)
+        .eq('isActive', true)
         .order('updatedAt', { ascending: false })
 
       if (error) {
@@ -66,12 +63,51 @@ function useRealtimeChat() {
 
       console.log('✅ Conversations fetched:', data?.length || 0, 'conversations')
       
-      // Filter conversations for current user
-      const filteredData = (data || []).filter(conv => {
-        return conv.mentorId === user.id || conv.menteeId === user.id
-      })
+      // Enrich conversations with participant details
+      const enrichedConversations = await Promise.all(
+        (data || []).map(async (conv) => {
+          const otherParticipantId = conv.participant1Id === user.id 
+            ? conv.participant2Id 
+            : conv.participant1Id
+
+          // Try to fetch from mentor table first, then mentee table
+          let otherParticipant = null
+
+          try {
+            const { data: mentorData } = await supabasase
+              .from('mentor')
+              .select('supabaseId, first_name, last_name, profile_picture')
+              .eq('supabaseId', otherParticipantId)
+              .single()
+
+            if (mentorData) {
+              otherParticipant = { ...mentorData, id: mentorData.supabaseId, role: 'mentor' as const }
+            }
+          } catch (e) {
+            // Not a mentor, try mentee
+            try {
+              const { data: menteeData } = await supabasase
+                .from('mentee')
+                .select('supabaseId, first_name, last_name, profile_picture')
+                .eq('supabaseId', otherParticipantId)
+                .single()
+
+              if (menteeData) {
+                otherParticipant = { ...menteeData, id: menteeData.supabaseId, role: 'mentee' as const }
+              }
+            } catch (e2) {
+              console.warn('Could not find participant details for:', otherParticipantId)
+            }
+          }
+
+          return {
+            ...conv,
+            otherParticipant
+          }
+        })
+      )
       
-      setConversations(filteredData)
+      setConversations(enrichedConversations)
     } catch (err) {
       console.error('💥 Unexpected error fetching conversations:', err)
     } finally {
@@ -94,10 +130,24 @@ function useRealtimeChat() {
       }
 
       setMessages(data || [])
+
+      // Mark all messages in this conversation as read (except user's own messages)
+      if (user?.id && data && data.length > 0) {
+        const unreadMessages = data.filter(msg => !msg.isRead && msg.senderId !== user.id);
+        if (unreadMessages.length > 0) {
+          console.log('📖 Marking', unreadMessages.length, 'messages as read');
+          await supabasase
+            .from('messages')
+            .update({ isRead: true })
+            .eq('conversationId', conversationId)
+            .neq('senderId', user.id)
+            .eq('isRead', false);
+        }
+      }
     } catch (err) {
       console.error('Unexpected error:', err)
     }
-  }, [])
+  }, [user?.id])
 
   // Send a message
   const sendMessage = useCallback(async (conversationId: number, content: string) => {
@@ -209,49 +259,63 @@ function useRealtimeChat() {
   }, [user?.id, userRole])
 
   // Create or find conversation
-  const createOrFindConversation = useCallback(async (mentorId: string, menteeId: string) => {
-    console.log('🚀 createOrFindConversation called with:', { mentorId, menteeId })
+  const createOrFindConversation = useCallback(async (participant1Id: string, participant2Id: string) => {
+    console.log('🚀 createOrFindConversation called with:', { participant1Id, participant2Id })
     
     try {
-      // Try to find existing conversation
+      // Try to find existing conversation (check both directions)
       console.log('🔍 Searching for existing conversation...')
-      console.log('🔍 Query params: mentorId =', mentorId, 'menteeId =', menteeId)
       
       try {
-        // Add timeout to prevent hanging
-        const queryPromise = supabasase
+        const { data: existingConversations, error: findError } = await supabasase
           .from('conversations')
-          .select(`
-            *,
-            mentor:mentor(first_name, last_name, profile_picture, expertise, location),
-            mentee:mentee(first_name, last_name, profile_picture, Interests, location)
-          `)
-          .eq('mentorId', mentorId)
-          .eq('menteeId', menteeId)
+          .select('*')
+          .or(`and(participant1Id.eq.${participant1Id},participant2Id.eq.${participant2Id}),and(participant1Id.eq.${participant2Id},participant2Id.eq.${participant1Id})`)
+          .eq('isActive', true)
 
-        console.log('🔍 Query built, executing...')
-        
-        // Create a timeout promise
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Query timeout after 5 seconds')), 5000)
-        })
-
-        // Race between query and timeout
-        const result = await Promise.race([queryPromise, timeoutPromise]) as any
-
-        console.log('🔍 Query completed!')
-        console.log('🔍 Find result - Data:', result.data)
-        console.log('🔍 Find result - Error:', result.error)
-
-        const existingList = result.data
-        const findError = result.error
+        console.log('🔍 Find result - Data:', existingConversations)
+        console.log('🔍 Find result - Error:', findError)
 
         // Check if we found an existing conversation
-        const existing = existingList && existingList.length > 0 ? existingList[0] : null
+        const existing = existingConversations && existingConversations.length > 0 ? existingConversations[0] : null
 
         if (existing && !findError) {
           console.log('✅ Found existing conversation:', existing)
-          return existing
+          
+          // Enrich with participant details
+          const otherParticipantId = existing.participant1Id === user?.id 
+            ? existing.participant2Id 
+            : existing.participant1Id
+
+          let otherParticipant = null
+          
+          try {
+            const { data: mentorData } = await supabasase
+              .from('mentor')
+              .select('supabaseId, first_name, last_name, profile_picture')
+              .eq('supabaseId', otherParticipantId)
+              .single()
+
+            if (mentorData) {
+              otherParticipant = { ...mentorData, id: mentorData.supabaseId, role: 'mentor' as const }
+            }
+          } catch (e) {
+            try {
+              const { data: menteeData } = await supabasase
+                .from('mentee')
+                .select('supabaseId, first_name, last_name, profile_picture')
+                .eq('supabaseId', otherParticipantId)
+                .single()
+
+              if (menteeData) {
+                otherParticipant = { ...menteeData, id: menteeData.supabaseId, role: 'mentee' as const }
+              }
+            } catch (e2) {
+              console.warn('Could not find participant details for:', otherParticipantId)
+            }
+          }
+
+          return { ...existing, otherParticipant }
         } else {
           console.log('❌ No existing conversation found, will create new one')
         }
@@ -264,37 +328,24 @@ function useRealtimeChat() {
       console.log('➕ Creating new conversation...')
       const now = new Date().toISOString()
       const insertData = {
-        mentorId: mentorId,
-        menteeId: menteeId,
+        participant1Id: participant1Id,
+        participant2Id: participant2Id,
+        type: 'MENTOR_MENTEE',
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
+        isActive: true
       }
       console.log('📝 Insert data:', insertData)
       
       try {
-        // Add timeout to conversation creation as well
-        const createPromise = supabasase
+        const { data: newConversation, error: createError } = await supabasase
           .from('conversations')
           .insert([insertData])
           .select('*')
           .single()
 
-        console.log('➕ Insert query built, executing...')
-        
-        // Create a timeout promise
-        const createTimeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Create query timeout after 10 seconds')), 10000)
-        })
-
-        // Race between create query and timeout
-        const result = await Promise.race([createPromise, createTimeoutPromise]) as any
-
-        console.log('➕ Create query completed!')
-        console.log('➕ Create result - Data:', result.data)
-        console.log('➕ Create result - Error:', result.error)
-
-        const newConversation = result.data
-        const createError = result.error
+        console.log('➕ Create result - Data:', newConversation)
+        console.log('➕ Create result - Error:', createError)
 
         if (createError) {
           console.error('❌ Error creating conversation:', createError)
@@ -304,16 +355,11 @@ function useRealtimeChat() {
             console.log('🔄 Duplicate key error - conversation already exists, trying to fetch it...')
             
             try {
-              // Try to fetch the existing conversation with full details
               const { data: existingConv, error: fetchError } = await supabasase
                 .from('conversations')
-                .select(`
-                  *,
-                  mentor:mentor(first_name, last_name, profile_picture, expertise, location),
-                  mentee:mentee(first_name, last_name, profile_picture, Interests, location)
-                `)
-                .eq('mentorId', mentorId)
-                .eq('menteeId', menteeId)
+                .select('*')
+                .or(`and(participant1Id.eq.${participant1Id},participant2Id.eq.${participant2Id}),and(participant1Id.eq.${participant2Id},participant2Id.eq.${participant1Id})`)
+                .eq('isActive', true)
                 .single()
 
               if (fetchError) {
@@ -344,7 +390,7 @@ function useRealtimeChat() {
       console.error('💥 Unexpected error in createOrFindConversation:', err)
       return null
     }
-  }, [])
+  }, [user?.id])
 
   // Set up real-time subscriptions for conversations
   useEffect(() => {
@@ -361,10 +407,10 @@ function useRealtimeChat() {
           event: '*',
           schema: 'public',
           table: 'conversations',
-          filter: `mentorId=eq.${user.id}`
+          filter: `participant1Id=eq.${user.id}`
         },
         (payload) => {
-          console.log('🔔 Conversation update (as mentor):', payload.eventType, payload.new)
+          console.log('🔔 Conversation update (as participant1):', payload.eventType, payload.new)
           fetchConversations()
         }
       )
@@ -374,10 +420,10 @@ function useRealtimeChat() {
           event: '*',
           schema: 'public',
           table: 'conversations',
-          filter: `menteeId=eq.${user.id}`
+          filter: `participant2Id=eq.${user.id}`
         },
         (payload) => {
-          console.log('🔔 Conversation update (as mentee):', payload.eventType, payload.new)
+          console.log('🔔 Conversation update (as participant2):', payload.eventType, payload.new)
           fetchConversations()
         }
       )
@@ -484,6 +530,25 @@ function useRealtimeChat() {
     }
   }, [activeConversation, fetchMessages])
 
+  // Mark all messages in a conversation as read
+  const markConversationAsRead = useCallback(async (conversationId: number) => {
+    if (!user?.id) return;
+
+    try {
+      console.log('📖 Marking conversation as read:', conversationId);
+      await supabasase
+        .from('messages')
+        .update({ isRead: true })
+        .eq('conversationId', conversationId)
+        .neq('senderId', user.id)
+        .eq('isRead', false);
+      
+      console.log('✅ Conversation marked as read');
+    } catch (error) {
+      console.error('❌ Error marking conversation as read:', error);
+    }
+  }, [user?.id]);
+
   return {
     conversations,
     activeConversation,
@@ -493,6 +558,7 @@ function useRealtimeChat() {
     sendMessage,
     createOrFindConversation,
     fetchConversations,
+    markConversationAsRead,
     error,
     sendingMessage
   }

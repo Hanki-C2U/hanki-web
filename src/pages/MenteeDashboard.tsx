@@ -6,12 +6,13 @@ import {
   TrendingUp,
   Video,
   User,
-  Bell
+  MessageCircle
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { supabasase } from "../supabase_creds/supabase";
 import { useEffect, useState,useLayoutEffect } from "react";
 import useRealtimeChat from "../hooks/useRealtimeChat";
+import NotificationBell from "../components/NotificationBell";
 
 const MenteeDashboard = () => {
   const { userRole, roleLoading, user } = useAuthStore()
@@ -30,36 +31,27 @@ const MenteeDashboard = () => {
 
   // Redirect if explicitly not a mentee (don't redirect on null/unknown role)
   useLayoutEffect(() => {
-    // If role is loading, don't redirect yet - wait for it to complete
-    if (roleLoading) {
-      console.log('MenteeDashboard: Role is still loading, waiting...');
-      return;
-    }
-    
-    // If user has no session, let AuthProvider handle it
-    if (!user) {
+    // Only perform actions when role is not loading and user exists
+    if (!roleLoading && user) {
+      // If user is a mentor, deny access and redirect
+      if (userRole === 'mentor') {
+        console.log('MenteeDashboard: Access denied - Mentor trying to access mentee dashboard, redirecting to mentor dashboard');
+        navigate('/mentor-dashboard', { replace: true });
+      }
+      // Only redirect to onboarding if we have confirmed the user has no role
+      // AND they have a valid session (to avoid race conditions)
+      else if (userRole === null) {
+        console.log('MenteeDashboard: User has session but no role after role check complete, redirecting to onboarding');
+        navigate('/onboarding', { replace: true });
+      }
+      // If we reach here and userRole is 'mentee', stay on dashboard
+      else if (userRole === 'mentee') {
+        console.log('✅ MenteeDashboard: User confirmed as mentee, staying on dashboard');
+      }
+    } else if (!roleLoading && !user) {
       console.log('MenteeDashboard: No user session, letting AuthProvider handle...');
-      return;
-    }
-    
-    // If user is a mentor, deny access and redirect
-    if (userRole === 'mentor') {
-      console.log('MenteeDashboard: Access denied - Mentor trying to access mentee dashboard, redirecting to mentor dashboard');
-      navigate('/mentor-dashboard', { replace: true });
-      return;
-    }
-    
-    // Only redirect to onboarding if we have confirmed the user has no role
-    // AND they have a valid session (to avoid race conditions)
-    if (userRole === null && user) {
-      console.log('MenteeDashboard: User has session but no role after role check complete, redirecting to onboarding');
-      navigate('/onboarding', { replace: true });
-      return;
-    }
-    
-    // If we reach here and userRole is 'mentee', stay on dashboard
-    if (userRole === 'mentee') {
-      console.log('✅ MenteeDashboard: User confirmed as mentee, staying on dashboard');
+    } else {
+      console.log('MenteeDashboard: Role is still loading, waiting...');
     }
   }, [roleLoading, userRole, user, navigate])
 
@@ -154,25 +146,31 @@ const MenteeDashboard = () => {
       if (userRole === 'mentee' && user?.id) {
         try {
           setSessionsLoading(true)
+          
+          // Use today's date string for better date comparison
+          const today = new Date().toISOString().split('T')[0]
+          
           const { data: sessions, error } = await supabasase
             .from('sessions')
             .select(`
               *,
-              mentor (
+              mentor:mentorId (
+                supabaseId,
                 first_name,
                 last_name,
                 expertise
               )
             `)
             .eq('menteeId', user.id)
-            .gte('sessionDate', new Date().toISOString())
+            .gte('sessionDate', today)
             .order('sessionDate', { ascending: true })
             .order('startTime', { ascending: true })
-            .limit(5)
+            .limit(10)
 
           if (error) {
             console.error('Error fetching sessions:', error)
           } else {
+            console.log('📅 Fetched mentee sessions:', sessions)
             setUpcomingSessions(sessions || [])
           }
         } catch (error) {
@@ -184,6 +182,28 @@ const MenteeDashboard = () => {
     }
     
     fetchUpcomingSessions()
+
+    // Set up real-time subscription for session updates
+    const channel = supabasase
+      .channel('mentee-sessions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sessions',
+          filter: `menteeId=eq.${user?.id}`
+        },
+        (payload) => {
+          console.log('📅 Session update received:', payload)
+          fetchUpcomingSessions() // Refetch sessions when changes occur
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabasase.removeChannel(channel)
+    }
   }, [userRole, user?.id])
 
   // Show loading spinner while checking access permissions
@@ -226,11 +246,12 @@ const MenteeDashboard = () => {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <button className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
-                <Bell className="h-4 w-4" />
-              </button>
+              <NotificationBell />
               <button className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
                 <Link to="/resources">Resources</Link>
+              </button>
+              <button className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                <Link to="/discover-mentees">Connect with Peers</Link>
               </button>
               <button className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
                 <Link to="/discover-mentors">Find Mentors</Link>
@@ -387,63 +408,94 @@ const MenteeDashboard = () => {
                 </div>
               ) : upcomingSessions.length > 0 ? (
                 upcomingSessions.map((session) => (
-                  <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                     <div className="flex-1">
-                      <h4 className="font-medium">{session.title}</h4>
-                      <p className="text-sm text-professional-blue">
+                      <h4 className="font-medium text-gray-900">{session.title}</h4>
+                      <p className="text-sm text-professional-blue font-medium">
                         with {session.mentor?.first_name} {session.mentor?.last_name}
                       </p>
-                      <p className="text-xs text-gray-600">
-                        {session.mentor?.expertise?.join(', ') || 'Mentor'}
-                      </p>
+                      {session.mentor?.expertise && session.mentor.expertise.length > 0 && (
+                        <p className="text-xs text-gray-600">
+                          {session.mentor.expertise.join(', ')}
+                        </p>
+                      )}
                       <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(session.sessionDate).toLocaleDateString('en-US', { 
+                        📅 {new Date(session.sessionDate).toLocaleDateString('en-US', { 
                           weekday: 'long', 
                           month: 'short', 
-                          day: 'numeric' 
-                        })} at {session.startTime}
+                          day: 'numeric',
+                          year: 'numeric'
+                        })} ⏰ {session.startTime} - {session.endTime}
                       </p>
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-2 ${
-                        session.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                        session.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
-                        session.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {session.status}
-                      </span>
+                      {session.description && (
+                        <p className="text-xs text-gray-600 mt-1 italic">"{session.description}"</p>
+                      )}
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                          session.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                          session.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                          session.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                          session.status === 'COMPLETED' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {session.status === 'PENDING' ? '⏳ Pending Approval' :
+                           session.status === 'ACCEPTED' ? '✅ Confirmed' :
+                           session.status === 'REJECTED' ? '❌ Declined' :
+                           session.status === 'COMPLETED' ? '✨ Completed' :
+                           session.status}
+                        </span>
+                        {session.status === 'PENDING' && (
+                          <span className="text-xs text-gray-500">Waiting for mentor response</span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex gap-2">
-                      {session.status === 'ACCEPTED' && session.meetingUrl && (
-                        <a
-                          href={session.meetingUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      {session.status === 'ACCEPTED' && (
+                        <button
+                          onClick={() => navigate(`/session/${session.id}`)}
                           className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                          title="Join video session "
                         >
                           <Video className="h-4 w-4" />
-                          Join
-                        </a>
+                          Join Session
+                        </button>
                       )}
                       <button 
-                        onClick={() => navigate(`/chat`)}
+                        onClick={() => navigate(`/simple-chat/${session.mentorId}`)}
                         className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                       >
-                        <User className="h-4 w-4" />
+                        <MessageCircle className="h-4 w-4" />
                         Chat
                       </button>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8">
-                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-2">No upcoming sessions</p>
-                  <p className="text-sm text-gray-500">Book a session with a mentor to get started!</p>
+                <div className="text-center py-12">
+                  <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">No upcoming sessions</h4>
+                  <p className="text-gray-600 mb-4">You haven't booked any sessions yet.</p>
+                  <p className="text-sm text-gray-500 mb-6">
+                    Connect with experienced mentors to accelerate your professional growth!
+                  </p>
+                  <button
+                    onClick={() => navigate('/discover-mentors')}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                  >
+                    <Search className="h-4 w-4" />
+                    Find Mentors
+                  </button>
                 </div>
               )}
-              <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
-                View All Sessions
-              </button>
+              {upcomingSessions.length > 0 && (
+                <button 
+                  onClick={() => navigate('/discover-mentors')}
+                  className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                >
+                  <Search className="h-4 w-4" />
+                  Book More Sessions
+                </button>
+              )}
             </div>
           </div>
         </div>

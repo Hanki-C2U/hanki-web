@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { ArrowLeft, MoreVertical, Phone, Video, Send } from 'lucide-react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { useAuthStore } from '../store/authStore'
 import useRealtimeChat  from '../hooks/useRealtimeChat'
 
@@ -66,8 +66,8 @@ export default function ChatPage() {
         
         try {
           const existingConversation = conversations.find(c => 
-            (c.mentorId === mentorId && c.menteeId === menteeId) ||
-            (c.mentorId === menteeId && c.menteeId === mentorId)
+            (c.participant1Id === mentorId && c.participant2Id === menteeId) ||
+            (c.participant1Id === menteeId && c.participant2Id === mentorId)
           )
           
           if (existingConversation) {
@@ -76,7 +76,7 @@ export default function ChatPage() {
             navigate(`/chat/${existingConversation.id}`, { replace: true })
           } else {
             console.log(' No conversation found in fetched list')
-            console.log(' Available conversations:', conversations.map(c => ({ id: c.id, mentorId: c.mentorId, menteeId: c.menteeId })))
+            console.log(' Available conversations:', conversations.map(c => ({ id: c.id, participant1Id: c.participant1Id, participant2Id: c.participant2Id })))
             
             // Try to create a new conversation
             console.log('🔄 Attempting to create new conversation...')
@@ -159,8 +159,8 @@ export default function ChatPage() {
   }
 
   const getOtherUser = () => {
-    if (!activeConversation) return null
-    return activeConversation.mentorId === user?.id ? activeConversation.mentee : activeConversation.mentor
+    if (!activeConversation || !activeConversation.otherParticipant) return null
+    return activeConversation.otherParticipant
   }
 
   const otherUser = getOtherUser()
@@ -204,8 +204,8 @@ export default function ChatPage() {
             </div>
           ) : (
             conversations.map((conversation) => {
-              // Determine the other user based on current user ID, not role
-              const other = conversation.mentorId === user?.id ? conversation.mentee : conversation.mentor
+              // Get the other participant from the enriched conversation data
+              const other = conversation.otherParticipant
               if (!other) return null
 
               return (
@@ -259,7 +259,7 @@ export default function ChatPage() {
                       {otherUser.first_name} {otherUser.last_name}
                     </h3>
                     <p className="text-sm text-gray-500 capitalize">
-                      {activeConversation?.mentorId === user?.id ? 'Mentee' : 'Mentor'}
+                      {otherUser.role}
                     </p>
                     <p className="text-xs text-green-500">● Online</p>
                   </div>

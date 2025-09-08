@@ -19,11 +19,6 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type Mentee = $Result.DefaultSelection<Prisma.$MenteePayload>
 /**
- * Model Achievements
- * 
- */
-export type Achievements = $Result.DefaultSelection<Prisma.$AchievementsPayload>
-/**
  * Model Mentor
  * 
  */
@@ -48,7 +43,26 @@ export type sessions = $Result.DefaultSelection<Prisma.$sessionsPayload>
  * Enums
  */
 export namespace $Enums {
-  export const SessionStatus: {
+  export const ConversationType: {
+  MENTOR_MENTEE: 'MENTOR_MENTEE',
+  PEER_TO_PEER: 'PEER_TO_PEER',
+  GROUP_CHAT: 'GROUP_CHAT'
+};
+
+export type ConversationType = (typeof ConversationType)[keyof typeof ConversationType]
+
+
+export const MessageType: {
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  FILE: 'FILE',
+  SYSTEM: 'SYSTEM'
+};
+
+export type MessageType = (typeof MessageType)[keyof typeof MessageType]
+
+
+export const SessionStatus: {
   PENDING: 'PENDING',
   ACCEPTED: 'ACCEPTED',
   REJECTED: 'REJECTED',
@@ -60,6 +74,14 @@ export namespace $Enums {
 export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus]
 
 }
+
+export type ConversationType = $Enums.ConversationType
+
+export const ConversationType: typeof $Enums.ConversationType
+
+export type MessageType = $Enums.MessageType
+
+export const MessageType: typeof $Enums.MessageType
 
 export type SessionStatus = $Enums.SessionStatus
 
@@ -192,16 +214,6 @@ export class PrismaClient<
     * ```
     */
   get mentee(): Prisma.MenteeDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.achievements`: Exposes CRUD operations for the **Achievements** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more Achievements
-    * const achievements = await prisma.achievements.findMany()
-    * ```
-    */
-  get achievements(): Prisma.AchievementsDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.mentor`: Exposes CRUD operations for the **Mentor** model.
@@ -683,7 +695,6 @@ export namespace Prisma {
 
   export const ModelName: {
     Mentee: 'Mentee',
-    Achievements: 'Achievements',
     Mentor: 'Mentor',
     Conversation: 'Conversation',
     Message: 'Message',
@@ -706,7 +717,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "mentee" | "achievements" | "mentor" | "conversation" | "message" | "sessions"
+      modelProps: "mentee" | "mentor" | "conversation" | "message" | "sessions"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -781,80 +792,6 @@ export namespace Prisma {
           count: {
             args: Prisma.MenteeCountArgs<ExtArgs>
             result: $Utils.Optional<MenteeCountAggregateOutputType> | number
-          }
-        }
-      }
-      Achievements: {
-        payload: Prisma.$AchievementsPayload<ExtArgs>
-        fields: Prisma.AchievementsFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.AchievementsFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AchievementsPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.AchievementsFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AchievementsPayload>
-          }
-          findFirst: {
-            args: Prisma.AchievementsFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AchievementsPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.AchievementsFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AchievementsPayload>
-          }
-          findMany: {
-            args: Prisma.AchievementsFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AchievementsPayload>[]
-          }
-          create: {
-            args: Prisma.AchievementsCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AchievementsPayload>
-          }
-          createMany: {
-            args: Prisma.AchievementsCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.AchievementsCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AchievementsPayload>[]
-          }
-          delete: {
-            args: Prisma.AchievementsDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AchievementsPayload>
-          }
-          update: {
-            args: Prisma.AchievementsUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AchievementsPayload>
-          }
-          deleteMany: {
-            args: Prisma.AchievementsDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.AchievementsUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.AchievementsUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AchievementsPayload>[]
-          }
-          upsert: {
-            args: Prisma.AchievementsUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AchievementsPayload>
-          }
-          aggregate: {
-            args: Prisma.AchievementsAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateAchievements>
-          }
-          groupBy: {
-            args: Prisma.AchievementsGroupByArgs<ExtArgs>
-            result: $Utils.Optional<AchievementsGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.AchievementsCountArgs<ExtArgs>
-            result: $Utils.Optional<AchievementsCountAggregateOutputType> | number
           }
         }
       }
@@ -1247,7 +1184,6 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     mentee?: MenteeOmit
-    achievements?: AchievementsOmit
     mentor?: MentorOmit
     conversation?: ConversationOmit
     message?: MessageOmit
@@ -1332,13 +1268,11 @@ export namespace Prisma {
    */
 
   export type MenteeCountOutputType = {
-    conversations: number
     sessions: number
     mentor: number
   }
 
   export type MenteeCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversations?: boolean | MenteeCountOutputTypeCountConversationsArgs
     sessions?: boolean | MenteeCountOutputTypeCountSessionsArgs
     mentor?: boolean | MenteeCountOutputTypeCountMentorArgs
   }
@@ -1352,13 +1286,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the MenteeCountOutputType
      */
     select?: MenteeCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * MenteeCountOutputType without action
-   */
-  export type MenteeCountOutputTypeCountConversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ConversationWhereInput
   }
 
   /**
@@ -1381,13 +1308,11 @@ export namespace Prisma {
    */
 
   export type MentorCountOutputType = {
-    conversations: number
     sessions: number
     mentee: number
   }
 
   export type MentorCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversations?: boolean | MentorCountOutputTypeCountConversationsArgs
     sessions?: boolean | MentorCountOutputTypeCountSessionsArgs
     mentee?: boolean | MentorCountOutputTypeCountMenteeArgs
   }
@@ -1401,13 +1326,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the MentorCountOutputType
      */
     select?: MentorCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * MentorCountOutputType without action
-   */
-  export type MentorCountOutputTypeCountConversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ConversationWhereInput
   }
 
   /**
@@ -1476,14 +1394,12 @@ export namespace Prisma {
     id: number | null
     age: number | null
     ratings: number | null
-    experience: number | null
   }
 
   export type MenteeSumAggregateOutputType = {
     id: number | null
     age: number | null
     ratings: number | null
-    experience: number | null
   }
 
   export type MenteeMinAggregateOutputType = {
@@ -1503,7 +1419,6 @@ export namespace Prisma {
     supabaseId: string | null
     bio: string | null
     joined: Date | null
-    experience: number | null
     Github: string | null
     Instagram: string | null
     LinkedIn: string | null
@@ -1528,7 +1443,6 @@ export namespace Prisma {
     supabaseId: string | null
     bio: string | null
     joined: Date | null
-    experience: number | null
     Github: string | null
     Instagram: string | null
     LinkedIn: string | null
@@ -1554,7 +1468,6 @@ export namespace Prisma {
     bio: number
     joined: number
     goals: number
-    experience: number
     Github: number
     Instagram: number
     LinkedIn: number
@@ -1568,14 +1481,12 @@ export namespace Prisma {
     id?: true
     age?: true
     ratings?: true
-    experience?: true
   }
 
   export type MenteeSumAggregateInputType = {
     id?: true
     age?: true
     ratings?: true
-    experience?: true
   }
 
   export type MenteeMinAggregateInputType = {
@@ -1595,7 +1506,6 @@ export namespace Prisma {
     supabaseId?: true
     bio?: true
     joined?: true
-    experience?: true
     Github?: true
     Instagram?: true
     LinkedIn?: true
@@ -1620,7 +1530,6 @@ export namespace Prisma {
     supabaseId?: true
     bio?: true
     joined?: true
-    experience?: true
     Github?: true
     Instagram?: true
     LinkedIn?: true
@@ -1646,7 +1555,6 @@ export namespace Prisma {
     bio?: true
     joined?: true
     goals?: true
-    experience?: true
     Github?: true
     Instagram?: true
     LinkedIn?: true
@@ -1759,7 +1667,6 @@ export namespace Prisma {
     bio: string
     joined: Date
     goals: string[]
-    experience: number
     Github: string | null
     Instagram: string | null
     LinkedIn: string | null
@@ -1804,13 +1711,11 @@ export namespace Prisma {
     bio?: boolean
     joined?: boolean
     goals?: boolean
-    experience?: boolean
     Github?: boolean
     Instagram?: boolean
     LinkedIn?: boolean
     Twitter?: boolean
     Website?: boolean
-    conversations?: boolean | Mentee$conversationsArgs<ExtArgs>
     sessions?: boolean | Mentee$sessionsArgs<ExtArgs>
     mentor?: boolean | Mentee$mentorArgs<ExtArgs>
     _count?: boolean | MenteeCountOutputTypeDefaultArgs<ExtArgs>
@@ -1834,7 +1739,6 @@ export namespace Prisma {
     bio?: boolean
     joined?: boolean
     goals?: boolean
-    experience?: boolean
     Github?: boolean
     Instagram?: boolean
     LinkedIn?: boolean
@@ -1860,7 +1764,6 @@ export namespace Prisma {
     bio?: boolean
     joined?: boolean
     goals?: boolean
-    experience?: boolean
     Github?: boolean
     Instagram?: boolean
     LinkedIn?: boolean
@@ -1886,7 +1789,6 @@ export namespace Prisma {
     bio?: boolean
     joined?: boolean
     goals?: boolean
-    experience?: boolean
     Github?: boolean
     Instagram?: boolean
     LinkedIn?: boolean
@@ -1894,9 +1796,8 @@ export namespace Prisma {
     Website?: boolean
   }
 
-  export type MenteeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "first_name" | "last_name" | "age" | "gender" | "email" | "phone_number" | "password" | "location" | "updateAt" | "last_login" | "ratings" | "profile_picture" | "supabaseId" | "bio" | "joined" | "goals" | "experience" | "Github" | "Instagram" | "LinkedIn" | "Twitter" | "Website", ExtArgs["result"]["mentee"]>
+  export type MenteeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "first_name" | "last_name" | "age" | "gender" | "email" | "phone_number" | "password" | "location" | "updateAt" | "last_login" | "ratings" | "profile_picture" | "supabaseId" | "bio" | "joined" | "goals" | "Github" | "Instagram" | "LinkedIn" | "Twitter" | "Website", ExtArgs["result"]["mentee"]>
   export type MenteeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversations?: boolean | Mentee$conversationsArgs<ExtArgs>
     sessions?: boolean | Mentee$sessionsArgs<ExtArgs>
     mentor?: boolean | Mentee$mentorArgs<ExtArgs>
     _count?: boolean | MenteeCountOutputTypeDefaultArgs<ExtArgs>
@@ -1907,7 +1808,6 @@ export namespace Prisma {
   export type $MenteePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Mentee"
     objects: {
-      conversations: Prisma.$ConversationPayload<ExtArgs>[]
       sessions: Prisma.$sessionsPayload<ExtArgs>[]
       mentor: Prisma.$MentorPayload<ExtArgs>[]
     }
@@ -1929,7 +1829,6 @@ export namespace Prisma {
       bio: string
       joined: Date
       goals: string[]
-      experience: number
       Github: string | null
       Instagram: string | null
       LinkedIn: string | null
@@ -2329,7 +2228,6 @@ export namespace Prisma {
    */
   export interface Prisma__MenteeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    conversations<T extends Mentee$conversationsArgs<ExtArgs> = {}>(args?: Subset<T, Mentee$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sessions<T extends Mentee$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, Mentee$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$sessionsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     mentor<T extends Mentee$mentorArgs<ExtArgs> = {}>(args?: Subset<T, Mentee$mentorArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MentorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -2378,7 +2276,6 @@ export namespace Prisma {
     readonly bio: FieldRef<"Mentee", 'String'>
     readonly joined: FieldRef<"Mentee", 'DateTime'>
     readonly goals: FieldRef<"Mentee", 'String[]'>
-    readonly experience: FieldRef<"Mentee", 'Int'>
     readonly Github: FieldRef<"Mentee", 'String'>
     readonly Instagram: FieldRef<"Mentee", 'String'>
     readonly LinkedIn: FieldRef<"Mentee", 'String'>
@@ -2772,30 +2669,6 @@ export namespace Prisma {
   }
 
   /**
-   * Mentee.conversations
-   */
-  export type Mentee$conversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Conversation
-     */
-    select?: ConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Conversation
-     */
-    omit?: ConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConversationInclude<ExtArgs> | null
-    where?: ConversationWhereInput
-    orderBy?: ConversationOrderByWithRelationInput | ConversationOrderByWithRelationInput[]
-    cursor?: ConversationWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ConversationScalarFieldEnum | ConversationScalarFieldEnum[]
-  }
-
-  /**
    * Mentee.sessions
    */
   export type Mentee$sessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2863,1095 +2736,6 @@ export namespace Prisma {
 
 
   /**
-   * Model Achievements
-   */
-
-  export type AggregateAchievements = {
-    _count: AchievementsCountAggregateOutputType | null
-    _avg: AchievementsAvgAggregateOutputType | null
-    _sum: AchievementsSumAggregateOutputType | null
-    _min: AchievementsMinAggregateOutputType | null
-    _max: AchievementsMaxAggregateOutputType | null
-  }
-
-  export type AchievementsAvgAggregateOutputType = {
-    id: number | null
-  }
-
-  export type AchievementsSumAggregateOutputType = {
-    id: number | null
-  }
-
-  export type AchievementsMinAggregateOutputType = {
-    id: number | null
-    supabaseId: string | null
-  }
-
-  export type AchievementsMaxAggregateOutputType = {
-    id: number | null
-    supabaseId: string | null
-  }
-
-  export type AchievementsCountAggregateOutputType = {
-    id: number
-    supabaseId: number
-    experience: number
-    education: number
-    accolades: number
-    reviews: number
-    _all: number
-  }
-
-
-  export type AchievementsAvgAggregateInputType = {
-    id?: true
-  }
-
-  export type AchievementsSumAggregateInputType = {
-    id?: true
-  }
-
-  export type AchievementsMinAggregateInputType = {
-    id?: true
-    supabaseId?: true
-  }
-
-  export type AchievementsMaxAggregateInputType = {
-    id?: true
-    supabaseId?: true
-  }
-
-  export type AchievementsCountAggregateInputType = {
-    id?: true
-    supabaseId?: true
-    experience?: true
-    education?: true
-    accolades?: true
-    reviews?: true
-    _all?: true
-  }
-
-  export type AchievementsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Achievements to aggregate.
-     */
-    where?: AchievementsWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Achievements to fetch.
-     */
-    orderBy?: AchievementsOrderByWithRelationInput | AchievementsOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: AchievementsWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Achievements from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Achievements.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned Achievements
-    **/
-    _count?: true | AchievementsCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: AchievementsAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: AchievementsSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: AchievementsMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: AchievementsMaxAggregateInputType
-  }
-
-  export type GetAchievementsAggregateType<T extends AchievementsAggregateArgs> = {
-        [P in keyof T & keyof AggregateAchievements]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateAchievements[P]>
-      : GetScalarType<T[P], AggregateAchievements[P]>
-  }
-
-
-
-
-  export type AchievementsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AchievementsWhereInput
-    orderBy?: AchievementsOrderByWithAggregationInput | AchievementsOrderByWithAggregationInput[]
-    by: AchievementsScalarFieldEnum[] | AchievementsScalarFieldEnum
-    having?: AchievementsScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: AchievementsCountAggregateInputType | true
-    _avg?: AchievementsAvgAggregateInputType
-    _sum?: AchievementsSumAggregateInputType
-    _min?: AchievementsMinAggregateInputType
-    _max?: AchievementsMaxAggregateInputType
-  }
-
-  export type AchievementsGroupByOutputType = {
-    id: number
-    supabaseId: string
-    experience: string[]
-    education: string[]
-    accolades: string[]
-    reviews: string[]
-    _count: AchievementsCountAggregateOutputType | null
-    _avg: AchievementsAvgAggregateOutputType | null
-    _sum: AchievementsSumAggregateOutputType | null
-    _min: AchievementsMinAggregateOutputType | null
-    _max: AchievementsMaxAggregateOutputType | null
-  }
-
-  type GetAchievementsGroupByPayload<T extends AchievementsGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<AchievementsGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof AchievementsGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], AchievementsGroupByOutputType[P]>
-            : GetScalarType<T[P], AchievementsGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type AchievementsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    supabaseId?: boolean
-    experience?: boolean
-    education?: boolean
-    accolades?: boolean
-    reviews?: boolean
-    mentor?: boolean | MentorDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["achievements"]>
-
-  export type AchievementsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    supabaseId?: boolean
-    experience?: boolean
-    education?: boolean
-    accolades?: boolean
-    reviews?: boolean
-    mentor?: boolean | MentorDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["achievements"]>
-
-  export type AchievementsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    supabaseId?: boolean
-    experience?: boolean
-    education?: boolean
-    accolades?: boolean
-    reviews?: boolean
-    mentor?: boolean | MentorDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["achievements"]>
-
-  export type AchievementsSelectScalar = {
-    id?: boolean
-    supabaseId?: boolean
-    experience?: boolean
-    education?: boolean
-    accolades?: boolean
-    reviews?: boolean
-  }
-
-  export type AchievementsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "supabaseId" | "experience" | "education" | "accolades" | "reviews", ExtArgs["result"]["achievements"]>
-  export type AchievementsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    mentor?: boolean | MentorDefaultArgs<ExtArgs>
-  }
-  export type AchievementsIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    mentor?: boolean | MentorDefaultArgs<ExtArgs>
-  }
-  export type AchievementsIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    mentor?: boolean | MentorDefaultArgs<ExtArgs>
-  }
-
-  export type $AchievementsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Achievements"
-    objects: {
-      mentor: Prisma.$MentorPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: number
-      supabaseId: string
-      experience: string[]
-      education: string[]
-      accolades: string[]
-      reviews: string[]
-    }, ExtArgs["result"]["achievements"]>
-    composites: {}
-  }
-
-  type AchievementsGetPayload<S extends boolean | null | undefined | AchievementsDefaultArgs> = $Result.GetResult<Prisma.$AchievementsPayload, S>
-
-  type AchievementsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<AchievementsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: AchievementsCountAggregateInputType | true
-    }
-
-  export interface AchievementsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Achievements'], meta: { name: 'Achievements' } }
-    /**
-     * Find zero or one Achievements that matches the filter.
-     * @param {AchievementsFindUniqueArgs} args - Arguments to find a Achievements
-     * @example
-     * // Get one Achievements
-     * const achievements = await prisma.achievements.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends AchievementsFindUniqueArgs>(args: SelectSubset<T, AchievementsFindUniqueArgs<ExtArgs>>): Prisma__AchievementsClient<$Result.GetResult<Prisma.$AchievementsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one Achievements that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {AchievementsFindUniqueOrThrowArgs} args - Arguments to find a Achievements
-     * @example
-     * // Get one Achievements
-     * const achievements = await prisma.achievements.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends AchievementsFindUniqueOrThrowArgs>(args: SelectSubset<T, AchievementsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AchievementsClient<$Result.GetResult<Prisma.$AchievementsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Achievements that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AchievementsFindFirstArgs} args - Arguments to find a Achievements
-     * @example
-     * // Get one Achievements
-     * const achievements = await prisma.achievements.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends AchievementsFindFirstArgs>(args?: SelectSubset<T, AchievementsFindFirstArgs<ExtArgs>>): Prisma__AchievementsClient<$Result.GetResult<Prisma.$AchievementsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Achievements that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AchievementsFindFirstOrThrowArgs} args - Arguments to find a Achievements
-     * @example
-     * // Get one Achievements
-     * const achievements = await prisma.achievements.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends AchievementsFindFirstOrThrowArgs>(args?: SelectSubset<T, AchievementsFindFirstOrThrowArgs<ExtArgs>>): Prisma__AchievementsClient<$Result.GetResult<Prisma.$AchievementsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more Achievements that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AchievementsFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all Achievements
-     * const achievements = await prisma.achievements.findMany()
-     * 
-     * // Get first 10 Achievements
-     * const achievements = await prisma.achievements.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const achievementsWithIdOnly = await prisma.achievements.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends AchievementsFindManyArgs>(args?: SelectSubset<T, AchievementsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AchievementsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a Achievements.
-     * @param {AchievementsCreateArgs} args - Arguments to create a Achievements.
-     * @example
-     * // Create one Achievements
-     * const Achievements = await prisma.achievements.create({
-     *   data: {
-     *     // ... data to create a Achievements
-     *   }
-     * })
-     * 
-     */
-    create<T extends AchievementsCreateArgs>(args: SelectSubset<T, AchievementsCreateArgs<ExtArgs>>): Prisma__AchievementsClient<$Result.GetResult<Prisma.$AchievementsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many Achievements.
-     * @param {AchievementsCreateManyArgs} args - Arguments to create many Achievements.
-     * @example
-     * // Create many Achievements
-     * const achievements = await prisma.achievements.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends AchievementsCreateManyArgs>(args?: SelectSubset<T, AchievementsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many Achievements and returns the data saved in the database.
-     * @param {AchievementsCreateManyAndReturnArgs} args - Arguments to create many Achievements.
-     * @example
-     * // Create many Achievements
-     * const achievements = await prisma.achievements.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Achievements and only return the `id`
-     * const achievementsWithIdOnly = await prisma.achievements.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends AchievementsCreateManyAndReturnArgs>(args?: SelectSubset<T, AchievementsCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AchievementsPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a Achievements.
-     * @param {AchievementsDeleteArgs} args - Arguments to delete one Achievements.
-     * @example
-     * // Delete one Achievements
-     * const Achievements = await prisma.achievements.delete({
-     *   where: {
-     *     // ... filter to delete one Achievements
-     *   }
-     * })
-     * 
-     */
-    delete<T extends AchievementsDeleteArgs>(args: SelectSubset<T, AchievementsDeleteArgs<ExtArgs>>): Prisma__AchievementsClient<$Result.GetResult<Prisma.$AchievementsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one Achievements.
-     * @param {AchievementsUpdateArgs} args - Arguments to update one Achievements.
-     * @example
-     * // Update one Achievements
-     * const achievements = await prisma.achievements.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends AchievementsUpdateArgs>(args: SelectSubset<T, AchievementsUpdateArgs<ExtArgs>>): Prisma__AchievementsClient<$Result.GetResult<Prisma.$AchievementsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more Achievements.
-     * @param {AchievementsDeleteManyArgs} args - Arguments to filter Achievements to delete.
-     * @example
-     * // Delete a few Achievements
-     * const { count } = await prisma.achievements.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends AchievementsDeleteManyArgs>(args?: SelectSubset<T, AchievementsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Achievements.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AchievementsUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many Achievements
-     * const achievements = await prisma.achievements.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends AchievementsUpdateManyArgs>(args: SelectSubset<T, AchievementsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Achievements and returns the data updated in the database.
-     * @param {AchievementsUpdateManyAndReturnArgs} args - Arguments to update many Achievements.
-     * @example
-     * // Update many Achievements
-     * const achievements = await prisma.achievements.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Achievements and only return the `id`
-     * const achievementsWithIdOnly = await prisma.achievements.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends AchievementsUpdateManyAndReturnArgs>(args: SelectSubset<T, AchievementsUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AchievementsPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one Achievements.
-     * @param {AchievementsUpsertArgs} args - Arguments to update or create a Achievements.
-     * @example
-     * // Update or create a Achievements
-     * const achievements = await prisma.achievements.upsert({
-     *   create: {
-     *     // ... data to create a Achievements
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the Achievements we want to update
-     *   }
-     * })
-     */
-    upsert<T extends AchievementsUpsertArgs>(args: SelectSubset<T, AchievementsUpsertArgs<ExtArgs>>): Prisma__AchievementsClient<$Result.GetResult<Prisma.$AchievementsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of Achievements.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AchievementsCountArgs} args - Arguments to filter Achievements to count.
-     * @example
-     * // Count the number of Achievements
-     * const count = await prisma.achievements.count({
-     *   where: {
-     *     // ... the filter for the Achievements we want to count
-     *   }
-     * })
-    **/
-    count<T extends AchievementsCountArgs>(
-      args?: Subset<T, AchievementsCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], AchievementsCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a Achievements.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AchievementsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends AchievementsAggregateArgs>(args: Subset<T, AchievementsAggregateArgs>): Prisma.PrismaPromise<GetAchievementsAggregateType<T>>
-
-    /**
-     * Group by Achievements.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {AchievementsGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends AchievementsGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: AchievementsGroupByArgs['orderBy'] }
-        : { orderBy?: AchievementsGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, AchievementsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAchievementsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the Achievements model
-   */
-  readonly fields: AchievementsFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for Achievements.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__AchievementsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    mentor<T extends MentorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MentorDefaultArgs<ExtArgs>>): Prisma__MentorClient<$Result.GetResult<Prisma.$MentorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the Achievements model
-   */
-  interface AchievementsFieldRefs {
-    readonly id: FieldRef<"Achievements", 'Int'>
-    readonly supabaseId: FieldRef<"Achievements", 'String'>
-    readonly experience: FieldRef<"Achievements", 'String[]'>
-    readonly education: FieldRef<"Achievements", 'String[]'>
-    readonly accolades: FieldRef<"Achievements", 'String[]'>
-    readonly reviews: FieldRef<"Achievements", 'String[]'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * Achievements findUnique
-   */
-  export type AchievementsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsInclude<ExtArgs> | null
-    /**
-     * Filter, which Achievements to fetch.
-     */
-    where: AchievementsWhereUniqueInput
-  }
-
-  /**
-   * Achievements findUniqueOrThrow
-   */
-  export type AchievementsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsInclude<ExtArgs> | null
-    /**
-     * Filter, which Achievements to fetch.
-     */
-    where: AchievementsWhereUniqueInput
-  }
-
-  /**
-   * Achievements findFirst
-   */
-  export type AchievementsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsInclude<ExtArgs> | null
-    /**
-     * Filter, which Achievements to fetch.
-     */
-    where?: AchievementsWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Achievements to fetch.
-     */
-    orderBy?: AchievementsOrderByWithRelationInput | AchievementsOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Achievements.
-     */
-    cursor?: AchievementsWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Achievements from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Achievements.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Achievements.
-     */
-    distinct?: AchievementsScalarFieldEnum | AchievementsScalarFieldEnum[]
-  }
-
-  /**
-   * Achievements findFirstOrThrow
-   */
-  export type AchievementsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsInclude<ExtArgs> | null
-    /**
-     * Filter, which Achievements to fetch.
-     */
-    where?: AchievementsWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Achievements to fetch.
-     */
-    orderBy?: AchievementsOrderByWithRelationInput | AchievementsOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Achievements.
-     */
-    cursor?: AchievementsWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Achievements from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Achievements.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Achievements.
-     */
-    distinct?: AchievementsScalarFieldEnum | AchievementsScalarFieldEnum[]
-  }
-
-  /**
-   * Achievements findMany
-   */
-  export type AchievementsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsInclude<ExtArgs> | null
-    /**
-     * Filter, which Achievements to fetch.
-     */
-    where?: AchievementsWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Achievements to fetch.
-     */
-    orderBy?: AchievementsOrderByWithRelationInput | AchievementsOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing Achievements.
-     */
-    cursor?: AchievementsWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Achievements from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Achievements.
-     */
-    skip?: number
-    distinct?: AchievementsScalarFieldEnum | AchievementsScalarFieldEnum[]
-  }
-
-  /**
-   * Achievements create
-   */
-  export type AchievementsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsInclude<ExtArgs> | null
-    /**
-     * The data needed to create a Achievements.
-     */
-    data: XOR<AchievementsCreateInput, AchievementsUncheckedCreateInput>
-  }
-
-  /**
-   * Achievements createMany
-   */
-  export type AchievementsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many Achievements.
-     */
-    data: AchievementsCreateManyInput | AchievementsCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Achievements createManyAndReturn
-   */
-  export type AchievementsCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * The data used to create many Achievements.
-     */
-    data: AchievementsCreateManyInput | AchievementsCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * Achievements update
-   */
-  export type AchievementsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsInclude<ExtArgs> | null
-    /**
-     * The data needed to update a Achievements.
-     */
-    data: XOR<AchievementsUpdateInput, AchievementsUncheckedUpdateInput>
-    /**
-     * Choose, which Achievements to update.
-     */
-    where: AchievementsWhereUniqueInput
-  }
-
-  /**
-   * Achievements updateMany
-   */
-  export type AchievementsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update Achievements.
-     */
-    data: XOR<AchievementsUpdateManyMutationInput, AchievementsUncheckedUpdateManyInput>
-    /**
-     * Filter which Achievements to update
-     */
-    where?: AchievementsWhereInput
-    /**
-     * Limit how many Achievements to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * Achievements updateManyAndReturn
-   */
-  export type AchievementsUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * The data used to update Achievements.
-     */
-    data: XOR<AchievementsUpdateManyMutationInput, AchievementsUncheckedUpdateManyInput>
-    /**
-     * Filter which Achievements to update
-     */
-    where?: AchievementsWhereInput
-    /**
-     * Limit how many Achievements to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * Achievements upsert
-   */
-  export type AchievementsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsInclude<ExtArgs> | null
-    /**
-     * The filter to search for the Achievements to update in case it exists.
-     */
-    where: AchievementsWhereUniqueInput
-    /**
-     * In case the Achievements found by the `where` argument doesn't exist, create a new Achievements with this data.
-     */
-    create: XOR<AchievementsCreateInput, AchievementsUncheckedCreateInput>
-    /**
-     * In case the Achievements was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<AchievementsUpdateInput, AchievementsUncheckedUpdateInput>
-  }
-
-  /**
-   * Achievements delete
-   */
-  export type AchievementsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsInclude<ExtArgs> | null
-    /**
-     * Filter which Achievements to delete.
-     */
-    where: AchievementsWhereUniqueInput
-  }
-
-  /**
-   * Achievements deleteMany
-   */
-  export type AchievementsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Achievements to delete
-     */
-    where?: AchievementsWhereInput
-    /**
-     * Limit how many Achievements to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * Achievements without action
-   */
-  export type AchievementsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model Mentor
    */
 
@@ -3967,14 +2751,12 @@ export namespace Prisma {
     id: number | null
     age: number | null
     ratings: number | null
-    experience: number | null
   }
 
   export type MentorSumAggregateOutputType = {
     id: number | null
     age: number | null
     ratings: number | null
-    experience: number | null
   }
 
   export type MentorMinAggregateOutputType = {
@@ -3994,7 +2776,7 @@ export namespace Prisma {
     updateAt: Date | null
     last_login: Date | null
     bio: string | null
-    experience: number | null
+    resumeId: string | null
     Github: string | null
     Instagram: string | null
     LinkedIn: string | null
@@ -4019,7 +2801,7 @@ export namespace Prisma {
     updateAt: Date | null
     last_login: Date | null
     bio: string | null
-    experience: number | null
+    resumeId: string | null
     Github: string | null
     Instagram: string | null
     LinkedIn: string | null
@@ -4046,6 +2828,7 @@ export namespace Prisma {
     expertise: number
     bio: number
     experience: number
+    resumeId: number
     Github: number
     Instagram: number
     LinkedIn: number
@@ -4059,14 +2842,12 @@ export namespace Prisma {
     id?: true
     age?: true
     ratings?: true
-    experience?: true
   }
 
   export type MentorSumAggregateInputType = {
     id?: true
     age?: true
     ratings?: true
-    experience?: true
   }
 
   export type MentorMinAggregateInputType = {
@@ -4086,7 +2867,7 @@ export namespace Prisma {
     updateAt?: true
     last_login?: true
     bio?: true
-    experience?: true
+    resumeId?: true
     Github?: true
     Instagram?: true
     LinkedIn?: true
@@ -4111,7 +2892,7 @@ export namespace Prisma {
     updateAt?: true
     last_login?: true
     bio?: true
-    experience?: true
+    resumeId?: true
     Github?: true
     Instagram?: true
     LinkedIn?: true
@@ -4138,6 +2919,7 @@ export namespace Prisma {
     expertise?: true
     bio?: true
     experience?: true
+    resumeId?: true
     Github?: true
     Instagram?: true
     LinkedIn?: true
@@ -4250,7 +3032,8 @@ export namespace Prisma {
     last_login: Date
     expertise: string[]
     bio: string
-    experience: number
+    experience: JsonValue
+    resumeId: string
     Github: string | null
     Instagram: string | null
     LinkedIn: string
@@ -4296,13 +3079,12 @@ export namespace Prisma {
     expertise?: boolean
     bio?: boolean
     experience?: boolean
+    resumeId?: boolean
     Github?: boolean
     Instagram?: boolean
     LinkedIn?: boolean
     Twitter?: boolean
     Website?: boolean
-    achievement?: boolean | Mentor$achievementArgs<ExtArgs>
-    conversations?: boolean | Mentor$conversationsArgs<ExtArgs>
     sessions?: boolean | Mentor$sessionsArgs<ExtArgs>
     mentee?: boolean | Mentor$menteeArgs<ExtArgs>
     _count?: boolean | MentorCountOutputTypeDefaultArgs<ExtArgs>
@@ -4327,6 +3109,7 @@ export namespace Prisma {
     expertise?: boolean
     bio?: boolean
     experience?: boolean
+    resumeId?: boolean
     Github?: boolean
     Instagram?: boolean
     LinkedIn?: boolean
@@ -4353,6 +3136,7 @@ export namespace Prisma {
     expertise?: boolean
     bio?: boolean
     experience?: boolean
+    resumeId?: boolean
     Github?: boolean
     Instagram?: boolean
     LinkedIn?: boolean
@@ -4379,6 +3163,7 @@ export namespace Prisma {
     expertise?: boolean
     bio?: boolean
     experience?: boolean
+    resumeId?: boolean
     Github?: boolean
     Instagram?: boolean
     LinkedIn?: boolean
@@ -4386,10 +3171,8 @@ export namespace Prisma {
     Website?: boolean
   }
 
-  export type MentorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "first_name" | "last_name" | "age" | "email" | "phone_number" | "password" | "supabaseId" | "gender" | "profile_picture" | "location" | "joined" | "ratings" | "updateAt" | "last_login" | "expertise" | "bio" | "experience" | "Github" | "Instagram" | "LinkedIn" | "Twitter" | "Website", ExtArgs["result"]["mentor"]>
+  export type MentorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "first_name" | "last_name" | "age" | "email" | "phone_number" | "password" | "supabaseId" | "gender" | "profile_picture" | "location" | "joined" | "ratings" | "updateAt" | "last_login" | "expertise" | "bio" | "experience" | "resumeId" | "Github" | "Instagram" | "LinkedIn" | "Twitter" | "Website", ExtArgs["result"]["mentor"]>
   export type MentorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    achievement?: boolean | Mentor$achievementArgs<ExtArgs>
-    conversations?: boolean | Mentor$conversationsArgs<ExtArgs>
     sessions?: boolean | Mentor$sessionsArgs<ExtArgs>
     mentee?: boolean | Mentor$menteeArgs<ExtArgs>
     _count?: boolean | MentorCountOutputTypeDefaultArgs<ExtArgs>
@@ -4400,8 +3183,6 @@ export namespace Prisma {
   export type $MentorPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Mentor"
     objects: {
-      achievement: Prisma.$AchievementsPayload<ExtArgs> | null
-      conversations: Prisma.$ConversationPayload<ExtArgs>[]
       sessions: Prisma.$sessionsPayload<ExtArgs>[]
       mentee: Prisma.$MenteePayload<ExtArgs>[]
     }
@@ -4423,7 +3204,8 @@ export namespace Prisma {
       last_login: Date
       expertise: string[]
       bio: string
-      experience: number
+      experience: Prisma.JsonValue
+      resumeId: string
       Github: string | null
       Instagram: string | null
       LinkedIn: string
@@ -4823,8 +3605,6 @@ export namespace Prisma {
    */
   export interface Prisma__MentorClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    achievement<T extends Mentor$achievementArgs<ExtArgs> = {}>(args?: Subset<T, Mentor$achievementArgs<ExtArgs>>): Prisma__AchievementsClient<$Result.GetResult<Prisma.$AchievementsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    conversations<T extends Mentor$conversationsArgs<ExtArgs> = {}>(args?: Subset<T, Mentor$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sessions<T extends Mentor$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, Mentor$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$sessionsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     mentee<T extends Mentor$menteeArgs<ExtArgs> = {}>(args?: Subset<T, Mentor$menteeArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MenteePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -4873,7 +3653,8 @@ export namespace Prisma {
     readonly last_login: FieldRef<"Mentor", 'DateTime'>
     readonly expertise: FieldRef<"Mentor", 'String[]'>
     readonly bio: FieldRef<"Mentor", 'String'>
-    readonly experience: FieldRef<"Mentor", 'Int'>
+    readonly experience: FieldRef<"Mentor", 'Json'>
+    readonly resumeId: FieldRef<"Mentor", 'String'>
     readonly Github: FieldRef<"Mentor", 'String'>
     readonly Instagram: FieldRef<"Mentor", 'String'>
     readonly LinkedIn: FieldRef<"Mentor", 'String'>
@@ -5267,49 +4048,6 @@ export namespace Prisma {
   }
 
   /**
-   * Mentor.achievement
-   */
-  export type Mentor$achievementArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Achievements
-     */
-    select?: AchievementsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Achievements
-     */
-    omit?: AchievementsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AchievementsInclude<ExtArgs> | null
-    where?: AchievementsWhereInput
-  }
-
-  /**
-   * Mentor.conversations
-   */
-  export type Mentor$conversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Conversation
-     */
-    select?: ConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Conversation
-     */
-    omit?: ConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConversationInclude<ExtArgs> | null
-    where?: ConversationWhereInput
-    orderBy?: ConversationOrderByWithRelationInput | ConversationOrderByWithRelationInput[]
-    cursor?: ConversationWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ConversationScalarFieldEnum | ConversationScalarFieldEnum[]
-  }
-
-  /**
    * Mentor.sessions
    */
   export type Mentor$sessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5398,29 +4136,35 @@ export namespace Prisma {
 
   export type ConversationMinAggregateOutputType = {
     id: number | null
-    menteeId: string | null
-    mentorId: string | null
+    participant1Id: string | null
+    participant2Id: string | null
+    type: $Enums.ConversationType | null
     createdAt: Date | null
     updatedAt: Date | null
     lastMessage: string | null
+    isActive: boolean | null
   }
 
   export type ConversationMaxAggregateOutputType = {
     id: number | null
-    menteeId: string | null
-    mentorId: string | null
+    participant1Id: string | null
+    participant2Id: string | null
+    type: $Enums.ConversationType | null
     createdAt: Date | null
     updatedAt: Date | null
     lastMessage: string | null
+    isActive: boolean | null
   }
 
   export type ConversationCountAggregateOutputType = {
     id: number
-    menteeId: number
-    mentorId: number
+    participant1Id: number
+    participant2Id: number
+    type: number
     createdAt: number
     updatedAt: number
     lastMessage: number
+    isActive: number
     _all: number
   }
 
@@ -5435,29 +4179,35 @@ export namespace Prisma {
 
   export type ConversationMinAggregateInputType = {
     id?: true
-    menteeId?: true
-    mentorId?: true
+    participant1Id?: true
+    participant2Id?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
     lastMessage?: true
+    isActive?: true
   }
 
   export type ConversationMaxAggregateInputType = {
     id?: true
-    menteeId?: true
-    mentorId?: true
+    participant1Id?: true
+    participant2Id?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
     lastMessage?: true
+    isActive?: true
   }
 
   export type ConversationCountAggregateInputType = {
     id?: true
-    menteeId?: true
-    mentorId?: true
+    participant1Id?: true
+    participant2Id?: true
+    type?: true
     createdAt?: true
     updatedAt?: true
     lastMessage?: true
+    isActive?: true
     _all?: true
   }
 
@@ -5549,11 +4299,13 @@ export namespace Prisma {
 
   export type ConversationGroupByOutputType = {
     id: number
-    menteeId: string
-    mentorId: string
+    participant1Id: string
+    participant2Id: string
+    type: $Enums.ConversationType
     createdAt: Date
     updatedAt: Date
     lastMessage: string | null
+    isActive: boolean
     _count: ConversationCountAggregateOutputType | null
     _avg: ConversationAvgAggregateOutputType | null
     _sum: ConversationSumAggregateOutputType | null
@@ -5577,78 +4329,72 @@ export namespace Prisma {
 
   export type ConversationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    menteeId?: boolean
-    mentorId?: boolean
+    participant1Id?: boolean
+    participant2Id?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lastMessage?: boolean
-    mentee?: boolean | MenteeDefaultArgs<ExtArgs>
-    mentor?: boolean | MentorDefaultArgs<ExtArgs>
+    isActive?: boolean
     messages?: boolean | Conversation$messagesArgs<ExtArgs>
     _count?: boolean | ConversationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversation"]>
 
   export type ConversationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    menteeId?: boolean
-    mentorId?: boolean
+    participant1Id?: boolean
+    participant2Id?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lastMessage?: boolean
-    mentee?: boolean | MenteeDefaultArgs<ExtArgs>
-    mentor?: boolean | MentorDefaultArgs<ExtArgs>
+    isActive?: boolean
   }, ExtArgs["result"]["conversation"]>
 
   export type ConversationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    menteeId?: boolean
-    mentorId?: boolean
+    participant1Id?: boolean
+    participant2Id?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lastMessage?: boolean
-    mentee?: boolean | MenteeDefaultArgs<ExtArgs>
-    mentor?: boolean | MentorDefaultArgs<ExtArgs>
+    isActive?: boolean
   }, ExtArgs["result"]["conversation"]>
 
   export type ConversationSelectScalar = {
     id?: boolean
-    menteeId?: boolean
-    mentorId?: boolean
+    participant1Id?: boolean
+    participant2Id?: boolean
+    type?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lastMessage?: boolean
+    isActive?: boolean
   }
 
-  export type ConversationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "menteeId" | "mentorId" | "createdAt" | "updatedAt" | "lastMessage", ExtArgs["result"]["conversation"]>
+  export type ConversationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "participant1Id" | "participant2Id" | "type" | "createdAt" | "updatedAt" | "lastMessage" | "isActive", ExtArgs["result"]["conversation"]>
   export type ConversationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    mentee?: boolean | MenteeDefaultArgs<ExtArgs>
-    mentor?: boolean | MentorDefaultArgs<ExtArgs>
     messages?: boolean | Conversation$messagesArgs<ExtArgs>
     _count?: boolean | ConversationCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type ConversationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    mentee?: boolean | MenteeDefaultArgs<ExtArgs>
-    mentor?: boolean | MentorDefaultArgs<ExtArgs>
-  }
-  export type ConversationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    mentee?: boolean | MenteeDefaultArgs<ExtArgs>
-    mentor?: boolean | MentorDefaultArgs<ExtArgs>
-  }
+  export type ConversationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type ConversationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
   export type $ConversationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Conversation"
     objects: {
-      mentee: Prisma.$MenteePayload<ExtArgs>
-      mentor: Prisma.$MentorPayload<ExtArgs>
       messages: Prisma.$MessagePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
-      menteeId: string
-      mentorId: string
+      participant1Id: string
+      participant2Id: string
+      type: $Enums.ConversationType
       createdAt: Date
       updatedAt: Date
       lastMessage: string | null
+      isActive: boolean
     }, ExtArgs["result"]["conversation"]>
     composites: {}
   }
@@ -6043,8 +4789,6 @@ export namespace Prisma {
    */
   export interface Prisma__ConversationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    mentee<T extends MenteeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MenteeDefaultArgs<ExtArgs>>): Prisma__MenteeClient<$Result.GetResult<Prisma.$MenteePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    mentor<T extends MentorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MentorDefaultArgs<ExtArgs>>): Prisma__MentorClient<$Result.GetResult<Prisma.$MentorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     messages<T extends Conversation$messagesArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -6076,11 +4820,13 @@ export namespace Prisma {
    */
   interface ConversationFieldRefs {
     readonly id: FieldRef<"Conversation", 'Int'>
-    readonly menteeId: FieldRef<"Conversation", 'String'>
-    readonly mentorId: FieldRef<"Conversation", 'String'>
+    readonly participant1Id: FieldRef<"Conversation", 'String'>
+    readonly participant2Id: FieldRef<"Conversation", 'String'>
+    readonly type: FieldRef<"Conversation", 'ConversationType'>
     readonly createdAt: FieldRef<"Conversation", 'DateTime'>
     readonly updatedAt: FieldRef<"Conversation", 'DateTime'>
     readonly lastMessage: FieldRef<"Conversation", 'String'>
+    readonly isActive: FieldRef<"Conversation", 'Boolean'>
   }
     
 
@@ -6330,10 +5076,6 @@ export namespace Prisma {
      */
     data: ConversationCreateManyInput | ConversationCreateManyInput[]
     skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConversationIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -6404,10 +5146,6 @@ export namespace Prisma {
      * Limit how many Conversations to update.
      */
     limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConversationIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -6543,35 +5281,32 @@ export namespace Prisma {
 
   export type MessageMinAggregateOutputType = {
     id: number | null
-    conversationId: number | null
-    senderRole: string | null
     content: string | null
+    senderId: string | null
+    conversationId: number | null
     createdAt: Date | null
     isRead: boolean | null
-    messageType: string | null
-    senderId: string | null
+    messageType: $Enums.MessageType | null
   }
 
   export type MessageMaxAggregateOutputType = {
     id: number | null
-    conversationId: number | null
-    senderRole: string | null
     content: string | null
+    senderId: string | null
+    conversationId: number | null
     createdAt: Date | null
     isRead: boolean | null
-    messageType: string | null
-    senderId: string | null
+    messageType: $Enums.MessageType | null
   }
 
   export type MessageCountAggregateOutputType = {
     id: number
-    conversationId: number
-    senderRole: number
     content: number
+    senderId: number
+    conversationId: number
     createdAt: number
     isRead: number
     messageType: number
-    senderId: number
     _all: number
   }
 
@@ -6588,35 +5323,32 @@ export namespace Prisma {
 
   export type MessageMinAggregateInputType = {
     id?: true
-    conversationId?: true
-    senderRole?: true
     content?: true
+    senderId?: true
+    conversationId?: true
     createdAt?: true
     isRead?: true
     messageType?: true
-    senderId?: true
   }
 
   export type MessageMaxAggregateInputType = {
     id?: true
-    conversationId?: true
-    senderRole?: true
     content?: true
+    senderId?: true
+    conversationId?: true
     createdAt?: true
     isRead?: true
     messageType?: true
-    senderId?: true
   }
 
   export type MessageCountAggregateInputType = {
     id?: true
-    conversationId?: true
-    senderRole?: true
     content?: true
+    senderId?: true
+    conversationId?: true
     createdAt?: true
     isRead?: true
     messageType?: true
-    senderId?: true
     _all?: true
   }
 
@@ -6708,13 +5440,12 @@ export namespace Prisma {
 
   export type MessageGroupByOutputType = {
     id: number
-    conversationId: number
-    senderRole: string
     content: string
+    senderId: string
+    conversationId: number
     createdAt: Date
     isRead: boolean
-    messageType: string
-    senderId: string
+    messageType: $Enums.MessageType
     _count: MessageCountAggregateOutputType | null
     _avg: MessageAvgAggregateOutputType | null
     _sum: MessageSumAggregateOutputType | null
@@ -6738,52 +5469,48 @@ export namespace Prisma {
 
   export type MessageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    conversationId?: boolean
-    senderRole?: boolean
     content?: boolean
+    senderId?: boolean
+    conversationId?: boolean
     createdAt?: boolean
     isRead?: boolean
     messageType?: boolean
-    senderId?: boolean
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
 
   export type MessageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    conversationId?: boolean
-    senderRole?: boolean
     content?: boolean
+    senderId?: boolean
+    conversationId?: boolean
     createdAt?: boolean
     isRead?: boolean
     messageType?: boolean
-    senderId?: boolean
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
 
   export type MessageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    conversationId?: boolean
-    senderRole?: boolean
     content?: boolean
+    senderId?: boolean
+    conversationId?: boolean
     createdAt?: boolean
     isRead?: boolean
     messageType?: boolean
-    senderId?: boolean
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
 
   export type MessageSelectScalar = {
     id?: boolean
-    conversationId?: boolean
-    senderRole?: boolean
     content?: boolean
+    senderId?: boolean
+    conversationId?: boolean
     createdAt?: boolean
     isRead?: boolean
     messageType?: boolean
-    senderId?: boolean
   }
 
-  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "senderRole" | "content" | "createdAt" | "isRead" | "messageType" | "senderId", ExtArgs["result"]["message"]>
+  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "content" | "senderId" | "conversationId" | "createdAt" | "isRead" | "messageType", ExtArgs["result"]["message"]>
   export type MessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
@@ -6801,13 +5528,12 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
-      conversationId: number
-      senderRole: string
       content: string
+      senderId: string
+      conversationId: number
       createdAt: Date
       isRead: boolean
-      messageType: string
-      senderId: string
+      messageType: $Enums.MessageType
     }, ExtArgs["result"]["message"]>
     composites: {}
   }
@@ -7233,13 +5959,12 @@ export namespace Prisma {
    */
   interface MessageFieldRefs {
     readonly id: FieldRef<"Message", 'Int'>
-    readonly conversationId: FieldRef<"Message", 'Int'>
-    readonly senderRole: FieldRef<"Message", 'String'>
     readonly content: FieldRef<"Message", 'String'>
+    readonly senderId: FieldRef<"Message", 'String'>
+    readonly conversationId: FieldRef<"Message", 'Int'>
     readonly createdAt: FieldRef<"Message", 'DateTime'>
     readonly isRead: FieldRef<"Message", 'Boolean'>
-    readonly messageType: FieldRef<"Message", 'String'>
-    readonly senderId: FieldRef<"Message", 'String'>
+    readonly messageType: FieldRef<"Message", 'MessageType'>
   }
     
 
@@ -9011,7 +7736,6 @@ export namespace Prisma {
     bio: 'bio',
     joined: 'joined',
     goals: 'goals',
-    experience: 'experience',
     Github: 'Github',
     Instagram: 'Instagram',
     LinkedIn: 'LinkedIn',
@@ -9020,18 +7744,6 @@ export namespace Prisma {
   };
 
   export type MenteeScalarFieldEnum = (typeof MenteeScalarFieldEnum)[keyof typeof MenteeScalarFieldEnum]
-
-
-  export const AchievementsScalarFieldEnum: {
-    id: 'id',
-    supabaseId: 'supabaseId',
-    experience: 'experience',
-    education: 'education',
-    accolades: 'accolades',
-    reviews: 'reviews'
-  };
-
-  export type AchievementsScalarFieldEnum = (typeof AchievementsScalarFieldEnum)[keyof typeof AchievementsScalarFieldEnum]
 
 
   export const MentorScalarFieldEnum: {
@@ -9053,6 +7765,7 @@ export namespace Prisma {
     expertise: 'expertise',
     bio: 'bio',
     experience: 'experience',
+    resumeId: 'resumeId',
     Github: 'Github',
     Instagram: 'Instagram',
     LinkedIn: 'LinkedIn',
@@ -9065,11 +7778,13 @@ export namespace Prisma {
 
   export const ConversationScalarFieldEnum: {
     id: 'id',
-    menteeId: 'menteeId',
-    mentorId: 'mentorId',
+    participant1Id: 'participant1Id',
+    participant2Id: 'participant2Id',
+    type: 'type',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
-    lastMessage: 'lastMessage'
+    lastMessage: 'lastMessage',
+    isActive: 'isActive'
   };
 
   export type ConversationScalarFieldEnum = (typeof ConversationScalarFieldEnum)[keyof typeof ConversationScalarFieldEnum]
@@ -9077,13 +7792,12 @@ export namespace Prisma {
 
   export const MessageScalarFieldEnum: {
     id: 'id',
-    conversationId: 'conversationId',
-    senderRole: 'senderRole',
     content: 'content',
+    senderId: 'senderId',
+    conversationId: 'conversationId',
     createdAt: 'createdAt',
     isRead: 'isRead',
-    messageType: 'messageType',
-    senderId: 'senderId'
+    messageType: 'messageType'
   };
 
   export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
@@ -9125,6 +7839,13 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
   export const QueryMode: {
     default: 'default',
     insensitive: 'insensitive'
@@ -9139,6 +7860,15 @@ export namespace Prisma {
   };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
   /**
@@ -9189,9 +7919,51 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
+   * Reference to a field of type 'ConversationType'
+   */
+  export type EnumConversationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConversationType'>
+    
+
+
+  /**
+   * Reference to a field of type 'ConversationType[]'
+   */
+  export type ListEnumConversationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ConversationType[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Boolean'
    */
   export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
+   * Reference to a field of type 'MessageType'
+   */
+  export type EnumMessageTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageType'>
+    
+
+
+  /**
+   * Reference to a field of type 'MessageType[]'
+   */
+  export type ListEnumMessageTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageType[]'>
     
 
 
@@ -9247,13 +8019,11 @@ export namespace Prisma {
     bio?: StringFilter<"Mentee"> | string
     joined?: DateTimeFilter<"Mentee"> | Date | string
     goals?: StringNullableListFilter<"Mentee">
-    experience?: IntFilter<"Mentee"> | number
     Github?: StringNullableFilter<"Mentee"> | string | null
     Instagram?: StringNullableFilter<"Mentee"> | string | null
     LinkedIn?: StringNullableFilter<"Mentee"> | string | null
     Twitter?: StringNullableFilter<"Mentee"> | string | null
     Website?: StringNullableFilter<"Mentee"> | string | null
-    conversations?: ConversationListRelationFilter
     sessions?: SessionsListRelationFilter
     mentor?: MentorListRelationFilter
   }
@@ -9276,13 +8046,11 @@ export namespace Prisma {
     bio?: SortOrder
     joined?: SortOrder
     goals?: SortOrder
-    experience?: SortOrder
     Github?: SortOrderInput | SortOrder
     Instagram?: SortOrderInput | SortOrder
     LinkedIn?: SortOrderInput | SortOrder
     Twitter?: SortOrderInput | SortOrder
     Website?: SortOrderInput | SortOrder
-    conversations?: ConversationOrderByRelationAggregateInput
     sessions?: sessionsOrderByRelationAggregateInput
     mentor?: MentorOrderByRelationAggregateInput
   }
@@ -9308,13 +8076,11 @@ export namespace Prisma {
     bio?: StringFilter<"Mentee"> | string
     joined?: DateTimeFilter<"Mentee"> | Date | string
     goals?: StringNullableListFilter<"Mentee">
-    experience?: IntFilter<"Mentee"> | number
     Github?: StringNullableFilter<"Mentee"> | string | null
     Instagram?: StringNullableFilter<"Mentee"> | string | null
     LinkedIn?: StringNullableFilter<"Mentee"> | string | null
     Twitter?: StringNullableFilter<"Mentee"> | string | null
     Website?: StringNullableFilter<"Mentee"> | string | null
-    conversations?: ConversationListRelationFilter
     sessions?: SessionsListRelationFilter
     mentor?: MentorListRelationFilter
   }, "id" | "email" | "phone_number" | "supabaseId">
@@ -9337,7 +8103,6 @@ export namespace Prisma {
     bio?: SortOrder
     joined?: SortOrder
     goals?: SortOrder
-    experience?: SortOrder
     Github?: SortOrderInput | SortOrder
     Instagram?: SortOrderInput | SortOrder
     LinkedIn?: SortOrderInput | SortOrder
@@ -9371,74 +8136,11 @@ export namespace Prisma {
     bio?: StringWithAggregatesFilter<"Mentee"> | string
     joined?: DateTimeWithAggregatesFilter<"Mentee"> | Date | string
     goals?: StringNullableListFilter<"Mentee">
-    experience?: IntWithAggregatesFilter<"Mentee"> | number
     Github?: StringNullableWithAggregatesFilter<"Mentee"> | string | null
     Instagram?: StringNullableWithAggregatesFilter<"Mentee"> | string | null
     LinkedIn?: StringNullableWithAggregatesFilter<"Mentee"> | string | null
     Twitter?: StringNullableWithAggregatesFilter<"Mentee"> | string | null
     Website?: StringNullableWithAggregatesFilter<"Mentee"> | string | null
-  }
-
-  export type AchievementsWhereInput = {
-    AND?: AchievementsWhereInput | AchievementsWhereInput[]
-    OR?: AchievementsWhereInput[]
-    NOT?: AchievementsWhereInput | AchievementsWhereInput[]
-    id?: IntFilter<"Achievements"> | number
-    supabaseId?: StringFilter<"Achievements"> | string
-    experience?: StringNullableListFilter<"Achievements">
-    education?: StringNullableListFilter<"Achievements">
-    accolades?: StringNullableListFilter<"Achievements">
-    reviews?: StringNullableListFilter<"Achievements">
-    mentor?: XOR<MentorScalarRelationFilter, MentorWhereInput>
-  }
-
-  export type AchievementsOrderByWithRelationInput = {
-    id?: SortOrder
-    supabaseId?: SortOrder
-    experience?: SortOrder
-    education?: SortOrder
-    accolades?: SortOrder
-    reviews?: SortOrder
-    mentor?: MentorOrderByWithRelationInput
-  }
-
-  export type AchievementsWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
-    supabaseId?: string
-    AND?: AchievementsWhereInput | AchievementsWhereInput[]
-    OR?: AchievementsWhereInput[]
-    NOT?: AchievementsWhereInput | AchievementsWhereInput[]
-    experience?: StringNullableListFilter<"Achievements">
-    education?: StringNullableListFilter<"Achievements">
-    accolades?: StringNullableListFilter<"Achievements">
-    reviews?: StringNullableListFilter<"Achievements">
-    mentor?: XOR<MentorScalarRelationFilter, MentorWhereInput>
-  }, "id" | "supabaseId">
-
-  export type AchievementsOrderByWithAggregationInput = {
-    id?: SortOrder
-    supabaseId?: SortOrder
-    experience?: SortOrder
-    education?: SortOrder
-    accolades?: SortOrder
-    reviews?: SortOrder
-    _count?: AchievementsCountOrderByAggregateInput
-    _avg?: AchievementsAvgOrderByAggregateInput
-    _max?: AchievementsMaxOrderByAggregateInput
-    _min?: AchievementsMinOrderByAggregateInput
-    _sum?: AchievementsSumOrderByAggregateInput
-  }
-
-  export type AchievementsScalarWhereWithAggregatesInput = {
-    AND?: AchievementsScalarWhereWithAggregatesInput | AchievementsScalarWhereWithAggregatesInput[]
-    OR?: AchievementsScalarWhereWithAggregatesInput[]
-    NOT?: AchievementsScalarWhereWithAggregatesInput | AchievementsScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"Achievements"> | number
-    supabaseId?: StringWithAggregatesFilter<"Achievements"> | string
-    experience?: StringNullableListFilter<"Achievements">
-    education?: StringNullableListFilter<"Achievements">
-    accolades?: StringNullableListFilter<"Achievements">
-    reviews?: StringNullableListFilter<"Achievements">
   }
 
   export type MentorWhereInput = {
@@ -9462,14 +8164,13 @@ export namespace Prisma {
     last_login?: DateTimeFilter<"Mentor"> | Date | string
     expertise?: StringNullableListFilter<"Mentor">
     bio?: StringFilter<"Mentor"> | string
-    experience?: IntFilter<"Mentor"> | number
+    experience?: JsonFilter<"Mentor">
+    resumeId?: StringFilter<"Mentor"> | string
     Github?: StringNullableFilter<"Mentor"> | string | null
     Instagram?: StringNullableFilter<"Mentor"> | string | null
     LinkedIn?: StringFilter<"Mentor"> | string
     Twitter?: StringNullableFilter<"Mentor"> | string | null
     Website?: StringNullableFilter<"Mentor"> | string | null
-    achievement?: XOR<AchievementsNullableScalarRelationFilter, AchievementsWhereInput> | null
-    conversations?: ConversationListRelationFilter
     sessions?: SessionsListRelationFilter
     mentee?: MenteeListRelationFilter
   }
@@ -9493,13 +8194,12 @@ export namespace Prisma {
     expertise?: SortOrder
     bio?: SortOrder
     experience?: SortOrder
+    resumeId?: SortOrder
     Github?: SortOrderInput | SortOrder
     Instagram?: SortOrderInput | SortOrder
     LinkedIn?: SortOrder
     Twitter?: SortOrderInput | SortOrder
     Website?: SortOrderInput | SortOrder
-    achievement?: AchievementsOrderByWithRelationInput
-    conversations?: ConversationOrderByRelationAggregateInput
     sessions?: sessionsOrderByRelationAggregateInput
     mentee?: MenteeOrderByRelationAggregateInput
   }
@@ -9525,14 +8225,13 @@ export namespace Prisma {
     last_login?: DateTimeFilter<"Mentor"> | Date | string
     expertise?: StringNullableListFilter<"Mentor">
     bio?: StringFilter<"Mentor"> | string
-    experience?: IntFilter<"Mentor"> | number
+    experience?: JsonFilter<"Mentor">
+    resumeId?: StringFilter<"Mentor"> | string
     Github?: StringNullableFilter<"Mentor"> | string | null
     Instagram?: StringNullableFilter<"Mentor"> | string | null
     LinkedIn?: StringFilter<"Mentor"> | string
     Twitter?: StringNullableFilter<"Mentor"> | string | null
     Website?: StringNullableFilter<"Mentor"> | string | null
-    achievement?: XOR<AchievementsNullableScalarRelationFilter, AchievementsWhereInput> | null
-    conversations?: ConversationListRelationFilter
     sessions?: SessionsListRelationFilter
     mentee?: MenteeListRelationFilter
   }, "id" | "email" | "phone_number" | "supabaseId">
@@ -9556,6 +8255,7 @@ export namespace Prisma {
     expertise?: SortOrder
     bio?: SortOrder
     experience?: SortOrder
+    resumeId?: SortOrder
     Github?: SortOrderInput | SortOrder
     Instagram?: SortOrderInput | SortOrder
     LinkedIn?: SortOrder
@@ -9589,7 +8289,8 @@ export namespace Prisma {
     last_login?: DateTimeWithAggregatesFilter<"Mentor"> | Date | string
     expertise?: StringNullableListFilter<"Mentor">
     bio?: StringWithAggregatesFilter<"Mentor"> | string
-    experience?: IntWithAggregatesFilter<"Mentor"> | number
+    experience?: JsonWithAggregatesFilter<"Mentor">
+    resumeId?: StringWithAggregatesFilter<"Mentor"> | string
     Github?: StringNullableWithAggregatesFilter<"Mentor"> | string | null
     Instagram?: StringNullableWithAggregatesFilter<"Mentor"> | string | null
     LinkedIn?: StringWithAggregatesFilter<"Mentor"> | string
@@ -9602,51 +8303,53 @@ export namespace Prisma {
     OR?: ConversationWhereInput[]
     NOT?: ConversationWhereInput | ConversationWhereInput[]
     id?: IntFilter<"Conversation"> | number
-    menteeId?: StringFilter<"Conversation"> | string
-    mentorId?: StringFilter<"Conversation"> | string
+    participant1Id?: StringFilter<"Conversation"> | string
+    participant2Id?: StringFilter<"Conversation"> | string
+    type?: EnumConversationTypeFilter<"Conversation"> | $Enums.ConversationType
     createdAt?: DateTimeFilter<"Conversation"> | Date | string
     updatedAt?: DateTimeFilter<"Conversation"> | Date | string
     lastMessage?: StringNullableFilter<"Conversation"> | string | null
-    mentee?: XOR<MenteeScalarRelationFilter, MenteeWhereInput>
-    mentor?: XOR<MentorScalarRelationFilter, MentorWhereInput>
+    isActive?: BoolFilter<"Conversation"> | boolean
     messages?: MessageListRelationFilter
   }
 
   export type ConversationOrderByWithRelationInput = {
     id?: SortOrder
-    menteeId?: SortOrder
-    mentorId?: SortOrder
+    participant1Id?: SortOrder
+    participant2Id?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastMessage?: SortOrderInput | SortOrder
-    mentee?: MenteeOrderByWithRelationInput
-    mentor?: MentorOrderByWithRelationInput
+    isActive?: SortOrder
     messages?: MessageOrderByRelationAggregateInput
   }
 
   export type ConversationWhereUniqueInput = Prisma.AtLeast<{
     id?: number
-    mentorId_menteeId?: ConversationMentorIdMenteeIdCompoundUniqueInput
+    participant1Id_participant2Id?: ConversationParticipant1IdParticipant2IdCompoundUniqueInput
     AND?: ConversationWhereInput | ConversationWhereInput[]
     OR?: ConversationWhereInput[]
     NOT?: ConversationWhereInput | ConversationWhereInput[]
-    menteeId?: StringFilter<"Conversation"> | string
-    mentorId?: StringFilter<"Conversation"> | string
+    participant1Id?: StringFilter<"Conversation"> | string
+    participant2Id?: StringFilter<"Conversation"> | string
+    type?: EnumConversationTypeFilter<"Conversation"> | $Enums.ConversationType
     createdAt?: DateTimeFilter<"Conversation"> | Date | string
     updatedAt?: DateTimeFilter<"Conversation"> | Date | string
     lastMessage?: StringNullableFilter<"Conversation"> | string | null
-    mentee?: XOR<MenteeScalarRelationFilter, MenteeWhereInput>
-    mentor?: XOR<MentorScalarRelationFilter, MentorWhereInput>
+    isActive?: BoolFilter<"Conversation"> | boolean
     messages?: MessageListRelationFilter
-  }, "id" | "mentorId_menteeId">
+  }, "id" | "participant1Id_participant2Id">
 
   export type ConversationOrderByWithAggregationInput = {
     id?: SortOrder
-    menteeId?: SortOrder
-    mentorId?: SortOrder
+    participant1Id?: SortOrder
+    participant2Id?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastMessage?: SortOrderInput | SortOrder
+    isActive?: SortOrder
     _count?: ConversationCountOrderByAggregateInput
     _avg?: ConversationAvgOrderByAggregateInput
     _max?: ConversationMaxOrderByAggregateInput
@@ -9659,11 +8362,13 @@ export namespace Prisma {
     OR?: ConversationScalarWhereWithAggregatesInput[]
     NOT?: ConversationScalarWhereWithAggregatesInput | ConversationScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Conversation"> | number
-    menteeId?: StringWithAggregatesFilter<"Conversation"> | string
-    mentorId?: StringWithAggregatesFilter<"Conversation"> | string
+    participant1Id?: StringWithAggregatesFilter<"Conversation"> | string
+    participant2Id?: StringWithAggregatesFilter<"Conversation"> | string
+    type?: EnumConversationTypeWithAggregatesFilter<"Conversation"> | $Enums.ConversationType
     createdAt?: DateTimeWithAggregatesFilter<"Conversation"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Conversation"> | Date | string
     lastMessage?: StringNullableWithAggregatesFilter<"Conversation"> | string | null
+    isActive?: BoolWithAggregatesFilter<"Conversation"> | boolean
   }
 
   export type MessageWhereInput = {
@@ -9671,25 +8376,23 @@ export namespace Prisma {
     OR?: MessageWhereInput[]
     NOT?: MessageWhereInput | MessageWhereInput[]
     id?: IntFilter<"Message"> | number
-    conversationId?: IntFilter<"Message"> | number
-    senderRole?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
+    senderId?: StringFilter<"Message"> | string
+    conversationId?: IntFilter<"Message"> | number
     createdAt?: DateTimeFilter<"Message"> | Date | string
     isRead?: BoolFilter<"Message"> | boolean
-    messageType?: StringFilter<"Message"> | string
-    senderId?: StringFilter<"Message"> | string
+    messageType?: EnumMessageTypeFilter<"Message"> | $Enums.MessageType
     conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type MessageOrderByWithRelationInput = {
     id?: SortOrder
-    conversationId?: SortOrder
-    senderRole?: SortOrder
     content?: SortOrder
+    senderId?: SortOrder
+    conversationId?: SortOrder
     createdAt?: SortOrder
     isRead?: SortOrder
     messageType?: SortOrder
-    senderId?: SortOrder
     conversation?: ConversationOrderByWithRelationInput
   }
 
@@ -9698,25 +8401,23 @@ export namespace Prisma {
     AND?: MessageWhereInput | MessageWhereInput[]
     OR?: MessageWhereInput[]
     NOT?: MessageWhereInput | MessageWhereInput[]
-    conversationId?: IntFilter<"Message"> | number
-    senderRole?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
+    senderId?: StringFilter<"Message"> | string
+    conversationId?: IntFilter<"Message"> | number
     createdAt?: DateTimeFilter<"Message"> | Date | string
     isRead?: BoolFilter<"Message"> | boolean
-    messageType?: StringFilter<"Message"> | string
-    senderId?: StringFilter<"Message"> | string
+    messageType?: EnumMessageTypeFilter<"Message"> | $Enums.MessageType
     conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id">
 
   export type MessageOrderByWithAggregationInput = {
     id?: SortOrder
-    conversationId?: SortOrder
-    senderRole?: SortOrder
     content?: SortOrder
+    senderId?: SortOrder
+    conversationId?: SortOrder
     createdAt?: SortOrder
     isRead?: SortOrder
     messageType?: SortOrder
-    senderId?: SortOrder
     _count?: MessageCountOrderByAggregateInput
     _avg?: MessageAvgOrderByAggregateInput
     _max?: MessageMaxOrderByAggregateInput
@@ -9729,13 +8430,12 @@ export namespace Prisma {
     OR?: MessageScalarWhereWithAggregatesInput[]
     NOT?: MessageScalarWhereWithAggregatesInput | MessageScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Message"> | number
-    conversationId?: IntWithAggregatesFilter<"Message"> | number
-    senderRole?: StringWithAggregatesFilter<"Message"> | string
     content?: StringWithAggregatesFilter<"Message"> | string
+    senderId?: StringWithAggregatesFilter<"Message"> | string
+    conversationId?: IntWithAggregatesFilter<"Message"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Message"> | Date | string
     isRead?: BoolWithAggregatesFilter<"Message"> | boolean
-    messageType?: StringWithAggregatesFilter<"Message"> | string
-    senderId?: StringWithAggregatesFilter<"Message"> | string
+    messageType?: EnumMessageTypeWithAggregatesFilter<"Message"> | $Enums.MessageType
   }
 
   export type sessionsWhereInput = {
@@ -9901,13 +8601,11 @@ export namespace Prisma {
     bio: string
     joined?: Date | string
     goals?: MenteeCreategoalsInput | string[]
-    experience?: number
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string | null
     Twitter?: string | null
     Website?: string | null
-    conversations?: ConversationCreateNestedManyWithoutMenteeInput
     sessions?: sessionsCreateNestedManyWithoutMenteeInput
     mentor?: MentorCreateNestedManyWithoutMenteeInput
   }
@@ -9930,13 +8628,11 @@ export namespace Prisma {
     bio: string
     joined?: Date | string
     goals?: MenteeCreategoalsInput | string[]
-    experience?: number
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string | null
     Twitter?: string | null
     Website?: string | null
-    conversations?: ConversationUncheckedCreateNestedManyWithoutMenteeInput
     sessions?: sessionsUncheckedCreateNestedManyWithoutMenteeInput
     mentor?: MentorUncheckedCreateNestedManyWithoutMenteeInput
   }
@@ -9958,13 +8654,11 @@ export namespace Prisma {
     bio?: StringFieldUpdateOperationsInput | string
     joined?: DateTimeFieldUpdateOperationsInput | Date | string
     goals?: MenteeUpdategoalsInput | string[]
-    experience?: IntFieldUpdateOperationsInput | number
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: NullableStringFieldUpdateOperationsInput | string | null
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-    conversations?: ConversationUpdateManyWithoutMenteeNestedInput
     sessions?: sessionsUpdateManyWithoutMenteeNestedInput
     mentor?: MentorUpdateManyWithoutMenteeNestedInput
   }
@@ -9987,13 +8681,11 @@ export namespace Prisma {
     bio?: StringFieldUpdateOperationsInput | string
     joined?: DateTimeFieldUpdateOperationsInput | Date | string
     goals?: MenteeUpdategoalsInput | string[]
-    experience?: IntFieldUpdateOperationsInput | number
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: NullableStringFieldUpdateOperationsInput | string | null
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-    conversations?: ConversationUncheckedUpdateManyWithoutMenteeNestedInput
     sessions?: sessionsUncheckedUpdateManyWithoutMenteeNestedInput
     mentor?: MentorUncheckedUpdateManyWithoutMenteeNestedInput
   }
@@ -10016,7 +8708,6 @@ export namespace Prisma {
     bio: string
     joined?: Date | string
     goals?: MenteeCreategoalsInput | string[]
-    experience?: number
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string | null
@@ -10041,7 +8732,6 @@ export namespace Prisma {
     bio?: StringFieldUpdateOperationsInput | string
     joined?: DateTimeFieldUpdateOperationsInput | Date | string
     goals?: MenteeUpdategoalsInput | string[]
-    experience?: IntFieldUpdateOperationsInput | number
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10067,71 +8757,11 @@ export namespace Prisma {
     bio?: StringFieldUpdateOperationsInput | string
     joined?: DateTimeFieldUpdateOperationsInput | Date | string
     goals?: MenteeUpdategoalsInput | string[]
-    experience?: IntFieldUpdateOperationsInput | number
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: NullableStringFieldUpdateOperationsInput | string | null
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type AchievementsCreateInput = {
-    experience?: AchievementsCreateexperienceInput | string[]
-    education?: AchievementsCreateeducationInput | string[]
-    accolades?: AchievementsCreateaccoladesInput | string[]
-    reviews?: AchievementsCreatereviewsInput | string[]
-    mentor: MentorCreateNestedOneWithoutAchievementInput
-  }
-
-  export type AchievementsUncheckedCreateInput = {
-    id?: number
-    supabaseId: string
-    experience?: AchievementsCreateexperienceInput | string[]
-    education?: AchievementsCreateeducationInput | string[]
-    accolades?: AchievementsCreateaccoladesInput | string[]
-    reviews?: AchievementsCreatereviewsInput | string[]
-  }
-
-  export type AchievementsUpdateInput = {
-    experience?: AchievementsUpdateexperienceInput | string[]
-    education?: AchievementsUpdateeducationInput | string[]
-    accolades?: AchievementsUpdateaccoladesInput | string[]
-    reviews?: AchievementsUpdatereviewsInput | string[]
-    mentor?: MentorUpdateOneRequiredWithoutAchievementNestedInput
-  }
-
-  export type AchievementsUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    supabaseId?: StringFieldUpdateOperationsInput | string
-    experience?: AchievementsUpdateexperienceInput | string[]
-    education?: AchievementsUpdateeducationInput | string[]
-    accolades?: AchievementsUpdateaccoladesInput | string[]
-    reviews?: AchievementsUpdatereviewsInput | string[]
-  }
-
-  export type AchievementsCreateManyInput = {
-    id?: number
-    supabaseId: string
-    experience?: AchievementsCreateexperienceInput | string[]
-    education?: AchievementsCreateeducationInput | string[]
-    accolades?: AchievementsCreateaccoladesInput | string[]
-    reviews?: AchievementsCreatereviewsInput | string[]
-  }
-
-  export type AchievementsUpdateManyMutationInput = {
-    experience?: AchievementsUpdateexperienceInput | string[]
-    education?: AchievementsUpdateeducationInput | string[]
-    accolades?: AchievementsUpdateaccoladesInput | string[]
-    reviews?: AchievementsUpdatereviewsInput | string[]
-  }
-
-  export type AchievementsUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    supabaseId?: StringFieldUpdateOperationsInput | string
-    experience?: AchievementsUpdateexperienceInput | string[]
-    education?: AchievementsUpdateeducationInput | string[]
-    accolades?: AchievementsUpdateaccoladesInput | string[]
-    reviews?: AchievementsUpdatereviewsInput | string[]
   }
 
   export type MentorCreateInput = {
@@ -10151,14 +8781,13 @@ export namespace Prisma {
     last_login?: Date | string
     expertise?: MentorCreateexpertiseInput | string[]
     bio: string
-    experience: number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: string
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string
     Twitter?: string | null
     Website?: string | null
-    achievement?: AchievementsCreateNestedOneWithoutMentorInput
-    conversations?: ConversationCreateNestedManyWithoutMentorInput
     sessions?: sessionsCreateNestedManyWithoutMentorInput
     mentee?: MenteeCreateNestedManyWithoutMentorInput
   }
@@ -10181,14 +8810,13 @@ export namespace Prisma {
     last_login?: Date | string
     expertise?: MentorCreateexpertiseInput | string[]
     bio: string
-    experience: number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: string
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string
     Twitter?: string | null
     Website?: string | null
-    achievement?: AchievementsUncheckedCreateNestedOneWithoutMentorInput
-    conversations?: ConversationUncheckedCreateNestedManyWithoutMentorInput
     sessions?: sessionsUncheckedCreateNestedManyWithoutMentorInput
     mentee?: MenteeUncheckedCreateNestedManyWithoutMentorInput
   }
@@ -10210,14 +8838,13 @@ export namespace Prisma {
     last_login?: DateTimeFieldUpdateOperationsInput | Date | string
     expertise?: MentorUpdateexpertiseInput | string[]
     bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: StringFieldUpdateOperationsInput | string
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: StringFieldUpdateOperationsInput | string
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-    achievement?: AchievementsUpdateOneWithoutMentorNestedInput
-    conversations?: ConversationUpdateManyWithoutMentorNestedInput
     sessions?: sessionsUpdateManyWithoutMentorNestedInput
     mentee?: MenteeUpdateManyWithoutMentorNestedInput
   }
@@ -10240,14 +8867,13 @@ export namespace Prisma {
     last_login?: DateTimeFieldUpdateOperationsInput | Date | string
     expertise?: MentorUpdateexpertiseInput | string[]
     bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: StringFieldUpdateOperationsInput | string
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: StringFieldUpdateOperationsInput | string
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-    achievement?: AchievementsUncheckedUpdateOneWithoutMentorNestedInput
-    conversations?: ConversationUncheckedUpdateManyWithoutMentorNestedInput
     sessions?: sessionsUncheckedUpdateManyWithoutMentorNestedInput
     mentee?: MenteeUncheckedUpdateManyWithoutMentorNestedInput
   }
@@ -10270,7 +8896,8 @@ export namespace Prisma {
     last_login?: Date | string
     expertise?: MentorCreateexpertiseInput | string[]
     bio: string
-    experience: number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: string
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string
@@ -10295,7 +8922,8 @@ export namespace Prisma {
     last_login?: DateTimeFieldUpdateOperationsInput | Date | string
     expertise?: MentorUpdateexpertiseInput | string[]
     bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: StringFieldUpdateOperationsInput | string
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: StringFieldUpdateOperationsInput | string
@@ -10321,7 +8949,8 @@ export namespace Prisma {
     last_login?: DateTimeFieldUpdateOperationsInput | Date | string
     expertise?: MentorUpdateexpertiseInput | string[]
     bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: StringFieldUpdateOperationsInput | string
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: StringFieldUpdateOperationsInput | string
@@ -10330,138 +8959,147 @@ export namespace Prisma {
   }
 
   export type ConversationCreateInput = {
+    participant1Id: string
+    participant2Id: string
+    type?: $Enums.ConversationType
     createdAt?: Date | string
     updatedAt?: Date | string
     lastMessage?: string | null
-    mentee: MenteeCreateNestedOneWithoutConversationsInput
-    mentor: MentorCreateNestedOneWithoutConversationsInput
+    isActive?: boolean
     messages?: MessageCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateInput = {
     id?: number
-    menteeId: string
-    mentorId: string
+    participant1Id: string
+    participant2Id: string
+    type?: $Enums.ConversationType
     createdAt?: Date | string
     updatedAt?: Date | string
     lastMessage?: string | null
+    isActive?: boolean
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUpdateInput = {
+    participant1Id?: StringFieldUpdateOperationsInput | string
+    participant2Id?: StringFieldUpdateOperationsInput | string
+    type?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastMessage?: NullableStringFieldUpdateOperationsInput | string | null
-    mentee?: MenteeUpdateOneRequiredWithoutConversationsNestedInput
-    mentor?: MentorUpdateOneRequiredWithoutConversationsNestedInput
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     messages?: MessageUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
-    menteeId?: StringFieldUpdateOperationsInput | string
-    mentorId?: StringFieldUpdateOperationsInput | string
+    participant1Id?: StringFieldUpdateOperationsInput | string
+    participant2Id?: StringFieldUpdateOperationsInput | string
+    type?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationCreateManyInput = {
     id?: number
-    menteeId: string
-    mentorId: string
+    participant1Id: string
+    participant2Id: string
+    type?: $Enums.ConversationType
     createdAt?: Date | string
     updatedAt?: Date | string
     lastMessage?: string | null
+    isActive?: boolean
   }
 
   export type ConversationUpdateManyMutationInput = {
+    participant1Id?: StringFieldUpdateOperationsInput | string
+    participant2Id?: StringFieldUpdateOperationsInput | string
+    type?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type ConversationUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
-    menteeId?: StringFieldUpdateOperationsInput | string
-    mentorId?: StringFieldUpdateOperationsInput | string
+    participant1Id?: StringFieldUpdateOperationsInput | string
+    participant2Id?: StringFieldUpdateOperationsInput | string
+    type?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type MessageCreateInput = {
-    senderRole: string
     content: string
+    senderId: string
     createdAt?: Date | string
     isRead?: boolean
-    messageType?: string
-    senderId: string
+    messageType?: $Enums.MessageType
     conversation: ConversationCreateNestedOneWithoutMessagesInput
   }
 
   export type MessageUncheckedCreateInput = {
     id?: number
-    conversationId: number
-    senderRole: string
     content: string
+    senderId: string
+    conversationId: number
     createdAt?: Date | string
     isRead?: boolean
-    messageType?: string
-    senderId: string
+    messageType?: $Enums.MessageType
   }
 
   export type MessageUpdateInput = {
-    senderRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
-    messageType?: StringFieldUpdateOperationsInput | string
-    senderId?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
 
   export type MessageUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
-    conversationId?: IntFieldUpdateOperationsInput | number
-    senderRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    conversationId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
-    messageType?: StringFieldUpdateOperationsInput | string
-    senderId?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
   }
 
   export type MessageCreateManyInput = {
     id?: number
-    conversationId: number
-    senderRole: string
     content: string
+    senderId: string
+    conversationId: number
     createdAt?: Date | string
     isRead?: boolean
-    messageType?: string
-    senderId: string
+    messageType?: $Enums.MessageType
   }
 
   export type MessageUpdateManyMutationInput = {
-    senderRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
-    messageType?: StringFieldUpdateOperationsInput | string
-    senderId?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
   }
 
   export type MessageUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
-    conversationId?: IntFieldUpdateOperationsInput | number
-    senderRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    conversationId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
-    messageType?: StringFieldUpdateOperationsInput | string
-    senderId?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
   }
 
   export type sessionsCreateInput = {
@@ -10694,12 +9332,6 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type ConversationListRelationFilter = {
-    every?: ConversationWhereInput
-    some?: ConversationWhereInput
-    none?: ConversationWhereInput
-  }
-
   export type SessionsListRelationFilter = {
     every?: sessionsWhereInput
     some?: sessionsWhereInput
@@ -10715,10 +9347,6 @@ export namespace Prisma {
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
-  }
-
-  export type ConversationOrderByRelationAggregateInput = {
-    _count?: SortOrder
   }
 
   export type sessionsOrderByRelationAggregateInput = {
@@ -10747,7 +9375,6 @@ export namespace Prisma {
     bio?: SortOrder
     joined?: SortOrder
     goals?: SortOrder
-    experience?: SortOrder
     Github?: SortOrder
     Instagram?: SortOrder
     LinkedIn?: SortOrder
@@ -10759,7 +9386,6 @@ export namespace Prisma {
     id?: SortOrder
     age?: SortOrder
     ratings?: SortOrder
-    experience?: SortOrder
   }
 
   export type MenteeMaxOrderByAggregateInput = {
@@ -10779,7 +9405,6 @@ export namespace Prisma {
     supabaseId?: SortOrder
     bio?: SortOrder
     joined?: SortOrder
-    experience?: SortOrder
     Github?: SortOrder
     Instagram?: SortOrder
     LinkedIn?: SortOrder
@@ -10804,7 +9429,6 @@ export namespace Prisma {
     supabaseId?: SortOrder
     bio?: SortOrder
     joined?: SortOrder
-    experience?: SortOrder
     Github?: SortOrder
     Instagram?: SortOrder
     LinkedIn?: SortOrder
@@ -10816,7 +9440,6 @@ export namespace Prisma {
     id?: SortOrder
     age?: SortOrder
     ratings?: SortOrder
-    experience?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -10884,42 +9507,28 @@ export namespace Prisma {
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
 
-  export type MentorScalarRelationFilter = {
-    is?: MentorWhereInput
-    isNot?: MentorWhereInput
-  }
-
-  export type AchievementsCountOrderByAggregateInput = {
-    id?: SortOrder
-    supabaseId?: SortOrder
-    experience?: SortOrder
-    education?: SortOrder
-    accolades?: SortOrder
-    reviews?: SortOrder
-  }
-
-  export type AchievementsAvgOrderByAggregateInput = {
-    id?: SortOrder
-  }
-
-  export type AchievementsMaxOrderByAggregateInput = {
-    id?: SortOrder
-    supabaseId?: SortOrder
-  }
-
-  export type AchievementsMinOrderByAggregateInput = {
-    id?: SortOrder
-    supabaseId?: SortOrder
-  }
-
-  export type AchievementsSumOrderByAggregateInput = {
-    id?: SortOrder
-  }
-
-  export type AchievementsNullableScalarRelationFilter = {
-    is?: AchievementsWhereInput | null
-    isNot?: AchievementsWhereInput | null
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type MenteeListRelationFilter = {
@@ -10951,6 +9560,7 @@ export namespace Prisma {
     expertise?: SortOrder
     bio?: SortOrder
     experience?: SortOrder
+    resumeId?: SortOrder
     Github?: SortOrder
     Instagram?: SortOrder
     LinkedIn?: SortOrder
@@ -10962,7 +9572,6 @@ export namespace Prisma {
     id?: SortOrder
     age?: SortOrder
     ratings?: SortOrder
-    experience?: SortOrder
   }
 
   export type MentorMaxOrderByAggregateInput = {
@@ -10982,7 +9591,7 @@ export namespace Prisma {
     updateAt?: SortOrder
     last_login?: SortOrder
     bio?: SortOrder
-    experience?: SortOrder
+    resumeId?: SortOrder
     Github?: SortOrder
     Instagram?: SortOrder
     LinkedIn?: SortOrder
@@ -11007,7 +9616,7 @@ export namespace Prisma {
     updateAt?: SortOrder
     last_login?: SortOrder
     bio?: SortOrder
-    experience?: SortOrder
+    resumeId?: SortOrder
     Github?: SortOrder
     Instagram?: SortOrder
     LinkedIn?: SortOrder
@@ -11019,12 +9628,44 @@ export namespace Prisma {
     id?: SortOrder
     age?: SortOrder
     ratings?: SortOrder
-    experience?: SortOrder
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
   }
 
-  export type MenteeScalarRelationFilter = {
-    is?: MenteeWhereInput
-    isNot?: MenteeWhereInput
+  export type EnumConversationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ConversationType | EnumConversationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumConversationTypeFilter<$PrismaModel> | $Enums.ConversationType
+  }
+
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type MessageListRelationFilter = {
@@ -11037,18 +9678,20 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type ConversationMentorIdMenteeIdCompoundUniqueInput = {
-    mentorId: string
-    menteeId: string
+  export type ConversationParticipant1IdParticipant2IdCompoundUniqueInput = {
+    participant1Id: string
+    participant2Id: string
   }
 
   export type ConversationCountOrderByAggregateInput = {
     id?: SortOrder
-    menteeId?: SortOrder
-    mentorId?: SortOrder
+    participant1Id?: SortOrder
+    participant2Id?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastMessage?: SortOrder
+    isActive?: SortOrder
   }
 
   export type ConversationAvgOrderByAggregateInput = {
@@ -11057,29 +9700,53 @@ export namespace Prisma {
 
   export type ConversationMaxOrderByAggregateInput = {
     id?: SortOrder
-    menteeId?: SortOrder
-    mentorId?: SortOrder
+    participant1Id?: SortOrder
+    participant2Id?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastMessage?: SortOrder
+    isActive?: SortOrder
   }
 
   export type ConversationMinOrderByAggregateInput = {
     id?: SortOrder
-    menteeId?: SortOrder
-    mentorId?: SortOrder
+    participant1Id?: SortOrder
+    participant2Id?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastMessage?: SortOrder
+    isActive?: SortOrder
   }
 
   export type ConversationSumOrderByAggregateInput = {
     id?: SortOrder
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
+  export type EnumConversationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ConversationType | EnumConversationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumConversationTypeWithAggregatesFilter<$PrismaModel> | $Enums.ConversationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumConversationTypeFilter<$PrismaModel>
+    _max?: NestedEnumConversationTypeFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type EnumMessageTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.MessageType | EnumMessageTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMessageTypeFilter<$PrismaModel> | $Enums.MessageType
   }
 
   export type ConversationScalarRelationFilter = {
@@ -11089,13 +9756,12 @@ export namespace Prisma {
 
   export type MessageCountOrderByAggregateInput = {
     id?: SortOrder
-    conversationId?: SortOrder
-    senderRole?: SortOrder
     content?: SortOrder
+    senderId?: SortOrder
+    conversationId?: SortOrder
     createdAt?: SortOrder
     isRead?: SortOrder
     messageType?: SortOrder
-    senderId?: SortOrder
   }
 
   export type MessageAvgOrderByAggregateInput = {
@@ -11105,24 +9771,22 @@ export namespace Prisma {
 
   export type MessageMaxOrderByAggregateInput = {
     id?: SortOrder
-    conversationId?: SortOrder
-    senderRole?: SortOrder
     content?: SortOrder
+    senderId?: SortOrder
+    conversationId?: SortOrder
     createdAt?: SortOrder
     isRead?: SortOrder
     messageType?: SortOrder
-    senderId?: SortOrder
   }
 
   export type MessageMinOrderByAggregateInput = {
     id?: SortOrder
-    conversationId?: SortOrder
-    senderRole?: SortOrder
     content?: SortOrder
+    senderId?: SortOrder
+    conversationId?: SortOrder
     createdAt?: SortOrder
     isRead?: SortOrder
     messageType?: SortOrder
-    senderId?: SortOrder
   }
 
   export type MessageSumOrderByAggregateInput = {
@@ -11130,12 +9794,14 @@ export namespace Prisma {
     conversationId?: SortOrder
   }
 
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+  export type EnumMessageTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MessageType | EnumMessageTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMessageTypeWithAggregatesFilter<$PrismaModel> | $Enums.MessageType
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
+    _min?: NestedEnumMessageTypeFilter<$PrismaModel>
+    _max?: NestedEnumMessageTypeFilter<$PrismaModel>
   }
 
   export type EnumSessionStatusFilter<$PrismaModel = never> = {
@@ -11154,6 +9820,16 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type MenteeScalarRelationFilter = {
+    is?: MenteeWhereInput
+    isNot?: MenteeWhereInput
+  }
+
+  export type MentorScalarRelationFilter = {
+    is?: MentorWhereInput
+    isNot?: MentorWhereInput
   }
 
   export type sessionsSessionDateStartTimeCompoundUniqueInput = {
@@ -11276,13 +9952,6 @@ export namespace Prisma {
     set: string[]
   }
 
-  export type ConversationCreateNestedManyWithoutMenteeInput = {
-    create?: XOR<ConversationCreateWithoutMenteeInput, ConversationUncheckedCreateWithoutMenteeInput> | ConversationCreateWithoutMenteeInput[] | ConversationUncheckedCreateWithoutMenteeInput[]
-    connectOrCreate?: ConversationCreateOrConnectWithoutMenteeInput | ConversationCreateOrConnectWithoutMenteeInput[]
-    createMany?: ConversationCreateManyMenteeInputEnvelope
-    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-  }
-
   export type sessionsCreateNestedManyWithoutMenteeInput = {
     create?: XOR<sessionsCreateWithoutMenteeInput, sessionsUncheckedCreateWithoutMenteeInput> | sessionsCreateWithoutMenteeInput[] | sessionsUncheckedCreateWithoutMenteeInput[]
     connectOrCreate?: sessionsCreateOrConnectWithoutMenteeInput | sessionsCreateOrConnectWithoutMenteeInput[]
@@ -11294,13 +9963,6 @@ export namespace Prisma {
     create?: XOR<MentorCreateWithoutMenteeInput, MentorUncheckedCreateWithoutMenteeInput> | MentorCreateWithoutMenteeInput[] | MentorUncheckedCreateWithoutMenteeInput[]
     connectOrCreate?: MentorCreateOrConnectWithoutMenteeInput | MentorCreateOrConnectWithoutMenteeInput[]
     connect?: MentorWhereUniqueInput | MentorWhereUniqueInput[]
-  }
-
-  export type ConversationUncheckedCreateNestedManyWithoutMenteeInput = {
-    create?: XOR<ConversationCreateWithoutMenteeInput, ConversationUncheckedCreateWithoutMenteeInput> | ConversationCreateWithoutMenteeInput[] | ConversationUncheckedCreateWithoutMenteeInput[]
-    connectOrCreate?: ConversationCreateOrConnectWithoutMenteeInput | ConversationCreateOrConnectWithoutMenteeInput[]
-    createMany?: ConversationCreateManyMenteeInputEnvelope
-    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
   }
 
   export type sessionsUncheckedCreateNestedManyWithoutMenteeInput = {
@@ -11341,20 +10003,6 @@ export namespace Prisma {
     set?: string | null
   }
 
-  export type ConversationUpdateManyWithoutMenteeNestedInput = {
-    create?: XOR<ConversationCreateWithoutMenteeInput, ConversationUncheckedCreateWithoutMenteeInput> | ConversationCreateWithoutMenteeInput[] | ConversationUncheckedCreateWithoutMenteeInput[]
-    connectOrCreate?: ConversationCreateOrConnectWithoutMenteeInput | ConversationCreateOrConnectWithoutMenteeInput[]
-    upsert?: ConversationUpsertWithWhereUniqueWithoutMenteeInput | ConversationUpsertWithWhereUniqueWithoutMenteeInput[]
-    createMany?: ConversationCreateManyMenteeInputEnvelope
-    set?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    disconnect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    delete?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    update?: ConversationUpdateWithWhereUniqueWithoutMenteeInput | ConversationUpdateWithWhereUniqueWithoutMenteeInput[]
-    updateMany?: ConversationUpdateManyWithWhereWithoutMenteeInput | ConversationUpdateManyWithWhereWithoutMenteeInput[]
-    deleteMany?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
-  }
-
   export type sessionsUpdateManyWithoutMenteeNestedInput = {
     create?: XOR<sessionsCreateWithoutMenteeInput, sessionsUncheckedCreateWithoutMenteeInput> | sessionsCreateWithoutMenteeInput[] | sessionsUncheckedCreateWithoutMenteeInput[]
     connectOrCreate?: sessionsCreateOrConnectWithoutMenteeInput | sessionsCreateOrConnectWithoutMenteeInput[]
@@ -11380,20 +10028,6 @@ export namespace Prisma {
     update?: MentorUpdateWithWhereUniqueWithoutMenteeInput | MentorUpdateWithWhereUniqueWithoutMenteeInput[]
     updateMany?: MentorUpdateManyWithWhereWithoutMenteeInput | MentorUpdateManyWithWhereWithoutMenteeInput[]
     deleteMany?: MentorScalarWhereInput | MentorScalarWhereInput[]
-  }
-
-  export type ConversationUncheckedUpdateManyWithoutMenteeNestedInput = {
-    create?: XOR<ConversationCreateWithoutMenteeInput, ConversationUncheckedCreateWithoutMenteeInput> | ConversationCreateWithoutMenteeInput[] | ConversationUncheckedCreateWithoutMenteeInput[]
-    connectOrCreate?: ConversationCreateOrConnectWithoutMenteeInput | ConversationCreateOrConnectWithoutMenteeInput[]
-    upsert?: ConversationUpsertWithWhereUniqueWithoutMenteeInput | ConversationUpsertWithWhereUniqueWithoutMenteeInput[]
-    createMany?: ConversationCreateManyMenteeInputEnvelope
-    set?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    disconnect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    delete?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    update?: ConversationUpdateWithWhereUniqueWithoutMenteeInput | ConversationUpdateWithWhereUniqueWithoutMenteeInput[]
-    updateMany?: ConversationUpdateManyWithWhereWithoutMenteeInput | ConversationUpdateManyWithWhereWithoutMenteeInput[]
-    deleteMany?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
   }
 
   export type sessionsUncheckedUpdateManyWithoutMenteeNestedInput = {
@@ -11423,71 +10057,8 @@ export namespace Prisma {
     deleteMany?: MentorScalarWhereInput | MentorScalarWhereInput[]
   }
 
-  export type AchievementsCreateexperienceInput = {
-    set: string[]
-  }
-
-  export type AchievementsCreateeducationInput = {
-    set: string[]
-  }
-
-  export type AchievementsCreateaccoladesInput = {
-    set: string[]
-  }
-
-  export type AchievementsCreatereviewsInput = {
-    set: string[]
-  }
-
-  export type MentorCreateNestedOneWithoutAchievementInput = {
-    create?: XOR<MentorCreateWithoutAchievementInput, MentorUncheckedCreateWithoutAchievementInput>
-    connectOrCreate?: MentorCreateOrConnectWithoutAchievementInput
-    connect?: MentorWhereUniqueInput
-  }
-
-  export type AchievementsUpdateexperienceInput = {
-    set?: string[]
-    push?: string | string[]
-  }
-
-  export type AchievementsUpdateeducationInput = {
-    set?: string[]
-    push?: string | string[]
-  }
-
-  export type AchievementsUpdateaccoladesInput = {
-    set?: string[]
-    push?: string | string[]
-  }
-
-  export type AchievementsUpdatereviewsInput = {
-    set?: string[]
-    push?: string | string[]
-  }
-
-  export type MentorUpdateOneRequiredWithoutAchievementNestedInput = {
-    create?: XOR<MentorCreateWithoutAchievementInput, MentorUncheckedCreateWithoutAchievementInput>
-    connectOrCreate?: MentorCreateOrConnectWithoutAchievementInput
-    upsert?: MentorUpsertWithoutAchievementInput
-    connect?: MentorWhereUniqueInput
-    update?: XOR<XOR<MentorUpdateToOneWithWhereWithoutAchievementInput, MentorUpdateWithoutAchievementInput>, MentorUncheckedUpdateWithoutAchievementInput>
-  }
-
   export type MentorCreateexpertiseInput = {
     set: string[]
-  }
-
-  export type AchievementsCreateNestedOneWithoutMentorInput = {
-    create?: XOR<AchievementsCreateWithoutMentorInput, AchievementsUncheckedCreateWithoutMentorInput>
-    connectOrCreate?: AchievementsCreateOrConnectWithoutMentorInput
-    connect?: AchievementsWhereUniqueInput
-  }
-
-  export type ConversationCreateNestedManyWithoutMentorInput = {
-    create?: XOR<ConversationCreateWithoutMentorInput, ConversationUncheckedCreateWithoutMentorInput> | ConversationCreateWithoutMentorInput[] | ConversationUncheckedCreateWithoutMentorInput[]
-    connectOrCreate?: ConversationCreateOrConnectWithoutMentorInput | ConversationCreateOrConnectWithoutMentorInput[]
-    createMany?: ConversationCreateManyMentorInputEnvelope
-    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
   }
 
   export type sessionsCreateNestedManyWithoutMentorInput = {
@@ -11501,19 +10072,6 @@ export namespace Prisma {
     create?: XOR<MenteeCreateWithoutMentorInput, MenteeUncheckedCreateWithoutMentorInput> | MenteeCreateWithoutMentorInput[] | MenteeUncheckedCreateWithoutMentorInput[]
     connectOrCreate?: MenteeCreateOrConnectWithoutMentorInput | MenteeCreateOrConnectWithoutMentorInput[]
     connect?: MenteeWhereUniqueInput | MenteeWhereUniqueInput[]
-  }
-
-  export type AchievementsUncheckedCreateNestedOneWithoutMentorInput = {
-    create?: XOR<AchievementsCreateWithoutMentorInput, AchievementsUncheckedCreateWithoutMentorInput>
-    connectOrCreate?: AchievementsCreateOrConnectWithoutMentorInput
-    connect?: AchievementsWhereUniqueInput
-  }
-
-  export type ConversationUncheckedCreateNestedManyWithoutMentorInput = {
-    create?: XOR<ConversationCreateWithoutMentorInput, ConversationUncheckedCreateWithoutMentorInput> | ConversationCreateWithoutMentorInput[] | ConversationUncheckedCreateWithoutMentorInput[]
-    connectOrCreate?: ConversationCreateOrConnectWithoutMentorInput | ConversationCreateOrConnectWithoutMentorInput[]
-    createMany?: ConversationCreateManyMentorInputEnvelope
-    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
   }
 
   export type sessionsUncheckedCreateNestedManyWithoutMentorInput = {
@@ -11532,30 +10090,6 @@ export namespace Prisma {
   export type MentorUpdateexpertiseInput = {
     set?: string[]
     push?: string | string[]
-  }
-
-  export type AchievementsUpdateOneWithoutMentorNestedInput = {
-    create?: XOR<AchievementsCreateWithoutMentorInput, AchievementsUncheckedCreateWithoutMentorInput>
-    connectOrCreate?: AchievementsCreateOrConnectWithoutMentorInput
-    upsert?: AchievementsUpsertWithoutMentorInput
-    disconnect?: AchievementsWhereInput | boolean
-    delete?: AchievementsWhereInput | boolean
-    connect?: AchievementsWhereUniqueInput
-    update?: XOR<XOR<AchievementsUpdateToOneWithWhereWithoutMentorInput, AchievementsUpdateWithoutMentorInput>, AchievementsUncheckedUpdateWithoutMentorInput>
-  }
-
-  export type ConversationUpdateManyWithoutMentorNestedInput = {
-    create?: XOR<ConversationCreateWithoutMentorInput, ConversationUncheckedCreateWithoutMentorInput> | ConversationCreateWithoutMentorInput[] | ConversationUncheckedCreateWithoutMentorInput[]
-    connectOrCreate?: ConversationCreateOrConnectWithoutMentorInput | ConversationCreateOrConnectWithoutMentorInput[]
-    upsert?: ConversationUpsertWithWhereUniqueWithoutMentorInput | ConversationUpsertWithWhereUniqueWithoutMentorInput[]
-    createMany?: ConversationCreateManyMentorInputEnvelope
-    set?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    disconnect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    delete?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    update?: ConversationUpdateWithWhereUniqueWithoutMentorInput | ConversationUpdateWithWhereUniqueWithoutMentorInput[]
-    updateMany?: ConversationUpdateManyWithWhereWithoutMentorInput | ConversationUpdateManyWithWhereWithoutMentorInput[]
-    deleteMany?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
   }
 
   export type sessionsUpdateManyWithoutMentorNestedInput = {
@@ -11585,30 +10119,6 @@ export namespace Prisma {
     deleteMany?: MenteeScalarWhereInput | MenteeScalarWhereInput[]
   }
 
-  export type AchievementsUncheckedUpdateOneWithoutMentorNestedInput = {
-    create?: XOR<AchievementsCreateWithoutMentorInput, AchievementsUncheckedCreateWithoutMentorInput>
-    connectOrCreate?: AchievementsCreateOrConnectWithoutMentorInput
-    upsert?: AchievementsUpsertWithoutMentorInput
-    disconnect?: AchievementsWhereInput | boolean
-    delete?: AchievementsWhereInput | boolean
-    connect?: AchievementsWhereUniqueInput
-    update?: XOR<XOR<AchievementsUpdateToOneWithWhereWithoutMentorInput, AchievementsUpdateWithoutMentorInput>, AchievementsUncheckedUpdateWithoutMentorInput>
-  }
-
-  export type ConversationUncheckedUpdateManyWithoutMentorNestedInput = {
-    create?: XOR<ConversationCreateWithoutMentorInput, ConversationUncheckedCreateWithoutMentorInput> | ConversationCreateWithoutMentorInput[] | ConversationUncheckedCreateWithoutMentorInput[]
-    connectOrCreate?: ConversationCreateOrConnectWithoutMentorInput | ConversationCreateOrConnectWithoutMentorInput[]
-    upsert?: ConversationUpsertWithWhereUniqueWithoutMentorInput | ConversationUpsertWithWhereUniqueWithoutMentorInput[]
-    createMany?: ConversationCreateManyMentorInputEnvelope
-    set?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    disconnect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    delete?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    update?: ConversationUpdateWithWhereUniqueWithoutMentorInput | ConversationUpdateWithWhereUniqueWithoutMentorInput[]
-    updateMany?: ConversationUpdateManyWithWhereWithoutMentorInput | ConversationUpdateManyWithWhereWithoutMentorInput[]
-    deleteMany?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
-  }
-
   export type sessionsUncheckedUpdateManyWithoutMentorNestedInput = {
     create?: XOR<sessionsCreateWithoutMentorInput, sessionsUncheckedCreateWithoutMentorInput> | sessionsCreateWithoutMentorInput[] | sessionsUncheckedCreateWithoutMentorInput[]
     connectOrCreate?: sessionsCreateOrConnectWithoutMentorInput | sessionsCreateOrConnectWithoutMentorInput[]
@@ -11636,18 +10146,6 @@ export namespace Prisma {
     deleteMany?: MenteeScalarWhereInput | MenteeScalarWhereInput[]
   }
 
-  export type MenteeCreateNestedOneWithoutConversationsInput = {
-    create?: XOR<MenteeCreateWithoutConversationsInput, MenteeUncheckedCreateWithoutConversationsInput>
-    connectOrCreate?: MenteeCreateOrConnectWithoutConversationsInput
-    connect?: MenteeWhereUniqueInput
-  }
-
-  export type MentorCreateNestedOneWithoutConversationsInput = {
-    create?: XOR<MentorCreateWithoutConversationsInput, MentorUncheckedCreateWithoutConversationsInput>
-    connectOrCreate?: MentorCreateOrConnectWithoutConversationsInput
-    connect?: MentorWhereUniqueInput
-  }
-
   export type MessageCreateNestedManyWithoutConversationInput = {
     create?: XOR<MessageCreateWithoutConversationInput, MessageUncheckedCreateWithoutConversationInput> | MessageCreateWithoutConversationInput[] | MessageUncheckedCreateWithoutConversationInput[]
     connectOrCreate?: MessageCreateOrConnectWithoutConversationInput | MessageCreateOrConnectWithoutConversationInput[]
@@ -11662,20 +10160,12 @@ export namespace Prisma {
     connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
   }
 
-  export type MenteeUpdateOneRequiredWithoutConversationsNestedInput = {
-    create?: XOR<MenteeCreateWithoutConversationsInput, MenteeUncheckedCreateWithoutConversationsInput>
-    connectOrCreate?: MenteeCreateOrConnectWithoutConversationsInput
-    upsert?: MenteeUpsertWithoutConversationsInput
-    connect?: MenteeWhereUniqueInput
-    update?: XOR<XOR<MenteeUpdateToOneWithWhereWithoutConversationsInput, MenteeUpdateWithoutConversationsInput>, MenteeUncheckedUpdateWithoutConversationsInput>
+  export type EnumConversationTypeFieldUpdateOperationsInput = {
+    set?: $Enums.ConversationType
   }
 
-  export type MentorUpdateOneRequiredWithoutConversationsNestedInput = {
-    create?: XOR<MentorCreateWithoutConversationsInput, MentorUncheckedCreateWithoutConversationsInput>
-    connectOrCreate?: MentorCreateOrConnectWithoutConversationsInput
-    upsert?: MentorUpsertWithoutConversationsInput
-    connect?: MentorWhereUniqueInput
-    update?: XOR<XOR<MentorUpdateToOneWithWhereWithoutConversationsInput, MentorUpdateWithoutConversationsInput>, MentorUncheckedUpdateWithoutConversationsInput>
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type MessageUpdateManyWithoutConversationNestedInput = {
@@ -11712,8 +10202,8 @@ export namespace Prisma {
     connect?: ConversationWhereUniqueInput
   }
 
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
+  export type EnumMessageTypeFieldUpdateOperationsInput = {
+    set?: $Enums.MessageType
   }
 
   export type ConversationUpdateOneRequiredWithoutMessagesNestedInput = {
@@ -11908,10 +10398,50 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedEnumConversationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ConversationType | EnumConversationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumConversationTypeFilter<$PrismaModel> | $Enums.ConversationType
+  }
 
   export type NestedBoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedEnumConversationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ConversationType | EnumConversationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ConversationType[] | ListEnumConversationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumConversationTypeWithAggregatesFilter<$PrismaModel> | $Enums.ConversationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumConversationTypeFilter<$PrismaModel>
+    _max?: NestedEnumConversationTypeFilter<$PrismaModel>
   }
 
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -11920,6 +10450,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedEnumMessageTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.MessageType | EnumMessageTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMessageTypeFilter<$PrismaModel> | $Enums.MessageType
+  }
+
+  export type NestedEnumMessageTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MessageType | EnumMessageTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MessageType[] | ListEnumMessageTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMessageTypeWithAggregatesFilter<$PrismaModel> | $Enums.MessageType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMessageTypeFilter<$PrismaModel>
+    _max?: NestedEnumMessageTypeFilter<$PrismaModel>
   }
 
   export type NestedEnumSessionStatusFilter<$PrismaModel = never> = {
@@ -11964,33 +10511,6 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type ConversationCreateWithoutMenteeInput = {
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    lastMessage?: string | null
-    mentor: MentorCreateNestedOneWithoutConversationsInput
-    messages?: MessageCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationUncheckedCreateWithoutMenteeInput = {
-    id?: number
-    mentorId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    lastMessage?: string | null
-    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationCreateOrConnectWithoutMenteeInput = {
-    where: ConversationWhereUniqueInput
-    create: XOR<ConversationCreateWithoutMenteeInput, ConversationUncheckedCreateWithoutMenteeInput>
-  }
-
-  export type ConversationCreateManyMenteeInputEnvelope = {
-    data: ConversationCreateManyMenteeInput | ConversationCreateManyMenteeInput[]
-    skipDuplicates?: boolean
   }
 
   export type sessionsCreateWithoutMenteeInput = {
@@ -12067,14 +10587,13 @@ export namespace Prisma {
     last_login?: Date | string
     expertise?: MentorCreateexpertiseInput | string[]
     bio: string
-    experience: number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: string
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string
     Twitter?: string | null
     Website?: string | null
-    achievement?: AchievementsCreateNestedOneWithoutMentorInput
-    conversations?: ConversationCreateNestedManyWithoutMentorInput
     sessions?: sessionsCreateNestedManyWithoutMentorInput
   }
 
@@ -12096,48 +10615,19 @@ export namespace Prisma {
     last_login?: Date | string
     expertise?: MentorCreateexpertiseInput | string[]
     bio: string
-    experience: number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: string
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string
     Twitter?: string | null
     Website?: string | null
-    achievement?: AchievementsUncheckedCreateNestedOneWithoutMentorInput
-    conversations?: ConversationUncheckedCreateNestedManyWithoutMentorInput
     sessions?: sessionsUncheckedCreateNestedManyWithoutMentorInput
   }
 
   export type MentorCreateOrConnectWithoutMenteeInput = {
     where: MentorWhereUniqueInput
     create: XOR<MentorCreateWithoutMenteeInput, MentorUncheckedCreateWithoutMenteeInput>
-  }
-
-  export type ConversationUpsertWithWhereUniqueWithoutMenteeInput = {
-    where: ConversationWhereUniqueInput
-    update: XOR<ConversationUpdateWithoutMenteeInput, ConversationUncheckedUpdateWithoutMenteeInput>
-    create: XOR<ConversationCreateWithoutMenteeInput, ConversationUncheckedCreateWithoutMenteeInput>
-  }
-
-  export type ConversationUpdateWithWhereUniqueWithoutMenteeInput = {
-    where: ConversationWhereUniqueInput
-    data: XOR<ConversationUpdateWithoutMenteeInput, ConversationUncheckedUpdateWithoutMenteeInput>
-  }
-
-  export type ConversationUpdateManyWithWhereWithoutMenteeInput = {
-    where: ConversationScalarWhereInput
-    data: XOR<ConversationUpdateManyMutationInput, ConversationUncheckedUpdateManyWithoutMenteeInput>
-  }
-
-  export type ConversationScalarWhereInput = {
-    AND?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
-    OR?: ConversationScalarWhereInput[]
-    NOT?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
-    id?: IntFilter<"Conversation"> | number
-    menteeId?: StringFilter<"Conversation"> | string
-    mentorId?: StringFilter<"Conversation"> | string
-    createdAt?: DateTimeFilter<"Conversation"> | Date | string
-    updatedAt?: DateTimeFilter<"Conversation"> | Date | string
-    lastMessage?: StringNullableFilter<"Conversation"> | string | null
   }
 
   export type sessionsUpsertWithWhereUniqueWithoutMenteeInput = {
@@ -12221,189 +10711,13 @@ export namespace Prisma {
     last_login?: DateTimeFilter<"Mentor"> | Date | string
     expertise?: StringNullableListFilter<"Mentor">
     bio?: StringFilter<"Mentor"> | string
-    experience?: IntFilter<"Mentor"> | number
+    experience?: JsonFilter<"Mentor">
+    resumeId?: StringFilter<"Mentor"> | string
     Github?: StringNullableFilter<"Mentor"> | string | null
     Instagram?: StringNullableFilter<"Mentor"> | string | null
     LinkedIn?: StringFilter<"Mentor"> | string
     Twitter?: StringNullableFilter<"Mentor"> | string | null
     Website?: StringNullableFilter<"Mentor"> | string | null
-  }
-
-  export type MentorCreateWithoutAchievementInput = {
-    first_name: string
-    last_name: string
-    age?: number
-    email: string
-    phone_number: string
-    password: string
-    supabaseId: string
-    gender?: string
-    profile_picture?: string
-    location: string
-    joined?: Date | string
-    ratings?: number
-    updateAt?: Date | string
-    last_login?: Date | string
-    expertise?: MentorCreateexpertiseInput | string[]
-    bio: string
-    experience: number
-    Github?: string | null
-    Instagram?: string | null
-    LinkedIn?: string
-    Twitter?: string | null
-    Website?: string | null
-    conversations?: ConversationCreateNestedManyWithoutMentorInput
-    sessions?: sessionsCreateNestedManyWithoutMentorInput
-    mentee?: MenteeCreateNestedManyWithoutMentorInput
-  }
-
-  export type MentorUncheckedCreateWithoutAchievementInput = {
-    id?: number
-    first_name: string
-    last_name: string
-    age?: number
-    email: string
-    phone_number: string
-    password: string
-    supabaseId: string
-    gender?: string
-    profile_picture?: string
-    location: string
-    joined?: Date | string
-    ratings?: number
-    updateAt?: Date | string
-    last_login?: Date | string
-    expertise?: MentorCreateexpertiseInput | string[]
-    bio: string
-    experience: number
-    Github?: string | null
-    Instagram?: string | null
-    LinkedIn?: string
-    Twitter?: string | null
-    Website?: string | null
-    conversations?: ConversationUncheckedCreateNestedManyWithoutMentorInput
-    sessions?: sessionsUncheckedCreateNestedManyWithoutMentorInput
-    mentee?: MenteeUncheckedCreateNestedManyWithoutMentorInput
-  }
-
-  export type MentorCreateOrConnectWithoutAchievementInput = {
-    where: MentorWhereUniqueInput
-    create: XOR<MentorCreateWithoutAchievementInput, MentorUncheckedCreateWithoutAchievementInput>
-  }
-
-  export type MentorUpsertWithoutAchievementInput = {
-    update: XOR<MentorUpdateWithoutAchievementInput, MentorUncheckedUpdateWithoutAchievementInput>
-    create: XOR<MentorCreateWithoutAchievementInput, MentorUncheckedCreateWithoutAchievementInput>
-    where?: MentorWhereInput
-  }
-
-  export type MentorUpdateToOneWithWhereWithoutAchievementInput = {
-    where?: MentorWhereInput
-    data: XOR<MentorUpdateWithoutAchievementInput, MentorUncheckedUpdateWithoutAchievementInput>
-  }
-
-  export type MentorUpdateWithoutAchievementInput = {
-    first_name?: StringFieldUpdateOperationsInput | string
-    last_name?: StringFieldUpdateOperationsInput | string
-    age?: IntFieldUpdateOperationsInput | number
-    email?: StringFieldUpdateOperationsInput | string
-    phone_number?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    supabaseId?: StringFieldUpdateOperationsInput | string
-    gender?: StringFieldUpdateOperationsInput | string
-    profile_picture?: StringFieldUpdateOperationsInput | string
-    location?: StringFieldUpdateOperationsInput | string
-    joined?: DateTimeFieldUpdateOperationsInput | Date | string
-    ratings?: IntFieldUpdateOperationsInput | number
-    updateAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    last_login?: DateTimeFieldUpdateOperationsInput | Date | string
-    expertise?: MentorUpdateexpertiseInput | string[]
-    bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
-    Github?: NullableStringFieldUpdateOperationsInput | string | null
-    Instagram?: NullableStringFieldUpdateOperationsInput | string | null
-    LinkedIn?: StringFieldUpdateOperationsInput | string
-    Twitter?: NullableStringFieldUpdateOperationsInput | string | null
-    Website?: NullableStringFieldUpdateOperationsInput | string | null
-    conversations?: ConversationUpdateManyWithoutMentorNestedInput
-    sessions?: sessionsUpdateManyWithoutMentorNestedInput
-    mentee?: MenteeUpdateManyWithoutMentorNestedInput
-  }
-
-  export type MentorUncheckedUpdateWithoutAchievementInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    first_name?: StringFieldUpdateOperationsInput | string
-    last_name?: StringFieldUpdateOperationsInput | string
-    age?: IntFieldUpdateOperationsInput | number
-    email?: StringFieldUpdateOperationsInput | string
-    phone_number?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    supabaseId?: StringFieldUpdateOperationsInput | string
-    gender?: StringFieldUpdateOperationsInput | string
-    profile_picture?: StringFieldUpdateOperationsInput | string
-    location?: StringFieldUpdateOperationsInput | string
-    joined?: DateTimeFieldUpdateOperationsInput | Date | string
-    ratings?: IntFieldUpdateOperationsInput | number
-    updateAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    last_login?: DateTimeFieldUpdateOperationsInput | Date | string
-    expertise?: MentorUpdateexpertiseInput | string[]
-    bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
-    Github?: NullableStringFieldUpdateOperationsInput | string | null
-    Instagram?: NullableStringFieldUpdateOperationsInput | string | null
-    LinkedIn?: StringFieldUpdateOperationsInput | string
-    Twitter?: NullableStringFieldUpdateOperationsInput | string | null
-    Website?: NullableStringFieldUpdateOperationsInput | string | null
-    conversations?: ConversationUncheckedUpdateManyWithoutMentorNestedInput
-    sessions?: sessionsUncheckedUpdateManyWithoutMentorNestedInput
-    mentee?: MenteeUncheckedUpdateManyWithoutMentorNestedInput
-  }
-
-  export type AchievementsCreateWithoutMentorInput = {
-    experience?: AchievementsCreateexperienceInput | string[]
-    education?: AchievementsCreateeducationInput | string[]
-    accolades?: AchievementsCreateaccoladesInput | string[]
-    reviews?: AchievementsCreatereviewsInput | string[]
-  }
-
-  export type AchievementsUncheckedCreateWithoutMentorInput = {
-    id?: number
-    experience?: AchievementsCreateexperienceInput | string[]
-    education?: AchievementsCreateeducationInput | string[]
-    accolades?: AchievementsCreateaccoladesInput | string[]
-    reviews?: AchievementsCreatereviewsInput | string[]
-  }
-
-  export type AchievementsCreateOrConnectWithoutMentorInput = {
-    where: AchievementsWhereUniqueInput
-    create: XOR<AchievementsCreateWithoutMentorInput, AchievementsUncheckedCreateWithoutMentorInput>
-  }
-
-  export type ConversationCreateWithoutMentorInput = {
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    lastMessage?: string | null
-    mentee: MenteeCreateNestedOneWithoutConversationsInput
-    messages?: MessageCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationUncheckedCreateWithoutMentorInput = {
-    id?: number
-    menteeId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    lastMessage?: string | null
-    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationCreateOrConnectWithoutMentorInput = {
-    where: ConversationWhereUniqueInput
-    create: XOR<ConversationCreateWithoutMentorInput, ConversationUncheckedCreateWithoutMentorInput>
-  }
-
-  export type ConversationCreateManyMentorInputEnvelope = {
-    data: ConversationCreateManyMentorInput | ConversationCreateManyMentorInput[]
-    skipDuplicates?: boolean
   }
 
   export type sessionsCreateWithoutMentorInput = {
@@ -12480,13 +10794,11 @@ export namespace Prisma {
     bio: string
     joined?: Date | string
     goals?: MenteeCreategoalsInput | string[]
-    experience?: number
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string | null
     Twitter?: string | null
     Website?: string | null
-    conversations?: ConversationCreateNestedManyWithoutMenteeInput
     sessions?: sessionsCreateNestedManyWithoutMenteeInput
   }
 
@@ -12508,61 +10820,17 @@ export namespace Prisma {
     bio: string
     joined?: Date | string
     goals?: MenteeCreategoalsInput | string[]
-    experience?: number
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string | null
     Twitter?: string | null
     Website?: string | null
-    conversations?: ConversationUncheckedCreateNestedManyWithoutMenteeInput
     sessions?: sessionsUncheckedCreateNestedManyWithoutMenteeInput
   }
 
   export type MenteeCreateOrConnectWithoutMentorInput = {
     where: MenteeWhereUniqueInput
     create: XOR<MenteeCreateWithoutMentorInput, MenteeUncheckedCreateWithoutMentorInput>
-  }
-
-  export type AchievementsUpsertWithoutMentorInput = {
-    update: XOR<AchievementsUpdateWithoutMentorInput, AchievementsUncheckedUpdateWithoutMentorInput>
-    create: XOR<AchievementsCreateWithoutMentorInput, AchievementsUncheckedCreateWithoutMentorInput>
-    where?: AchievementsWhereInput
-  }
-
-  export type AchievementsUpdateToOneWithWhereWithoutMentorInput = {
-    where?: AchievementsWhereInput
-    data: XOR<AchievementsUpdateWithoutMentorInput, AchievementsUncheckedUpdateWithoutMentorInput>
-  }
-
-  export type AchievementsUpdateWithoutMentorInput = {
-    experience?: AchievementsUpdateexperienceInput | string[]
-    education?: AchievementsUpdateeducationInput | string[]
-    accolades?: AchievementsUpdateaccoladesInput | string[]
-    reviews?: AchievementsUpdatereviewsInput | string[]
-  }
-
-  export type AchievementsUncheckedUpdateWithoutMentorInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    experience?: AchievementsUpdateexperienceInput | string[]
-    education?: AchievementsUpdateeducationInput | string[]
-    accolades?: AchievementsUpdateaccoladesInput | string[]
-    reviews?: AchievementsUpdatereviewsInput | string[]
-  }
-
-  export type ConversationUpsertWithWhereUniqueWithoutMentorInput = {
-    where: ConversationWhereUniqueInput
-    update: XOR<ConversationUpdateWithoutMentorInput, ConversationUncheckedUpdateWithoutMentorInput>
-    create: XOR<ConversationCreateWithoutMentorInput, ConversationUncheckedCreateWithoutMentorInput>
-  }
-
-  export type ConversationUpdateWithWhereUniqueWithoutMentorInput = {
-    where: ConversationWhereUniqueInput
-    data: XOR<ConversationUpdateWithoutMentorInput, ConversationUncheckedUpdateWithoutMentorInput>
-  }
-
-  export type ConversationUpdateManyWithWhereWithoutMentorInput = {
-    where: ConversationScalarWhereInput
-    data: XOR<ConversationUpdateManyMutationInput, ConversationUncheckedUpdateManyWithoutMentorInput>
   }
 
   export type sessionsUpsertWithWhereUniqueWithoutMentorInput = {
@@ -12618,7 +10886,6 @@ export namespace Prisma {
     bio?: StringFilter<"Mentee"> | string
     joined?: DateTimeFilter<"Mentee"> | Date | string
     goals?: StringNullableListFilter<"Mentee">
-    experience?: IntFilter<"Mentee"> | number
     Github?: StringNullableFilter<"Mentee"> | string | null
     Instagram?: StringNullableFilter<"Mentee"> | string | null
     LinkedIn?: StringNullableFilter<"Mentee"> | string | null
@@ -12626,145 +10893,21 @@ export namespace Prisma {
     Website?: StringNullableFilter<"Mentee"> | string | null
   }
 
-  export type MenteeCreateWithoutConversationsInput = {
-    first_name: string
-    last_name: string
-    age?: number
-    gender?: string
-    email: string
-    phone_number: string
-    password: string
-    location: string
-    updateAt?: Date | string
-    last_login?: Date | string
-    ratings?: number
-    profile_picture?: string
-    supabaseId: string
-    bio: string
-    joined?: Date | string
-    goals?: MenteeCreategoalsInput | string[]
-    experience?: number
-    Github?: string | null
-    Instagram?: string | null
-    LinkedIn?: string | null
-    Twitter?: string | null
-    Website?: string | null
-    sessions?: sessionsCreateNestedManyWithoutMenteeInput
-    mentor?: MentorCreateNestedManyWithoutMenteeInput
-  }
-
-  export type MenteeUncheckedCreateWithoutConversationsInput = {
-    id?: number
-    first_name: string
-    last_name: string
-    age?: number
-    gender?: string
-    email: string
-    phone_number: string
-    password: string
-    location: string
-    updateAt?: Date | string
-    last_login?: Date | string
-    ratings?: number
-    profile_picture?: string
-    supabaseId: string
-    bio: string
-    joined?: Date | string
-    goals?: MenteeCreategoalsInput | string[]
-    experience?: number
-    Github?: string | null
-    Instagram?: string | null
-    LinkedIn?: string | null
-    Twitter?: string | null
-    Website?: string | null
-    sessions?: sessionsUncheckedCreateNestedManyWithoutMenteeInput
-    mentor?: MentorUncheckedCreateNestedManyWithoutMenteeInput
-  }
-
-  export type MenteeCreateOrConnectWithoutConversationsInput = {
-    where: MenteeWhereUniqueInput
-    create: XOR<MenteeCreateWithoutConversationsInput, MenteeUncheckedCreateWithoutConversationsInput>
-  }
-
-  export type MentorCreateWithoutConversationsInput = {
-    first_name: string
-    last_name: string
-    age?: number
-    email: string
-    phone_number: string
-    password: string
-    supabaseId: string
-    gender?: string
-    profile_picture?: string
-    location: string
-    joined?: Date | string
-    ratings?: number
-    updateAt?: Date | string
-    last_login?: Date | string
-    expertise?: MentorCreateexpertiseInput | string[]
-    bio: string
-    experience: number
-    Github?: string | null
-    Instagram?: string | null
-    LinkedIn?: string
-    Twitter?: string | null
-    Website?: string | null
-    achievement?: AchievementsCreateNestedOneWithoutMentorInput
-    sessions?: sessionsCreateNestedManyWithoutMentorInput
-    mentee?: MenteeCreateNestedManyWithoutMentorInput
-  }
-
-  export type MentorUncheckedCreateWithoutConversationsInput = {
-    id?: number
-    first_name: string
-    last_name: string
-    age?: number
-    email: string
-    phone_number: string
-    password: string
-    supabaseId: string
-    gender?: string
-    profile_picture?: string
-    location: string
-    joined?: Date | string
-    ratings?: number
-    updateAt?: Date | string
-    last_login?: Date | string
-    expertise?: MentorCreateexpertiseInput | string[]
-    bio: string
-    experience: number
-    Github?: string | null
-    Instagram?: string | null
-    LinkedIn?: string
-    Twitter?: string | null
-    Website?: string | null
-    achievement?: AchievementsUncheckedCreateNestedOneWithoutMentorInput
-    sessions?: sessionsUncheckedCreateNestedManyWithoutMentorInput
-    mentee?: MenteeUncheckedCreateNestedManyWithoutMentorInput
-  }
-
-  export type MentorCreateOrConnectWithoutConversationsInput = {
-    where: MentorWhereUniqueInput
-    create: XOR<MentorCreateWithoutConversationsInput, MentorUncheckedCreateWithoutConversationsInput>
-  }
-
   export type MessageCreateWithoutConversationInput = {
-    senderRole: string
     content: string
+    senderId: string
     createdAt?: Date | string
     isRead?: boolean
-    messageType?: string
-    senderId: string
+    messageType?: $Enums.MessageType
   }
 
   export type MessageUncheckedCreateWithoutConversationInput = {
     id?: number
-    senderRole: string
     content: string
+    senderId: string
     createdAt?: Date | string
     isRead?: boolean
-    messageType?: string
-    senderId: string
+    messageType?: $Enums.MessageType
   }
 
   export type MessageCreateOrConnectWithoutConversationInput = {
@@ -12775,140 +10918,6 @@ export namespace Prisma {
   export type MessageCreateManyConversationInputEnvelope = {
     data: MessageCreateManyConversationInput | MessageCreateManyConversationInput[]
     skipDuplicates?: boolean
-  }
-
-  export type MenteeUpsertWithoutConversationsInput = {
-    update: XOR<MenteeUpdateWithoutConversationsInput, MenteeUncheckedUpdateWithoutConversationsInput>
-    create: XOR<MenteeCreateWithoutConversationsInput, MenteeUncheckedCreateWithoutConversationsInput>
-    where?: MenteeWhereInput
-  }
-
-  export type MenteeUpdateToOneWithWhereWithoutConversationsInput = {
-    where?: MenteeWhereInput
-    data: XOR<MenteeUpdateWithoutConversationsInput, MenteeUncheckedUpdateWithoutConversationsInput>
-  }
-
-  export type MenteeUpdateWithoutConversationsInput = {
-    first_name?: StringFieldUpdateOperationsInput | string
-    last_name?: StringFieldUpdateOperationsInput | string
-    age?: IntFieldUpdateOperationsInput | number
-    gender?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phone_number?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    location?: StringFieldUpdateOperationsInput | string
-    updateAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    last_login?: DateTimeFieldUpdateOperationsInput | Date | string
-    ratings?: IntFieldUpdateOperationsInput | number
-    profile_picture?: StringFieldUpdateOperationsInput | string
-    supabaseId?: StringFieldUpdateOperationsInput | string
-    bio?: StringFieldUpdateOperationsInput | string
-    joined?: DateTimeFieldUpdateOperationsInput | Date | string
-    goals?: MenteeUpdategoalsInput | string[]
-    experience?: IntFieldUpdateOperationsInput | number
-    Github?: NullableStringFieldUpdateOperationsInput | string | null
-    Instagram?: NullableStringFieldUpdateOperationsInput | string | null
-    LinkedIn?: NullableStringFieldUpdateOperationsInput | string | null
-    Twitter?: NullableStringFieldUpdateOperationsInput | string | null
-    Website?: NullableStringFieldUpdateOperationsInput | string | null
-    sessions?: sessionsUpdateManyWithoutMenteeNestedInput
-    mentor?: MentorUpdateManyWithoutMenteeNestedInput
-  }
-
-  export type MenteeUncheckedUpdateWithoutConversationsInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    first_name?: StringFieldUpdateOperationsInput | string
-    last_name?: StringFieldUpdateOperationsInput | string
-    age?: IntFieldUpdateOperationsInput | number
-    gender?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phone_number?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    location?: StringFieldUpdateOperationsInput | string
-    updateAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    last_login?: DateTimeFieldUpdateOperationsInput | Date | string
-    ratings?: IntFieldUpdateOperationsInput | number
-    profile_picture?: StringFieldUpdateOperationsInput | string
-    supabaseId?: StringFieldUpdateOperationsInput | string
-    bio?: StringFieldUpdateOperationsInput | string
-    joined?: DateTimeFieldUpdateOperationsInput | Date | string
-    goals?: MenteeUpdategoalsInput | string[]
-    experience?: IntFieldUpdateOperationsInput | number
-    Github?: NullableStringFieldUpdateOperationsInput | string | null
-    Instagram?: NullableStringFieldUpdateOperationsInput | string | null
-    LinkedIn?: NullableStringFieldUpdateOperationsInput | string | null
-    Twitter?: NullableStringFieldUpdateOperationsInput | string | null
-    Website?: NullableStringFieldUpdateOperationsInput | string | null
-    sessions?: sessionsUncheckedUpdateManyWithoutMenteeNestedInput
-    mentor?: MentorUncheckedUpdateManyWithoutMenteeNestedInput
-  }
-
-  export type MentorUpsertWithoutConversationsInput = {
-    update: XOR<MentorUpdateWithoutConversationsInput, MentorUncheckedUpdateWithoutConversationsInput>
-    create: XOR<MentorCreateWithoutConversationsInput, MentorUncheckedCreateWithoutConversationsInput>
-    where?: MentorWhereInput
-  }
-
-  export type MentorUpdateToOneWithWhereWithoutConversationsInput = {
-    where?: MentorWhereInput
-    data: XOR<MentorUpdateWithoutConversationsInput, MentorUncheckedUpdateWithoutConversationsInput>
-  }
-
-  export type MentorUpdateWithoutConversationsInput = {
-    first_name?: StringFieldUpdateOperationsInput | string
-    last_name?: StringFieldUpdateOperationsInput | string
-    age?: IntFieldUpdateOperationsInput | number
-    email?: StringFieldUpdateOperationsInput | string
-    phone_number?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    supabaseId?: StringFieldUpdateOperationsInput | string
-    gender?: StringFieldUpdateOperationsInput | string
-    profile_picture?: StringFieldUpdateOperationsInput | string
-    location?: StringFieldUpdateOperationsInput | string
-    joined?: DateTimeFieldUpdateOperationsInput | Date | string
-    ratings?: IntFieldUpdateOperationsInput | number
-    updateAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    last_login?: DateTimeFieldUpdateOperationsInput | Date | string
-    expertise?: MentorUpdateexpertiseInput | string[]
-    bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
-    Github?: NullableStringFieldUpdateOperationsInput | string | null
-    Instagram?: NullableStringFieldUpdateOperationsInput | string | null
-    LinkedIn?: StringFieldUpdateOperationsInput | string
-    Twitter?: NullableStringFieldUpdateOperationsInput | string | null
-    Website?: NullableStringFieldUpdateOperationsInput | string | null
-    achievement?: AchievementsUpdateOneWithoutMentorNestedInput
-    sessions?: sessionsUpdateManyWithoutMentorNestedInput
-    mentee?: MenteeUpdateManyWithoutMentorNestedInput
-  }
-
-  export type MentorUncheckedUpdateWithoutConversationsInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    first_name?: StringFieldUpdateOperationsInput | string
-    last_name?: StringFieldUpdateOperationsInput | string
-    age?: IntFieldUpdateOperationsInput | number
-    email?: StringFieldUpdateOperationsInput | string
-    phone_number?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    supabaseId?: StringFieldUpdateOperationsInput | string
-    gender?: StringFieldUpdateOperationsInput | string
-    profile_picture?: StringFieldUpdateOperationsInput | string
-    location?: StringFieldUpdateOperationsInput | string
-    joined?: DateTimeFieldUpdateOperationsInput | Date | string
-    ratings?: IntFieldUpdateOperationsInput | number
-    updateAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    last_login?: DateTimeFieldUpdateOperationsInput | Date | string
-    expertise?: MentorUpdateexpertiseInput | string[]
-    bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
-    Github?: NullableStringFieldUpdateOperationsInput | string | null
-    Instagram?: NullableStringFieldUpdateOperationsInput | string | null
-    LinkedIn?: StringFieldUpdateOperationsInput | string
-    Twitter?: NullableStringFieldUpdateOperationsInput | string | null
-    Website?: NullableStringFieldUpdateOperationsInput | string | null
-    achievement?: AchievementsUncheckedUpdateOneWithoutMentorNestedInput
-    sessions?: sessionsUncheckedUpdateManyWithoutMentorNestedInput
-    mentee?: MenteeUncheckedUpdateManyWithoutMentorNestedInput
   }
 
   export type MessageUpsertWithWhereUniqueWithoutConversationInput = {
@@ -12932,30 +10941,33 @@ export namespace Prisma {
     OR?: MessageScalarWhereInput[]
     NOT?: MessageScalarWhereInput | MessageScalarWhereInput[]
     id?: IntFilter<"Message"> | number
-    conversationId?: IntFilter<"Message"> | number
-    senderRole?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
+    senderId?: StringFilter<"Message"> | string
+    conversationId?: IntFilter<"Message"> | number
     createdAt?: DateTimeFilter<"Message"> | Date | string
     isRead?: BoolFilter<"Message"> | boolean
-    messageType?: StringFilter<"Message"> | string
-    senderId?: StringFilter<"Message"> | string
+    messageType?: EnumMessageTypeFilter<"Message"> | $Enums.MessageType
   }
 
   export type ConversationCreateWithoutMessagesInput = {
+    participant1Id: string
+    participant2Id: string
+    type?: $Enums.ConversationType
     createdAt?: Date | string
     updatedAt?: Date | string
     lastMessage?: string | null
-    mentee: MenteeCreateNestedOneWithoutConversationsInput
-    mentor: MentorCreateNestedOneWithoutConversationsInput
+    isActive?: boolean
   }
 
   export type ConversationUncheckedCreateWithoutMessagesInput = {
     id?: number
-    menteeId: string
-    mentorId: string
+    participant1Id: string
+    participant2Id: string
+    type?: $Enums.ConversationType
     createdAt?: Date | string
     updatedAt?: Date | string
     lastMessage?: string | null
+    isActive?: boolean
   }
 
   export type ConversationCreateOrConnectWithoutMessagesInput = {
@@ -12975,20 +10987,24 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateWithoutMessagesInput = {
+    participant1Id?: StringFieldUpdateOperationsInput | string
+    participant2Id?: StringFieldUpdateOperationsInput | string
+    type?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastMessage?: NullableStringFieldUpdateOperationsInput | string | null
-    mentee?: MenteeUpdateOneRequiredWithoutConversationsNestedInput
-    mentor?: MentorUpdateOneRequiredWithoutConversationsNestedInput
+    isActive?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type ConversationUncheckedUpdateWithoutMessagesInput = {
     id?: IntFieldUpdateOperationsInput | number
-    menteeId?: StringFieldUpdateOperationsInput | string
-    mentorId?: StringFieldUpdateOperationsInput | string
+    participant1Id?: StringFieldUpdateOperationsInput | string
+    participant2Id?: StringFieldUpdateOperationsInput | string
+    type?: EnumConversationTypeFieldUpdateOperationsInput | $Enums.ConversationType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type MenteeCreateWithoutSessionsInput = {
@@ -13008,13 +11024,11 @@ export namespace Prisma {
     bio: string
     joined?: Date | string
     goals?: MenteeCreategoalsInput | string[]
-    experience?: number
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string | null
     Twitter?: string | null
     Website?: string | null
-    conversations?: ConversationCreateNestedManyWithoutMenteeInput
     mentor?: MentorCreateNestedManyWithoutMenteeInput
   }
 
@@ -13036,13 +11050,11 @@ export namespace Prisma {
     bio: string
     joined?: Date | string
     goals?: MenteeCreategoalsInput | string[]
-    experience?: number
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string | null
     Twitter?: string | null
     Website?: string | null
-    conversations?: ConversationUncheckedCreateNestedManyWithoutMenteeInput
     mentor?: MentorUncheckedCreateNestedManyWithoutMenteeInput
   }
 
@@ -13068,14 +11080,13 @@ export namespace Prisma {
     last_login?: Date | string
     expertise?: MentorCreateexpertiseInput | string[]
     bio: string
-    experience: number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: string
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string
     Twitter?: string | null
     Website?: string | null
-    achievement?: AchievementsCreateNestedOneWithoutMentorInput
-    conversations?: ConversationCreateNestedManyWithoutMentorInput
     mentee?: MenteeCreateNestedManyWithoutMentorInput
   }
 
@@ -13097,14 +11108,13 @@ export namespace Prisma {
     last_login?: Date | string
     expertise?: MentorCreateexpertiseInput | string[]
     bio: string
-    experience: number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: string
     Github?: string | null
     Instagram?: string | null
     LinkedIn?: string
     Twitter?: string | null
     Website?: string | null
-    achievement?: AchievementsUncheckedCreateNestedOneWithoutMentorInput
-    conversations?: ConversationUncheckedCreateNestedManyWithoutMentorInput
     mentee?: MenteeUncheckedCreateNestedManyWithoutMentorInput
   }
 
@@ -13141,13 +11151,11 @@ export namespace Prisma {
     bio?: StringFieldUpdateOperationsInput | string
     joined?: DateTimeFieldUpdateOperationsInput | Date | string
     goals?: MenteeUpdategoalsInput | string[]
-    experience?: IntFieldUpdateOperationsInput | number
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: NullableStringFieldUpdateOperationsInput | string | null
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-    conversations?: ConversationUpdateManyWithoutMenteeNestedInput
     mentor?: MentorUpdateManyWithoutMenteeNestedInput
   }
 
@@ -13169,13 +11177,11 @@ export namespace Prisma {
     bio?: StringFieldUpdateOperationsInput | string
     joined?: DateTimeFieldUpdateOperationsInput | Date | string
     goals?: MenteeUpdategoalsInput | string[]
-    experience?: IntFieldUpdateOperationsInput | number
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: NullableStringFieldUpdateOperationsInput | string | null
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-    conversations?: ConversationUncheckedUpdateManyWithoutMenteeNestedInput
     mentor?: MentorUncheckedUpdateManyWithoutMenteeNestedInput
   }
 
@@ -13207,14 +11213,13 @@ export namespace Prisma {
     last_login?: DateTimeFieldUpdateOperationsInput | Date | string
     expertise?: MentorUpdateexpertiseInput | string[]
     bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: StringFieldUpdateOperationsInput | string
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: StringFieldUpdateOperationsInput | string
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-    achievement?: AchievementsUpdateOneWithoutMentorNestedInput
-    conversations?: ConversationUpdateManyWithoutMentorNestedInput
     mentee?: MenteeUpdateManyWithoutMentorNestedInput
   }
 
@@ -13236,23 +11241,14 @@ export namespace Prisma {
     last_login?: DateTimeFieldUpdateOperationsInput | Date | string
     expertise?: MentorUpdateexpertiseInput | string[]
     bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: StringFieldUpdateOperationsInput | string
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: StringFieldUpdateOperationsInput | string
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-    achievement?: AchievementsUncheckedUpdateOneWithoutMentorNestedInput
-    conversations?: ConversationUncheckedUpdateManyWithoutMentorNestedInput
     mentee?: MenteeUncheckedUpdateManyWithoutMentorNestedInput
-  }
-
-  export type ConversationCreateManyMenteeInput = {
-    id?: number
-    mentorId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    lastMessage?: string | null
   }
 
   export type sessionsCreateManyMenteeInput = {
@@ -13277,31 +11273,6 @@ export namespace Prisma {
     menteeReview?: string | null
     mentorRating?: number | null
     mentorReview?: string | null
-  }
-
-  export type ConversationUpdateWithoutMenteeInput = {
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastMessage?: NullableStringFieldUpdateOperationsInput | string | null
-    mentor?: MentorUpdateOneRequiredWithoutConversationsNestedInput
-    messages?: MessageUpdateManyWithoutConversationNestedInput
-  }
-
-  export type ConversationUncheckedUpdateWithoutMenteeInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    mentorId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastMessage?: NullableStringFieldUpdateOperationsInput | string | null
-    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
-  }
-
-  export type ConversationUncheckedUpdateManyWithoutMenteeInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    mentorId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastMessage?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type sessionsUpdateWithoutMenteeInput = {
@@ -13392,14 +11363,13 @@ export namespace Prisma {
     last_login?: DateTimeFieldUpdateOperationsInput | Date | string
     expertise?: MentorUpdateexpertiseInput | string[]
     bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: StringFieldUpdateOperationsInput | string
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: StringFieldUpdateOperationsInput | string
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-    achievement?: AchievementsUpdateOneWithoutMentorNestedInput
-    conversations?: ConversationUpdateManyWithoutMentorNestedInput
     sessions?: sessionsUpdateManyWithoutMentorNestedInput
   }
 
@@ -13421,14 +11391,13 @@ export namespace Prisma {
     last_login?: DateTimeFieldUpdateOperationsInput | Date | string
     expertise?: MentorUpdateexpertiseInput | string[]
     bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: StringFieldUpdateOperationsInput | string
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: StringFieldUpdateOperationsInput | string
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-    achievement?: AchievementsUncheckedUpdateOneWithoutMentorNestedInput
-    conversations?: ConversationUncheckedUpdateManyWithoutMentorNestedInput
     sessions?: sessionsUncheckedUpdateManyWithoutMentorNestedInput
   }
 
@@ -13450,20 +11419,13 @@ export namespace Prisma {
     last_login?: DateTimeFieldUpdateOperationsInput | Date | string
     expertise?: MentorUpdateexpertiseInput | string[]
     bio?: StringFieldUpdateOperationsInput | string
-    experience?: IntFieldUpdateOperationsInput | number
+    experience?: JsonNullValueInput | InputJsonValue
+    resumeId?: StringFieldUpdateOperationsInput | string
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: StringFieldUpdateOperationsInput | string
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type ConversationCreateManyMentorInput = {
-    id?: number
-    menteeId: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    lastMessage?: string | null
   }
 
   export type sessionsCreateManyMentorInput = {
@@ -13488,31 +11450,6 @@ export namespace Prisma {
     menteeReview?: string | null
     mentorRating?: number | null
     mentorReview?: string | null
-  }
-
-  export type ConversationUpdateWithoutMentorInput = {
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastMessage?: NullableStringFieldUpdateOperationsInput | string | null
-    mentee?: MenteeUpdateOneRequiredWithoutConversationsNestedInput
-    messages?: MessageUpdateManyWithoutConversationNestedInput
-  }
-
-  export type ConversationUncheckedUpdateWithoutMentorInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    menteeId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastMessage?: NullableStringFieldUpdateOperationsInput | string | null
-    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
-  }
-
-  export type ConversationUncheckedUpdateManyWithoutMentorInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    menteeId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastMessage?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type sessionsUpdateWithoutMentorInput = {
@@ -13603,13 +11540,11 @@ export namespace Prisma {
     bio?: StringFieldUpdateOperationsInput | string
     joined?: DateTimeFieldUpdateOperationsInput | Date | string
     goals?: MenteeUpdategoalsInput | string[]
-    experience?: IntFieldUpdateOperationsInput | number
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: NullableStringFieldUpdateOperationsInput | string | null
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-    conversations?: ConversationUpdateManyWithoutMenteeNestedInput
     sessions?: sessionsUpdateManyWithoutMenteeNestedInput
   }
 
@@ -13631,13 +11566,11 @@ export namespace Prisma {
     bio?: StringFieldUpdateOperationsInput | string
     joined?: DateTimeFieldUpdateOperationsInput | Date | string
     goals?: MenteeUpdategoalsInput | string[]
-    experience?: IntFieldUpdateOperationsInput | number
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: NullableStringFieldUpdateOperationsInput | string | null
     Twitter?: NullableStringFieldUpdateOperationsInput | string | null
     Website?: NullableStringFieldUpdateOperationsInput | string | null
-    conversations?: ConversationUncheckedUpdateManyWithoutMenteeNestedInput
     sessions?: sessionsUncheckedUpdateManyWithoutMenteeNestedInput
   }
 
@@ -13659,7 +11592,6 @@ export namespace Prisma {
     bio?: StringFieldUpdateOperationsInput | string
     joined?: DateTimeFieldUpdateOperationsInput | Date | string
     goals?: MenteeUpdategoalsInput | string[]
-    experience?: IntFieldUpdateOperationsInput | number
     Github?: NullableStringFieldUpdateOperationsInput | string | null
     Instagram?: NullableStringFieldUpdateOperationsInput | string | null
     LinkedIn?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13669,41 +11601,37 @@ export namespace Prisma {
 
   export type MessageCreateManyConversationInput = {
     id?: number
-    senderRole: string
     content: string
+    senderId: string
     createdAt?: Date | string
     isRead?: boolean
-    messageType?: string
-    senderId: string
+    messageType?: $Enums.MessageType
   }
 
   export type MessageUpdateWithoutConversationInput = {
-    senderRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
-    messageType?: StringFieldUpdateOperationsInput | string
-    senderId?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
   }
 
   export type MessageUncheckedUpdateWithoutConversationInput = {
     id?: IntFieldUpdateOperationsInput | number
-    senderRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
-    messageType?: StringFieldUpdateOperationsInput | string
-    senderId?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
   }
 
   export type MessageUncheckedUpdateManyWithoutConversationInput = {
     id?: IntFieldUpdateOperationsInput | number
-    senderRole?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
-    messageType?: StringFieldUpdateOperationsInput | string
-    senderId?: StringFieldUpdateOperationsInput | string
+    messageType?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
   }
 
 

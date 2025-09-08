@@ -1,16 +1,17 @@
-import { createBrowserRouter,createRoutesFromElements,Route,RouterProvider } from "react-router-dom"
+import { createBrowserRouter,createRoutesFromElements,Route } from "react-router"
 import Login from "./pages/Login"
 import Signup from "./pages/SignUp"
 import LandingPage from "./pages/LandingPage";
 import ResourceLibrary from "./pages/ResourceLibrary";
 import MentorDiscovery from "./pages/MentorDiscovery";
+import MenteeDiscovery from "./pages/MenteeDiscovery";
 import MentorProfile from "./pages/MentorProfile";
+import MenteeProfile from "./pages/MenteeProfile";
 import BookSession from "./pages/BookSession";
 import ProgressTracking from "./pages/ProgressTracking";
 import NotFound from "./pages/NotFound";
 import AuthCallback from "./pages/AuthCallback"
 import Onboarding from "./pages/Onboarding"
-import { AuthProvider } from "./components/AuthProvider"
 import ProtectedComp from "./components/ProtectedComp"
 import HomePage from "./pages/HomePage"
 import SessionPage from "./pages/SessionPage"
@@ -19,6 +20,8 @@ import IncompleteOnboardingHandler from "./components/IncompleteOnboardingHandle
 import MentorDashboard from "./pages/MentorDashboard";
 import MenteeDashboard from "./pages/MenteeDashboard";
 import ChatPage from "./pages/ChatPage"
+import SimpleChatPage from "./pages/SimpleChatPage"
+import SessionRoom from "./pages/SessionRoom"
 export const router = createBrowserRouter(createRoutesFromElements(
     <Route path="/">
           <Route index element={<Login/>}/>
@@ -29,7 +32,10 @@ export const router = createBrowserRouter(createRoutesFromElements(
           <Route path="progress" element={<ProgressTracking />} />
           <Route path="book-session/:mentorId" element={<BookSession />} />
           <Route path="discover-mentors" element={<MentorDiscovery />} />
+          <Route path="mentor-discovery" element={<MentorDiscovery />} />
+          <Route path="discover-mentees" element={<MenteeDiscovery />} />
           <Route path="mentor/:id" element={<MentorProfile />} />
+          <Route path="mentee/:id" element={<MenteeProfile />} />
           <Route path="auth/callback" element={<AuthCallback/>}/>
           <Route path="onboarding" element={<Onboarding/>}/>
           <Route path="*" element={<NotFound />} />
@@ -73,6 +79,20 @@ export const router = createBrowserRouter(createRoutesFromElements(
             <ProtectedComp>
               <IncompleteOnboardingHandler>
                 <ChatPage/>
+              </IncompleteOnboardingHandler>
+            </ProtectedComp>
+          } />
+          <Route path="/simple-chat/:userId" element={
+            <ProtectedComp>
+              <IncompleteOnboardingHandler>
+                <SimpleChatPage/>
+              </IncompleteOnboardingHandler>
+            </ProtectedComp>
+          } />
+          <Route path="/session/:sessionId" element={
+            <ProtectedComp>
+              <IncompleteOnboardingHandler>
+                <SessionRoom/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />

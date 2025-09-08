@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -47,26 +47,41 @@ const Onboarding = () => {
     firstName: "",
     lastName: "",
     age: "",
-    experience: "",
     number: "",
     gender: "",
     profilePic: null as File | null,
     bio: "",
     location: "",
-    goals: ""
+    goals: [] as string[], // Changed from string to string array to match database schema
+    Github: "",
+    Instagram: "",
+    LinkedIn: "",
+    Twitter: "",
+    Website: ""
   });
 
   const [mentorData, setMentorData] = useState({
     firstName: "",
     lastName: "",
     age: "",
-    experience: "",
+    experience: [] as Array<{
+      company: string;
+      position: string;
+      startDate: string;
+      endDate: string;
+      description: string;
+    }>, // Array of experience objects
     number: "",
     gender: "",
     profilePic: null as File | null,
     bio: "",
     expertise: [] as string[],
-    location: ""
+    location: "",
+    Github: "",
+    Instagram: "",
+    LinkedIn: "",
+    Twitter: "",
+    Website: ""
   });
 
   // Get current profile data based on role
@@ -108,6 +123,12 @@ const Onboarding = () => {
   }
   
   const [showChipSelection, setShowChipSelection] = useState(false);
+  const [showGoalSelection, setShowGoalSelection] = useState(false);
+  
+  // State for managing work experience entries
+  const [workExperiences, setWorkExperiences] = useState([
+    { company: "", position: "", startDate: "", endDate: "", description: "" }
+  ]);
 
   // Get current user on component mount and update Zustand store
   useEffect(() => {
@@ -140,10 +161,46 @@ const Onboarding = () => {
     updateProfileData({ expertise: selectedExpertise });
   };
 
+  // Handle goals selection for mentees
+  const handleGoalsChange = (selectedGoals: string[]) => {
+    setMenteeData(prev => ({ ...prev, goals: selectedGoals }));
+  };
+
+  // Handle work experience management
+  const addWorkExperience = () => {
+    setWorkExperiences(prev => [
+      ...prev,
+      { company: "", position: "", startDate: "", endDate: "", description: "" }
+    ]);
+  };
+
+  const removeWorkExperience = (index: number) => {
+    setWorkExperiences(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateWorkExperience = (index: number, field: string, value: string) => {
+    setWorkExperiences(prev => prev.map((exp, i) => 
+      i === index ? { ...exp, [field]: value } : exp
+    ));
+  };
+
+  const formatExperienceForDatabase = () => {
+    return workExperiences
+      .filter(exp => exp.company.trim() && exp.position.trim()) // Only include completed entries
+      .map(exp => ({
+        company: exp.company.trim(),
+        position: exp.position.trim(),
+        startDate: exp.startDate || '',
+        endDate: exp.endDate || '',
+        description: exp.description.trim() || ''
+      }));
+  };
+
   // Handle role change
   const handleRoleChange = (newRole: "mentor" | "mentee") => {
     setRole(newRole);
     setShowChipSelection(false);
+    setShowGoalSelection(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -193,8 +250,13 @@ const Onboarding = () => {
       return;
     }
 
-    if (role === 'mentee' && (!menteeData.goals || menteeData.goals.trim().length < 10)) {
-      setError("Please describe your learning goals (at least 10 characters)");
+    if (role === 'mentor' && (!currentData.LinkedIn || currentData.LinkedIn.trim().length === 0)) {
+      setError("LinkedIn username is required for mentors");
+      return;
+    }
+
+    if (role === 'mentee' && (!menteeData.goals || menteeData.goals.length === 0)) {
+      setError("Please select at least one learning goal/interest");
       return;
     }
 
@@ -241,7 +303,6 @@ const Onboarding = () => {
         password: 'OAUTH_USER', // Placeholder for OAuth users
         supabaseId: user.id,
         age: parseInt(currentData.age) || 20,
-        experience: parseInt(currentData.experience) || 0,
         phone_number: currentData.number || `TEMP_${user.id.slice(0, 8)}`, // Fallback to prevent conflicts
         gender: currentData.gender || 'Not specified',
         profile_picture: profilePicUrl || 
@@ -258,7 +319,13 @@ const Onboarding = () => {
         const mentorInsertData = {
           ...userData,
           expertise: mentorData.expertise,
-          Biography: currentData.bio, // Using 'Biography' field name for mentor table
+          experience: formatExperienceForDatabase(), // Use formatted work experience
+          bio: currentData.bio, // Using 'bio' field name for mentor table
+          Github: currentData.Github || null,
+          Instagram: currentData.Instagram || null,
+          LinkedIn: currentData.LinkedIn, // Required field for mentors
+          Twitter: currentData.Twitter || null,
+          Website: currentData.Website || null,
         };
         
         console.log('📋 Mentor data to insert:', mentorInsertData);
@@ -286,8 +353,13 @@ const Onboarding = () => {
         
         const menteeInsertData = {
           ...userData,
-          Interests: [menteeData.goals], // Using actual DB column name "Interests"
+          Interests: menteeData.goals, // Using database column name 'Interests' (mapped from goals)
           bio: currentData.bio,
+          Github: currentData.Github || null,
+          Instagram: currentData.Instagram || null,
+          LinkedIn: currentData.LinkedIn || null,
+          Twitter: currentData.Twitter || null,
+          Website: currentData.Website || null,
         };
         
         console.log('📋 Mentee data to insert:', menteeInsertData);
@@ -488,27 +560,38 @@ const Onboarding = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    name="location"
-                    placeholder="e.g., Kigali, Rwanda"
-                    value={getCurrentProfileData().location}
-                    onChange={handleChange}
-                    required
-                  />
-                    {chosen && Data.results.map((x,idx)=>{
-                      return (<div key={idx} className="rounded-md border-2 border-slate-600">
-                        <p  onClick={()=>{
-                          updateProfileData({ location: `${x.state}, ${x.country}` });
-                          if(getCurrentProfileData().location){
-                          setChosen(false)
-                          }
-                        }}> 
-                      {x.state}, {x.country}
-                        </p>
-                      </div>)
-                    })}
-                  
+                  <div className="relative">
+                    <Input
+                      id="location"
+                      name="location"
+                      placeholder="e.g., Kigali, Rwanda"
+                      value={getCurrentProfileData().location}
+                      onChange={handleChange}
+                      required
+                    />
+                    {chosen && Data.results.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                        {Data.results.map((x, idx) => (
+                          <div 
+                            key={idx} 
+                            className="px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-100 last:border-b-0"
+                            onClick={() => {
+                              updateProfileData({ location: `${x.state}, ${x.country}` });
+                              setChosen(false);
+                            }}
+                          > 
+                            <div className="flex items-center gap-2">
+                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                              <span className="text-sm text-gray-700">{x.state}, {x.country}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -557,19 +640,90 @@ const Onboarding = () => {
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="experience">Years of Experience</Label>
-                    <Input
-                      id="experience"
-                      name="experience"
-                      type="number"
-                      placeholder="5"
-                      value={getCurrentProfileData().experience}
-                      onChange={(e) => updateProfileData({ experience: e.target.value })}
-                      min="0"
-                      max="50"
-                      required
-                    />
+                  <div className="space-y-4">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-base font-medium">Work Experience</Label>
+                        <button
+                          type="button"
+                          onClick={addWorkExperience}
+                          className="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-100 transition-colors"
+                        >
+                          + Add Experience
+                        </button>
+                      </div>
+                      
+                      {workExperiences.map((exp, index) => (
+                        <div key={index} className="p-4 border border-gray-200 rounded-lg space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-medium text-gray-700">Experience {index + 1}</h4>
+                            {workExperiences.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeWorkExperience(index)}
+                                className="text-xs text-red-500 hover:text-red-700"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <Label htmlFor={`company-${index}`}>Company *</Label>
+                              <Input
+                                id={`company-${index}`}
+                                placeholder="e.g. Google"
+                                value={exp.company}
+                                onChange={(e) => updateWorkExperience(index, 'company', e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor={`position-${index}`}>Position *</Label>
+                              <Input
+                                id={`position-${index}`}
+                                placeholder="e.g. Software Engineer"
+                                value={exp.position}
+                                onChange={(e) => updateWorkExperience(index, 'position', e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <Label htmlFor={`startDate-${index}`}>Start Date</Label>
+                              <Input
+                                id={`startDate-${index}`}
+                                type="month"
+                                value={exp.startDate}
+                                onChange={(e) => updateWorkExperience(index, 'startDate', e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor={`endDate-${index}`}>End Date</Label>
+                              <Input
+                                id={`endDate-${index}`}
+                                type="month"
+                                placeholder="Leave empty if current"
+                                value={exp.endDate}
+                                onChange={(e) => updateWorkExperience(index, 'endDate', e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-1">
+                            <Label htmlFor={`description-${index}`}>Description (Optional)</Label>
+                            <Textarea
+                              id={`description-${index}`}
+                              placeholder="Brief description of your role and achievements..."
+                              value={exp.description}
+                              onChange={(e) => updateWorkExperience(index, 'description', e.target.value)}
+                              rows={2}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -583,40 +737,95 @@ const Onboarding = () => {
                       required
                     />
                   </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin">LinkedIn Username *</Label>
+                      <Input
+                        id="linkedin"
+                        name="linkedin"
+                        type="text"
+                        placeholder="your-username"
+                        value={getCurrentProfileData().LinkedIn || ''}
+                        onChange={(e) => updateProfileData({ LinkedIn: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="github">GitHub Username</Label>
+                      <Input
+                        id="github"
+                        name="github"
+                        type="text"
+                        placeholder="your-username"
+                        value={getCurrentProfileData().Github || ''}
+                        onChange={(e) => updateProfileData({ Github: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="twitter">Twitter Username</Label>
+                      <Input
+                        id="twitter"
+                        name="twitter"
+                        type="text"
+                        placeholder="your-username"
+                        value={getCurrentProfileData().Twitter || ''}
+                        onChange={(e) => updateProfileData({ Twitter: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="instagram">Instagram Username</Label>
+                      <Input
+                        id="instagram"
+                        name="instagram"
+                        type="text"
+                        placeholder="your-username"
+                        value={getCurrentProfileData().Instagram || ''}
+                        onChange={(e) => updateProfileData({ Instagram: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="website">Website URL</Label>
+                    <Input
+                      id="website"
+                      name="website"
+                      type="url"
+                      placeholder="https://your-website.com"
+                      value={getCurrentProfileData().Website || ''}
+                      onChange={(e) => updateProfileData({ Website: e.target.value })}
+                    />
+                  </div>
                 </>
               )}
 
               {role === "mentee" && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="experience">Years of Experience</Label>
+                    <Label htmlFor="goals">Learning Goals & Interests</Label>
                     <Input
-                      id="experience"
-                      name="experience"
-                      type="number"
-                      placeholder="2"
-                      value={getCurrentProfileData().experience}
-                      onChange={(e) => updateProfileData({ experience: e.target.value })}
-                      min="0"
-                      max="50"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="goals">Learning Goals</Label>
-                    <Textarea
                       id="goals"
                       name="goals"
-                      placeholder="What do you hope to achieve through mentorship? What skills do you want to develop?"
-                      value={role === 'mentee' ? menteeData.goals : ''}
-                      onChange={(e) => {
-                        if (role === 'mentee') {
-                          setMenteeData(prev => ({ ...prev, goals: e.target.value }));
-                        }
-                      }}
+                      placeholder="Click below to select your learning goals and interests"
+                      value={menteeData.goals.join(', ')}
+                      readOnly
+                      onClick={() => setShowGoalSelection(prev => !prev)}
+                      className="cursor-pointer"
                       required
                     />
+                    {showGoalSelection && (
+                      <div className="mt-2">
+                        <ChipSelection 
+                          selectedChips={menteeData.goals}
+                          onSelectionChange={handleGoalsChange}
+                          maxSelections={5}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -628,6 +837,68 @@ const Onboarding = () => {
                       value={getCurrentProfileData().bio}
                       onChange={(e) => updateProfileData({ bio: e.target.value })}
                       required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin">LinkedIn Username</Label>
+                      <Input
+                        id="linkedin"
+                        name="linkedin"
+                        type="text"
+                        placeholder="your-username"
+                        value={getCurrentProfileData().LinkedIn || ''}
+                        onChange={(e) => updateProfileData({ LinkedIn: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="github">GitHub Username</Label>
+                      <Input
+                        id="github"
+                        name="github"
+                        type="text"
+                        placeholder="your-username"
+                        value={getCurrentProfileData().Github || ''}
+                        onChange={(e) => updateProfileData({ Github: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="twitter">Twitter Username</Label>
+                      <Input
+                        id="twitter"
+                        name="twitter"
+                        type="text"
+                        placeholder="your-username"
+                        value={getCurrentProfileData().Twitter || ''}
+                        onChange={(e) => updateProfileData({ Twitter: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="instagram">Instagram Username</Label>
+                      <Input
+                        id="instagram"
+                        name="instagram"
+                        type="text"
+                        placeholder="your-username"
+                        value={getCurrentProfileData().Instagram || ''}
+                        onChange={(e) => updateProfileData({ Instagram: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="website">Website URL</Label>
+                    <Input
+                      id="website"
+                      name="website"
+                      type="url"
+                      placeholder="https://your-website.com"
+                      value={getCurrentProfileData().Website || ''}
+                      onChange={(e) => updateProfileData({ Website: e.target.value })}
                     />
                   </div>
                 </>

@@ -7,13 +7,12 @@ import {
   MessageCircle,
   Video,
   Star,
-  Bell,
-  User,
   Loader2
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { supabasase } from "../supabase_creds/supabase";
 import { useEffect, useState ,useLayoutEffect} from "react";
+import NotificationBell from "../components/NotificationBell";
 
 const MentorDashboard = () => {
   const { userRole, roleLoading, user } = useAuthStore()
@@ -28,21 +27,18 @@ const MentorDashboard = () => {
 
   // Redirect if explicitly not a mentor (don't redirect on null/unknown role)
   useLayoutEffect(() => {
-    // If role is loading, don't redirect yet
-    if (roleLoading) return;
-    
-    // If user has no role, redirect to onboarding
-    if (userRole === null) {
-      console.log('No role assigned, redirecting to onboarding');
-      navigate('/onboarding', { replace: true });
-      return;
-    }
-    
-    // If user is a mentee, deny access and redirect
-    if (userRole === 'mentee') {
-      console.log('Access denied: Mentee trying to access mentor dashboard, redirecting to mentee dashboard');
-      navigate('/mentee-dashboard', { replace: true });
-      return;
+    // Only perform redirections when role is not loading
+    if (!roleLoading) {
+      // If user has no role, redirect to onboarding
+      if (userRole === null) {
+        console.log('No role assigned, redirecting to onboarding');
+        navigate('/onboarding', { replace: true });
+      }
+      // If user is a mentee, deny access and redirect
+      else if (userRole === 'mentee') {
+        console.log('Access denied: Mentee trying to access mentor dashboard, redirecting to mentee dashboard');
+        navigate('/mentee-dashboard', { replace: true });
+      }
     }
   }, [roleLoading, userRole, navigate])
 
@@ -236,9 +232,7 @@ const MentorDashboard = () => {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <button className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
-                <Bell className="h-4 w-4" />
-              </button>
+              <NotificationBell />
               <button className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
                 <Link to="/chat" className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4" />
@@ -358,19 +352,18 @@ const MentorDashboard = () => {
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      {session.status === 'ACCEPTED' && session.meetingUrl && (
-                        <a
-                          href={session.meetingUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      {session.status === 'ACCEPTED' && (
+                        <button
+                          onClick={() => navigate(`/session/${session.id}`)}
                           className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                          title="Join video session (testing mode - no time restrictions)"
                         >
                           <Video className="h-4 w-4" />
-                          Join
-                        </a>
+                          Join Session
+                        </button>
                       )}
                       <button 
-                        onClick={() => navigate(`/chat`)}
+                        onClick={() => navigate(`/simple-chat/${session.menteeId}`)}
                         className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                       >
                         <MessageCircle className="h-4 w-4" />
@@ -443,7 +436,7 @@ const MentorDashboard = () => {
                         Decline
                       </button>
                       <button 
-                        onClick={() => navigate(`/chat`)}
+                        onClick={() => navigate(`/simple-chat/${request.menteeId}`)}
                         className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                       >
                         <MessageCircle className="h-4 w-4" />

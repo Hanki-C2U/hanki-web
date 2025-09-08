@@ -107,6 +107,30 @@ const Signup = () => {
     setEmailLoading(true);
     
     try {
+      // STEP 1: First check if user already exists in our database
+      console.log('🔍 Checking if user already exists in database...');
+      const userExistsInDb = await checkUserExistsInDatabase(email);
+      
+      if (userExistsInDb) {
+        console.log('❌ User already exists in database, redirecting to login');
+        setSignupError(
+          <div className="text-sm">
+            <p className="font-medium">Account already exists</p>
+            <p className="mt-1">An account with this email already exists.</p>
+            <button 
+              onClick={() => navigate('/login', { state: { email } })}
+              className="mt-2 text-orange-600 hover:text-orange-700 underline font-medium"
+            >
+              Sign in instead →
+            </button>
+          </div>
+        );
+        return;
+      }
+
+      // STEP 2: If user doesn't exist in database, proceed with signup
+      console.log('✅ Email available, proceeding with signup...');
+
       const { data, error } = await supabasase.auth.signUp({
         email: email,
         password: password,
@@ -178,6 +202,35 @@ const Signup = () => {
       setEmailLoading(false);
     }
   }
+
+  // Helper function to check if user exists in our database
+  const checkUserExistsInDatabase = async (email: string): Promise<boolean> => {
+    try {
+      console.log('🔍 Checking database for user with email:', email);
+      
+      // Check both mentor and mentee tables
+      const [mentorCheck, menteeCheck] = await Promise.all([
+        supabasase.from('mentor').select('id').eq('email', email).maybeSingle(),
+        supabasase.from('mentee').select('id').eq('email', email).maybeSingle()
+      ]);
+
+      console.log('📊 Database check results:', {
+        mentorFound: !!mentorCheck.data && !mentorCheck.error,
+        menteeFound: !!menteeCheck.data && !menteeCheck.error,
+        mentorError: mentorCheck.error?.message,
+        menteeError: menteeCheck.error?.message
+      });
+
+      const userExists = (mentorCheck.data && !mentorCheck.error) || (menteeCheck.data && !menteeCheck.error);
+      console.log(`${userExists ? '✅' : '❌'} User ${userExists ? 'found' : 'not found'} in database`);
+      
+      return !!userExists;
+    } catch (error) {
+      console.error('❌ Error checking user in database:', error);
+      // In case of error, assume user doesn't exist to allow signup
+      return false;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center p-4">

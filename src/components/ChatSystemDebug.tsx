@@ -133,8 +133,8 @@ const ChatSystemDebug: React.FC = () => {
             {conversations.slice(0, 3).map((conv) => (
               <div key={conv.id} className="p-2 bg-gray-50 rounded text-sm">
                 <p>ID: {conv.id}</p>
-                <p>Mentor: {conv.mentorId}</p>
-                <p>Mentee: {conv.menteeId}</p>
+                <p>Participant1: {conv.participant1Id}</p>
+                <p>Participant2: {conv.participant2Id}</p>
                 <p>Last: {conv.lastMessage || 'No messages'}</p>
               </div>
             ))}

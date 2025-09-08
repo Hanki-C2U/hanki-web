@@ -13,28 +13,23 @@ function ProtectedComp({ children, allowedRoles }: ProtectedCompProps) {
 
     useEffect(() => {
         // Only make navigation decisions after hydration is complete
-        if (!hasHydrated) return;
-
-        // Only redirect if we're not loading and there's no session
-        if (!isLoading && !isAuthenticated) {
-            navigate('/login', { replace: true })
-            return;
-        }
-
-        // If we have a session but no role (and not loading), redirect to onboarding
-        if (isAuthenticated && !roleLoading && userRole === null) {
-            console.log('🔄 ProtectedComp: User has session but no role, redirecting to onboarding');
-            navigate('/onboarding', { replace: true })
-            return;
-        }
-
-        // Check role-based access
-        if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
-            // Redirect to appropriate dashboard based on user's actual role
-            const redirectPath = userRole === 'mentor' ? '/mentor-dashboard' : '/mentee-dashboard';
-            console.log('🔄 ProtectedComp: Wrong role for this page, redirecting to:', redirectPath);
-            navigate(redirectPath, { replace: true })
-            return;
+        if (hasHydrated) {
+            // Only redirect if we're not loading and there's no session
+            if (!isLoading && !isAuthenticated) {
+                navigate('/login', { replace: true })
+            }
+            // If we have a session but no role (and not loading), redirect to onboarding
+            else if (isAuthenticated && !roleLoading && userRole === null) {
+                console.log('🔄 ProtectedComp: User has session but no role, redirecting to onboarding');
+                navigate('/onboarding', { replace: true })
+            }
+            // Check role-based access
+            else if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
+                // Redirect to appropriate dashboard based on user's actual role
+                const redirectPath = userRole === 'mentor' ? '/mentor-dashboard' : '/mentee-dashboard';
+                console.log('🔄 ProtectedComp: Wrong role for this page, redirecting to:', redirectPath);
+                navigate(redirectPath, { replace: true })
+            }
         }
     }, [navigate, isAuthenticated, isLoading, userRole, roleLoading, allowedRoles, hasHydrated])
 

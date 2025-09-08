@@ -9,105 +9,104 @@ datasource db {
 }
 
 model Mentee {
-  id              Int            @id @default(autoincrement())
+  id              Int        @id @default(autoincrement())
   first_name      String
   last_name       String
-  age             Int            @default(20)
-  gender          String         @default("Not specified")
-  email           String         @unique
-  phone_number    String         @unique
+  age             Int        @default(20)
+  gender          String     @default("Not specified")
+  email           String     @unique
+  phone_number    String     @unique
   password        String
   location        String
-  updateAt        DateTime       @updatedAt
-  last_login      DateTime       @default(now())
-  ratings         Int            @default(0)
-  profile_picture String         @default("https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg")
-  supabaseId      String         @unique
+  updateAt        DateTime   @updatedAt
+  last_login      DateTime   @default(now())
+  ratings         Int        @default(0)
+  profile_picture String     @default("https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg")
+  supabaseId      String     @unique
   bio             String
-  joined          DateTime       @default(now())
-  goals           String[]       @map("Interests")
-  experience      Int            @default(0)
+  joined          DateTime   @default(now())
+  goals           String[]   @map("Interests")
   Github          String?
   Instagram       String?
   LinkedIn        String?
   Twitter         String?
   Website         String?
-  conversations   Conversation[]
   sessions        sessions[]
-  mentor          Mentor[]       @relation("MenteeToMentor")
+  mentor          Mentor[]   @relation("MenteeToMentor")
 
   @@map("mentee")
 }
 
-model Achievements {
-  id         Int      @id @default(autoincrement())
-  supabaseId String   @unique
-  experience String[]
-  education  String[]
-  accolades  String[]
-  reviews    String[]
-  mentor     Mentor   @relation(fields: [supabaseId], references: [supabaseId])
-}
-
 model Mentor {
-  id              Int            @id @default(autoincrement())
+  id              Int        @id @default(autoincrement())
   first_name      String
   last_name       String
-  age             Int            @default(20)
-  email           String         @unique
-  phone_number    String         @unique
+  age             Int        @default(20)
+  email           String     @unique
+  phone_number    String     @unique
   password        String
-  supabaseId      String         @unique
-  gender          String         @default("Not specified")
-  profile_picture String         @default("https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg")
+  supabaseId      String     @unique
+  gender          String     @default("Not specified")
+  profile_picture String     @default("https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg")
   location        String
-  joined          DateTime       @default(now())
-  ratings         Int            @default(0)
-  updateAt        DateTime       @updatedAt
-  last_login      DateTime       @default(now())
+  joined          DateTime   @default(now())
+  ratings         Int        @default(0)
+  updateAt        DateTime   @updatedAt
+  last_login      DateTime   @default(now())
   expertise       String[]
-  bio             String         @map("Biography")
-  experience      Int
+  bio             String
+  experience      Json       @default("[]") // Array of experience objects
+  resumeId        String     @default("") // Resume Id in the resume bucket
   Github          String?
   Instagram       String?
-  LinkedIn        String         @default("")
+  LinkedIn        String     @default("")
   Twitter         String?
   Website         String?
-  achievement     Achievements?
-  conversations   Conversation[]
   sessions        sessions[]
-  mentee          Mentee[]       @relation("MenteeToMentor")
+  mentee          Mentee[]   @relation("MenteeToMentor")
 
   @@map("mentor")
 }
 
 model Conversation {
-  id          Int       @id @default(autoincrement())
-  menteeId    String
-  mentorId    String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  lastMessage String?
-  mentee      Mentee    @relation(fields: [menteeId], references: [supabaseId])
-  mentor      Mentor    @relation(fields: [mentorId], references: [supabaseId])
-  messages    Message[]
+  id             Int              @id @default(autoincrement())
+  participant1Id String // First participant (can be mentor or mentee)
+  participant2Id String // Second participant (can be mentor or mentee)
+  type           ConversationType @default(PEER_TO_PEER)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  lastMessage    String?
+  isActive       Boolean          @default(true)
+  messages       Message[]
 
-  @@unique([mentorId, menteeId])
+  @@unique([participant1Id, participant2Id])
   @@map("conversations")
+}
+
+enum ConversationType {
+  MENTOR_MENTEE
+  PEER_TO_PEER
+  GROUP_CHAT
 }
 
 model Message {
   id             Int          @id @default(autoincrement())
-  conversationId Int
-  senderRole     String
   content        String
+  senderId       String
+  conversationId Int
   createdAt      DateTime     @default(now())
   isRead         Boolean      @default(false)
-  messageType    String       @default("text")
-  senderId       String
+  messageType    MessageType  @default(TEXT)
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@map("messages")
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
 }
 
 model sessions {

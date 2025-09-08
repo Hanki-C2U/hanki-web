@@ -37,7 +37,7 @@ const BookSession = () => {
   const [endTime, setEndTime] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [additionalParticipants, setAdditionalParticipants] = useState<string[]>([]);
+  const [additionalParticipants] = useState<string[]>([]);
   
   // Component state
   const [mentor, setMentor] = useState<Mentor | null>(null);
@@ -98,19 +98,10 @@ const BookSession = () => {
     { start: "17:00", end: "18:00", label: "5:00 PM - 6:00 PM" }
   ];
 
-  // Helper function to get full datetime for the selected session
-  const getSessionDateTime = (date: Date | null, time: string): Date | null => {
-    if (!date || !time) return null;
-    const sessionDate = new Date(date);
-    const [hours, minutes] = time.split(':').map(Number);
-    sessionDate.setHours(hours, minutes, 0, 0);
-    return sessionDate;
-  };
-
-  // Helper function to check if a time slot is available (not in the past)
-  const isTimeSlotAvailable = (date: Date | null, startTime: string): boolean => {
-    const sessionDateTime = getSessionDateTime(date, startTime);
-    return sessionDateTime ? sessionDateTime > new Date() : false;
+  // Helper function to check if a time slot is available 
+  // For testing: All time slots are always available
+  const isTimeSlotAvailable = (): boolean => {
+    return true; // Always return true for testing purposes
   };
 
   const sessionTitles = [
@@ -128,24 +119,7 @@ const BookSession = () => {
       return;
     }
 
-    // Validate that the selected date is not in the past
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (selectedDate < today) {
-      alert("Please select a future date for your session");
-      return;
-    }
-
-    // Validate that the session time is not in the past if it's today
-    const selectedDateTime = new Date(selectedDate);
-    const [hours, minutes] = startTime.split(':').map(Number);
-    selectedDateTime.setHours(hours, minutes, 0, 0);
-    
-    if (selectedDateTime <= new Date()) {
-      alert("Please select a future time for your session");
-      return;
-    }
-
+    // For testing: Skip all time validations - allow any date/time
     setBookingLoading(true);
     
     try {
@@ -225,6 +199,15 @@ const BookSession = () => {
         </div>
       </header>
 
+      {/* Testing Mode Banner */}
+      <div className="bg-green-100 border-b border-green-200 px-4 sm:px-6 lg:px-8 py-2">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-center text-sm text-green-800">
+            🧪 <strong>Testing Mode:</strong> All time slots are available - No time restrictions for testing purposes
+          </p>
+        </div>
+      </div>
+
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading ? (
           <div className="text-center py-12">
@@ -303,7 +286,7 @@ const BookSession = () => {
                   <label className="block text-sm font-medium text-gray-700">Select Time Slot</label>
                   <div className="grid grid-cols-2 gap-3">
                     {timeSlots.map((timeSlot) => {
-                      const isAvailable = selectedDate ? isTimeSlotAvailable(selectedDate, timeSlot.start) : true;
+                      const isAvailable = isTimeSlotAvailable(); // Always true for testing
                       const isSelected = startTime === timeSlot.start && endTime === timeSlot.end;
                       
                       return (
@@ -327,7 +310,6 @@ const BookSession = () => {
                         >
                           <Video className="h-4 w-4" />
                           {timeSlot.label}
-                          {!isAvailable && <span className="text-xs ml-1">(Past)</span>}
                         </button>
                       );
                     })}

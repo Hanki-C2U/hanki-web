@@ -138,21 +138,11 @@ exports.Prisma.MenteeScalarFieldEnum = {
   bio: 'bio',
   joined: 'joined',
   goals: 'goals',
-  experience: 'experience',
   Github: 'Github',
   Instagram: 'Instagram',
   LinkedIn: 'LinkedIn',
   Twitter: 'Twitter',
   Website: 'Website'
-};
-
-exports.Prisma.AchievementsScalarFieldEnum = {
-  id: 'id',
-  supabaseId: 'supabaseId',
-  experience: 'experience',
-  education: 'education',
-  accolades: 'accolades',
-  reviews: 'reviews'
 };
 
 exports.Prisma.MentorScalarFieldEnum = {
@@ -174,6 +164,7 @@ exports.Prisma.MentorScalarFieldEnum = {
   expertise: 'expertise',
   bio: 'bio',
   experience: 'experience',
+  resumeId: 'resumeId',
   Github: 'Github',
   Instagram: 'Instagram',
   LinkedIn: 'LinkedIn',
@@ -183,22 +174,23 @@ exports.Prisma.MentorScalarFieldEnum = {
 
 exports.Prisma.ConversationScalarFieldEnum = {
   id: 'id',
-  menteeId: 'menteeId',
-  mentorId: 'mentorId',
+  participant1Id: 'participant1Id',
+  participant2Id: 'participant2Id',
+  type: 'type',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  lastMessage: 'lastMessage'
+  lastMessage: 'lastMessage',
+  isActive: 'isActive'
 };
 
 exports.Prisma.MessageScalarFieldEnum = {
   id: 'id',
-  conversationId: 'conversationId',
-  senderRole: 'senderRole',
   content: 'content',
+  senderId: 'senderId',
+  conversationId: 'conversationId',
   createdAt: 'createdAt',
   isRead: 'isRead',
-  messageType: 'messageType',
-  senderId: 'senderId'
+  messageType: 'messageType'
 };
 
 exports.Prisma.SessionsScalarFieldEnum = {
@@ -231,6 +223,10 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -240,6 +236,25 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+exports.ConversationType = exports.$Enums.ConversationType = {
+  MENTOR_MENTEE: 'MENTOR_MENTEE',
+  PEER_TO_PEER: 'PEER_TO_PEER',
+  GROUP_CHAT: 'GROUP_CHAT'
+};
+
+exports.MessageType = exports.$Enums.MessageType = {
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  FILE: 'FILE',
+  SYSTEM: 'SYSTEM'
+};
+
 exports.SessionStatus = exports.$Enums.SessionStatus = {
   PENDING: 'PENDING',
   ACCEPTED: 'ACCEPTED',
@@ -251,7 +266,6 @@ exports.SessionStatus = exports.$Enums.SessionStatus = {
 
 exports.Prisma.ModelName = {
   Mentee: 'Mentee',
-  Achievements: 'Achievements',
   Mentor: 'Mentor',
   Conversation: 'Conversation',
   Message: 'Message',

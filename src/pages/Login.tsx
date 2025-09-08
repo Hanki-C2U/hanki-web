@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -60,6 +60,35 @@ const Login = () => {
     );
   }
 
+  // Helper function to check if user exists in our database
+  const checkUserExistsInDatabase = async (email: string): Promise<boolean> => {
+    try {
+      console.log('🔍 Checking database for user with email:', email);
+      
+      // Check both mentor and mentee tables
+      const [mentorCheck, menteeCheck] = await Promise.all([
+        supabasase.from('mentor').select('id').eq('email', email).maybeSingle(),
+        supabasase.from('mentee').select('id').eq('email', email).maybeSingle()
+      ]);
+
+      console.log('📊 Database check results:', {
+        mentorFound: !!mentorCheck.data && !mentorCheck.error,
+        menteeFound: !!menteeCheck.data && !menteeCheck.error,
+        mentorError: mentorCheck.error?.message,
+        menteeError: menteeCheck.error?.message
+      });
+
+      const userExists = (mentorCheck.data && !mentorCheck.error) || (menteeCheck.data && !menteeCheck.error);
+      console.log(`${userExists ? '✅' : '❌'} User ${userExists ? 'found' : 'not found'} in database`);
+      
+      return !!userExists;
+    } catch (error) {
+      console.error('❌ Error checking user in database:', error);
+      // In case of error, assume user might exist to avoid blocking legitimate users
+      return true;
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
@@ -108,8 +137,29 @@ const Login = () => {
     setEmailLoading(true);
     
     try {
-      // STEP 1: Check if user exists in Supabase Auth first
-      console.log('🔍 Checking if user exists in auth system...');
+      // STEP 1: First check if user exists in our database tables (mentor or mentee)
+      console.log('🔍 Checking if user exists in database...');
+      const userExistsInDb = await checkUserExistsInDatabase(email);
+      
+      if (!userExistsInDb) {
+        console.log('❌ User not found in database, redirecting to signup');
+        setLoginError(
+          <div className="text-sm">
+            <p className="font-medium">Account not found</p>
+            <p className="mt-1">No account exists with this email address.</p>
+            <button 
+              onClick={() => navigate('/signup', { state: { email } })}
+              className="mt-2 text-orange-600 hover:text-orange-700 underline font-medium"
+            >
+              Create an account instead →
+            </button>
+          </div>
+        );
+        return;
+      }
+
+      // STEP 2: If user exists in database, attempt authentication
+      console.log('✅ User found in database, attempting authentication...');
       
       const { data, error } = await supabasase.auth.signInWithPassword({
         email: email,
@@ -122,14 +172,10 @@ const Login = () => {
         console.error('❌ Login error:', error);
         
         // Handle specific authentication errors
-        if (error.message === 'Invalid login credentials') {
-          // Check if it's because user doesn't exist
-          await handleUserNotFound(email);
-          return;
-        }
-        
-        // Handle other auth errors
         switch (error.message) {
+          case 'Invalid login credentials':
+            setLoginError('Invalid email or password. Please check your credentials and try again.');
+            break;
           case 'Email not confirmed':
             setLoginError('Please check your email and click the confirmation link to verify your account.');
             break;
@@ -142,13 +188,10 @@ const Login = () => {
         return;
       }
 
-      // STEP 2: If auth successful, verify user exists in our database
+      // STEP 3: If auth successful, complete login flow
       if (data.session && data.user) {
         console.log('✅ Auth successful! User logged in:', data.user.id);
         console.log('📧 User email:', data.user.email);
-        
-        // DEBUG: Check what's actually in the database
-        await debugDatabaseUser(data.user.email!, data.user.id);
         
         console.log('🎯 Session created, manually setting in auth store...');
         
@@ -195,107 +238,6 @@ const Login = () => {
       setLoginError('An unexpected error occurred. Please try again.');
     } finally {
       setEmailLoading(false);
-    }
-  };
-
-  // Helper function to handle when user doesn't exist in auth
-  const handleUserNotFound = async (email: string) => {
-    console.log('🔍 Checking if user might not exist...');
-    setLoginError(
-      <div className="text-sm">
-        <p className="font-medium">Account not found</p>
-        <p className="mt-1">No account exists with this email address.</p>
-        <button 
-          onClick={() => navigate('/signup', { state: { email } })}
-          className="mt-2 text-orange-600 hover:text-orange-700 underline font-medium"
-        >
-          Create an account instead →
-        </button>
-      </div>
-    );
-  };
-
-  // Helper function to verify user exists in our database
-  const verifyUserInDatabase = async (userId: string) => {
-    try {
-      console.log('🔍 Verifying user in database...');
-      
-      // Check if user exists in either mentor or mentee table
-      const [mentorCheck, menteeCheck] = await Promise.all([
-        supabasase.from('mentor').select('id').eq('supabaseId', userId).single(),
-        supabasase.from('mentee').select('id').eq('supabaseId', userId).single()
-      ]);
-
-      const mentorExists = mentorCheck.data && !mentorCheck.error;
-      const menteeExists = menteeCheck.data && !menteeCheck.error;
-
-      if (!mentorExists && !menteeExists) {
-        console.log('⚠️ User authenticated but not in database - needs onboarding');
-        // User is authenticated but hasn't completed onboarding
-        // This will be handled by the auth state listener
-      } else {
-        console.log('✅ User verified in database');
-        // User exists in database - login successful
-        // Navigation will be handled by useEffect
-      }
-    } catch (error) {
-      console.error('❌ Error verifying user in database:', error);
-      // Continue with login flow even if database check fails
-    }
-  };
-
-  // DEBUG: Detailed database checking
-  const debugDatabaseUser = async (email: string, userId: string) => {
-    console.log('🔍 DEBUG: Checking database for user:', { email, userId });
-    
-    try {
-      // Check mentor table by email
-      const { data: mentorData, error: mentorError } = await supabasase
-        .from('mentor')
-        .select('*')
-        .eq('email', email);
-      
-      console.log('👨‍🏫 Mentor table check (by email):', { mentorData, mentorError });
-      
-      // Check mentee table by email
-      const { data: menteeData, error: menteeError } = await supabasase
-        .from('mentee')
-        .select('*')
-        .eq('email', email);
-        
-      console.log('👨‍🎓 Mentee table check (by email):', { menteeData, menteeError });
-      
-      // Check by supabaseId
-      const { data: mentorById, error: mentorByIdError } = await supabasase
-        .from('mentor')
-        .select('*')
-        .eq('supabaseId', userId);
-        
-      console.log('🆔 Mentor by supabaseId:', { mentorById, mentorByIdError });
-      
-      const { data: menteeById, error: menteeByIdError } = await supabasase
-        .from('mentee')
-        .select('*')
-        .eq('supabaseId', userId);
-        
-      console.log('🆔 Mentee by supabaseId:', { menteeById, menteeByIdError });
-      
-      // Get sample records to see what's in the database
-      const { data: sampleMentors } = await supabasase
-        .from('mentor')
-        .select('id, email, supabaseId, first_name, last_name')
-        .limit(3);
-        
-      const { data: sampleMentees } = await supabasase
-        .from('mentee')
-        .select('id, email, supabaseId, first_name, last_name')
-        .limit(3);
-        
-      console.log('📋 Sample mentor records:', sampleMentors);
-      console.log('📋 Sample mentee records:', sampleMentees);
-      
-    } catch (error) {
-      console.error('💥 Database debug error:', error);
     }
   };
 
