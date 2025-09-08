@@ -7,7 +7,9 @@ import {
   MessageCircle,
   Video,
   Star,
-  Bell
+  Bell,
+  Target,
+  Eye
 } from "lucide-react";
 
 const MentorDashboard = () => {
@@ -133,7 +135,7 @@ const MentorDashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Upcoming Sessions */}
           <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
             <div className="flex flex-col space-y-1.5 p-6">
@@ -160,6 +162,76 @@ const MentorDashboard = () => {
               <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
                 View All Sessions
               </button>
+            </div>
+          </div>
+
+          {/* Mentee Progress */}
+          <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+            <div className="flex flex-col space-y-1.5 p-6">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Mentee Progress
+              </h3>
+              <p className="text-sm text-gray-600">Skills development overview</p>
+            </div>
+            <div className="p-6 pt-0 space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium text-sm">Alice Mukamana</span>
+                      <span className="text-xs text-gray-500">85% progress</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '85%' }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>4 skills completed</span>
+                      <span>Updated 2 days ago</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium text-sm">David Nshuti</span>
+                      <span className="text-xs text-gray-500">65% progress</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: '65%' }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>3 skills in progress</span>
+                      <span>Updated yesterday</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium text-sm">Sarah Uwimana</span>
+                      <span className="text-xs text-gray-500">42% progress</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="bg-orange-500 h-1.5 rounded-full" style={{ width: '42%' }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>2 skills started</span>
+                      <span>Updated 5 days ago</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <Link 
+                to="/mentor/progress" 
+                className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <Eye className="h-4 w-4" />
+                View Detailed Progress
+              </Link>
             </div>
           </div>
 

@@ -7,6 +7,7 @@ import MentorDiscovery from "./pages/MentorDiscovery";
 import MentorProfile from "./pages/MentorProfile";
 import BookSession from "./pages/BookSession";
 import ProgressTracking from "./pages/ProgressTracking";
+import { MentorProgressView } from "./pages/MentorProgressView";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Signup from "./pages/SignUp";
@@ -24,6 +25,7 @@ function App() {
         <Route path="onboarding" element={<Onboarding />} />
         <Route path="home" element={<h1>Home Page</h1>} />
         <Route path="mentor-dashboard" element={<MentorDashboard />} />
+        <Route path="mentor/progress" element={<MentorProgressView />} />
         <Route path="mentee-dashboard" element={<MenteeDashboard />} />
         <Route path="resources" element={<ResourceLibrary />} />
         <Route path="discover-mentors" element={<MentorDiscovery />} />

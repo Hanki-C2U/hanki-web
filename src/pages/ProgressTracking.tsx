@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import {
   TrendingUp,
@@ -10,15 +10,103 @@ import {
   ArrowLeft,
   Users,
   Video,
-  Trophy
+  Trophy,
+  AlertCircle
 } from "lucide-react";
 import { AddGoalDialog } from "../components/AddGoalDialog";
 import { GoalDetailDialog } from "../components/GoalDetailDialog";
 import { AddSkillDialog } from "../components/AddSkillDialog";
 import { SkillDetailDialog } from "../components/SkillDetailDialog";
+import { useSkills } from "../hooks/useSkills";
+import { supabasase } from "../supabase_creds/supabase";
+import { testSkillsTable } from "../lib/testSkillsTable";
 
 const ProgressTracking = () => {
-  const [activeTab, setActiveTab] = useState("goals");
+  const [activeTab, setActiveTab] = useState("skills");
+  const [menteeId, setMenteeId] = useState<string | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+
+  // Get current user's mentee ID
+  useEffect(() => {
+    const getCurrentMenteeId = async () => {
+      try {
+        // Test skills table first
+        const tableTest = await testSkillsTable();
+        console.log('Skills table test result:', tableTest);
+        
+        // Try to get current authenticated user
+        const { data: { user } } = await supabasase.auth.getUser();
+        
+        if (user) {
+          // Use the authenticated user's ID
+          setMenteeId(user.id);
+          console.log('Using authenticated user ID:', user.id);
+        } else {
+          // Fallback: Get the first mentee from database for development
+          const { data: mentees, error } = await supabasase
+            .from('mentee')
+            .select('supabaseId')
+            .limit(1);
+          
+          if (mentees && mentees.length > 0) {
+            setMenteeId(mentees[0].supabaseId);
+            console.log('Using demo mentee ID:', mentees[0].supabaseId);
+          } else {
+            console.warn('No mentees found in database. Skills functionality will use mock data.');
+            setMenteeId(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error getting mentee ID:', error);
+        setMenteeId(null);
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+
+    getCurrentMenteeId();
+  }, []);
+  
+  // Use the custom hook for skills management (only if we have a menteeId)
+  const {
+    skills: dbSkills,
+    loading: skillsLoading,
+    error: skillsError,
+    addSkill,
+    updateSkill,
+    refetch: refetchSkills
+  } = useSkills({ 
+    menteeId: menteeId || "", 
+    autoFetch: !!menteeId 
+  });
+
+  // Fallback mock data for development when no valid mentee ID
+  const mockSkills = [
+    { 
+      id: 1,
+      name: "JavaScript", 
+      goal: "Master ES6+ features and async programming to build modern web applications",
+      status: "In Progress" as const,
+      reflection: "I've been practicing daily with coding challenges. Still struggling with promises and async/await, but making good progress on arrow functions and destructuring.",
+      dateAdded: "2024-01-15",
+      lastUpdated: "2024-02-20"
+    },
+    { 
+      id: 2,
+      name: "React", 
+      goal: "Build component-based UIs and understand state management patterns",
+      status: "In Progress" as const, 
+      reflection: "Completed a todo app project. Now working on understanding useEffect and custom hooks. Need more practice with state management.",
+      dateAdded: "2024-01-20",
+      lastUpdated: "2024-02-18"
+    }
+  ];
+
+  // Use database skills if available, otherwise use mock data
+  const skills = menteeId ? dbSkills : mockSkills;
+  const isUsingMockData = !menteeId;
+
+  // Mock data for other tabs (goals, badges, sessions)
   const [goals, setGoals] = useState([
     {
       id: 1,
@@ -102,15 +190,6 @@ const ProgressTracking = () => {
     }
   ];
 
-  const [skills, setSkills] = useState([
-    { name: "JavaScript", level: 80 },
-    { name: "React", level: 70 },
-    { name: "Project Management", level: 65 },
-    { name: "Communication", level: 85 },
-    { name: "Leadership", level: 60 },
-    { name: "Data Analysis", level: 45 }
-  ]);
-
   const [selectedGoal, setSelectedGoal] = useState<typeof goals[0] | null>(null);
   const [goalDetailOpen, setGoalDetailOpen] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<typeof skills[0] | null>(null);
@@ -131,8 +210,19 @@ const ProgressTracking = () => {
     ));
   };
 
-  const handleAddSkill = (newSkill: { name: string; level: number }) => {
-    setSkills([...skills, newSkill]);
+  const handleAddSkill = async (skillData: { name: string; goal: string; status: "Not Started" | "In Progress" | "Completed"; reflection: string }) => {
+    if (!menteeId || isUsingMockData) {
+      console.warn('Cannot add skill: No valid mentee ID. This feature requires a valid user account.');
+      alert('Skills management requires a valid user account. Please log in or ensure you have an account in the system.');
+      return;
+    }
+
+    try {
+      await addSkill(skillData);
+    } catch (error) {
+      console.error('Failed to add skill:', error);
+      alert('Failed to add skill. Please try again.');
+    }
   };
 
   const handleGoalClick = (goal: typeof goals[0]) => {
@@ -145,10 +235,20 @@ const ProgressTracking = () => {
     setSkillDetailOpen(true);
   };
 
-  const handleUpdateSkill = (name: string, updates: Partial<typeof skills[0]>) => {
-    setSkills(skills.map(skill =>
-      skill.name === name ? { ...skill, ...updates } : skill
-    ));
+  const handleUpdateSkill = async (skillId: number, updates: any) => {
+    if (!menteeId || isUsingMockData) {
+      console.warn('Cannot update skill: No valid mentee ID. This feature requires a valid user account.');
+      alert('Skills management requires a valid user account. Please log in or ensure you have an account in the system.');
+      return;
+    }
+
+    try {
+      await updateSkill(skillId, updates);
+      setSkillDetailOpen(false);
+    } catch (error) {
+      console.error('Failed to update skill:', error);
+      alert('Failed to update skill. Please try again.');
+    }
   };
 
 
@@ -342,37 +442,106 @@ const ProgressTracking = () => {
           {activeTab === "skills" && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Skill Development</h2>
+                <div>
+                  <h2 className="text-2xl font-bold">Skill Development & Self-Reflection</h2>
+                  <p className="text-gray-600 mt-1">Track your learning journey and reflect on your progress</p>
+                </div>
                 <AddSkillDialog onAddSkill={handleAddSkill} />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {skills.map((skill, index) => (
-                  <div key={index} className="rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer hover:shadow-lg transition-all duration-200" onClick={() => handleSkillClick(skill)}>
-                    <div className="p-6">
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <h3 className="font-semibold">{skill.name}</h3>
-                          <span className="inline-flex items-center rounded-full border border-gray-300 px-2.5 py-0.5 text-xs font-semibold text-gray-700">
-                            {skill.level}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${skill.level}%` }}
-                          />
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          {skill.level >= 80 ? "Advanced" :
-                            skill.level >= 60 ? "Intermediate" :
-                              skill.level >= 40 ? "Beginner" : "Starting"}
-                        </p>
-                      </div>
-                    </div>
+              {/* User Status Info */}
+              {isLoadingUser && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  <p className="text-blue-700">Loading user information...</p>
+                </div>
+              )}
+
+              {isUsingMockData && !isLoadingUser && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-yellow-500" />
+                  <div>
+                    <p className="text-yellow-700 font-medium">Demo Mode</p>
+                    <p className="text-yellow-600 text-sm">You're viewing sample data. Log in to manage your own skills.</p>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
+
+              {/* Error Display */}
+              {skillsError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-red-500" />
+                  <p className="text-red-700">{skillsError}</p>
+                  <button 
+                    onClick={refetchSkills}
+                    className="ml-auto text-red-600 hover:text-red-800 font-medium"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
+
+              {/* Loading State */}
+              {skillsLoading && (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                  <span className="ml-2 text-gray-600">Loading your skills...</span>
+                </div>
+              )}
+
+              {/* Skills Grid */}
+              {!skillsLoading && (
+                <>
+                  {skills.length > 0 ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {skills.map((skill) => (
+                        <div key={skill.id} className="rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer hover:shadow-lg transition-all duration-200" onClick={() => handleSkillClick(skill)}>
+                          <div className="p-6">
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-start">
+                                <h3 className="font-semibold text-lg">{skill.name}</h3>
+                                <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
+                                  skill.status === "Completed"
+                                    ? "border-transparent bg-green-100 text-green-800"
+                                    : skill.status === "In Progress"
+                                    ? "border-transparent bg-blue-100 text-blue-800"
+                                    : "border-transparent bg-gray-100 text-gray-800"
+                                  }`}>
+                                  {skill.status}
+                                </span>
+                              </div>
+                              
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-700 mb-2">Goal:</h4>
+                                <p className="text-sm text-gray-600 leading-relaxed">{skill.goal}</p>
+                              </div>
+
+                              {skill.reflection && (
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-700 mb-2">Current Reflection:</h4>
+                                  <p className="text-sm text-gray-600 leading-relaxed italic">"{skill.reflection}"</p>
+                                </div>
+                              )}
+
+                              <div className="flex justify-between text-xs text-gray-500 pt-2 border-t">
+                                <span>Added: {new Date(skill.dateAdded).toLocaleDateString()}</span>
+                                <span>Updated: {new Date(skill.lastUpdated).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No skills tracked yet</h3>
+                      <p className="text-gray-600 mb-4">Start your learning journey by adding your first skill to track!</p>
+                      <AddSkillDialog onAddSkill={handleAddSkill} />
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
 

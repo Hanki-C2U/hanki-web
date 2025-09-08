@@ -3,7 +3,9 @@ import { TrendingUp, Plus, X } from "lucide-react";
 
 interface Skill {
   name: string;
-  level: number;
+  goal: string;
+  status: "Not Started" | "In Progress" | "Completed";
+  reflection: string;
 }
 
 interface AddSkillDialogProps {
@@ -13,31 +15,30 @@ interface AddSkillDialogProps {
 export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [level, setLevel] = useState(25);
+  const [goal, setGoal] = useState("");
+  const [status, setStatus] = useState<Skill["status"]>("Not Started");
+  const [reflection, setReflection] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim()) return;
+    if (!name.trim() || !goal.trim()) return;
 
     const newSkill = {
       name: name.trim(),
-      level: level
+      goal: goal.trim(),
+      status,
+      reflection: reflection.trim()
     };
 
     onAddSkill(newSkill);
 
     // Reset form
     setName("");
-    setLevel(25);
+    setGoal("");
+    setStatus("Not Started");
+    setReflection("");
     setOpen(false);
-  };
-
-  const getLevelLabel = (value: number) => {
-    if (value >= 80) return "Advanced";
-    if (value >= 60) return "Intermediate";
-    if (value >= 40) return "Beginner";
-    return "Starting";
   };
 
   return (
@@ -61,7 +62,7 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
                     Add New Skill
                   </h2>
                   <p className="text-sm text-gray-600">
-                    Add a skill to track your development progress.
+                    Add a skill you want to develop and track your progress through self-reflection.
                   </p>
                 </div>
                 <button
@@ -88,37 +89,49 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
                 />
               </div>
 
-              <div className="space-y-4">
-                <label className="text-sm font-medium leading-none">
-                  Current Level: {level}% ({getLevelLabel(level)})
+              <div className="space-y-2">
+                <label htmlFor="skill-goal" className="text-sm font-medium leading-none">
+                  Learning Goal *
                 </label>
-                <div className="relative flex w-full touch-none select-none items-center">
-                  <div className="relative h-2 w-full grow overflow-hidden rounded-full bg-gray-200">
-                    <div
-                      className="absolute h-full bg-orange-500 rounded-full transition-all duration-300"
-                      style={{ width: `${level}%` }}
-                    />
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={level}
-                    onChange={(e) => setLevel(parseInt(e.target.value))}
-                    className="absolute w-full h-5 opacity-0 cursor-pointer"
-                  />
-                  <div
-                    className="absolute block h-5 w-5 rounded-full border-2 border-orange-500 bg-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
-                    style={{ left: `calc(${level}% - 10px)` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs text-gray-600">
-                  <span>Starting (0%)</span>
-                  <span>Beginner (40%)</span>
-                  <span>Intermediate (60%)</span>
-                  <span>Advanced (80%+)</span>
-                </div>
+                <textarea
+                  id="skill-goal"
+                  value={goal}
+                  onChange={(e) => setGoal(e.target.value)}
+                  placeholder="What do you want to achieve with this skill? Be specific about your learning objectives..."
+                  required
+                  rows={3}
+                  className="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="skill-status" className="text-sm font-medium leading-none">
+                  Current Status
+                </label>
+                <select
+                  id="skill-status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as Skill["status"])}
+                  className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="Not Started">Not Started</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="skill-reflection" className="text-sm font-medium leading-none">
+                  Initial Reflection
+                </label>
+                <textarea
+                  id="skill-reflection"
+                  value={reflection}
+                  onChange={(e) => setReflection(e.target.value)}
+                  placeholder="Share your thoughts about this skill... What motivates you to learn it? What challenges do you expect?"
+                  rows={3}
+                  className="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                />
               </div>
 
               <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-4">
@@ -131,10 +144,11 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
                 </button>
                 <button
                   type="submit"
-                  disabled={!name.trim()}
-                  className={`inline-flex items-center justify-center h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!name.trim()
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                  disabled={!name.trim() || !goal.trim()}
+                  className={`inline-flex items-center justify-center h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${
+                    !name.trim() || !goal.trim()
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-orange-500 text-white hover:bg-orange-600'
                     }`}
                 >
                   Add Skill
