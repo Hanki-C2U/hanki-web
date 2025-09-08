@@ -19,6 +19,7 @@ import { AddSkillDialog } from "../components/AddSkillDialog";
 import { SkillDetailDialog } from "../components/SkillDetailDialog";
 import { useSkills } from "../hooks/useSkills";
 import { supabasase } from "../supabase_creds/supabase";
+import { testSkillsTable } from "../lib/testSkillsTable";
 
 const ProgressTracking = () => {
   const [activeTab, setActiveTab] = useState("skills");
@@ -29,6 +30,10 @@ const ProgressTracking = () => {
   useEffect(() => {
     const getCurrentMenteeId = async () => {
       try {
+        // Test skills table first
+        const tableTest = await testSkillsTable();
+        console.log('Skills table test result:', tableTest);
+        
         // Try to get current authenticated user
         const { data: { user } } = await supabasase.auth.getUser();
         
