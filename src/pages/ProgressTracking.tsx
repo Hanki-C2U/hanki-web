@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import {
   TrendingUp,
@@ -19,6 +19,17 @@ import { SkillDetailDialog } from "../components/SkillDetailDialog";
 
 const ProgressTracking = () => {
   const [activeTab, setActiveTab] = useState("goals");
+
+  // Check for tab parameter in URL and set active tab accordingly
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+
+    if (tabParam && ['goals', 'skills', 'badges', 'sessions'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, []);
+
   const [goals, setGoals] = useState([
     {
       id: 1,
@@ -75,12 +86,12 @@ const ProgressTracking = () => {
   const sessions = [
     {
       id: 1,
-      mentor: "Dr. Emmanuel Ntagungira",
+      mentor: "Emmanuel Ntagungira",
       date: "Jan 15, 2024",
       topic: "Career Transition Planning",
       duration: "60 min",
       rating: 5,
-      notes: "Excellent session on mapping out career transition steps. Dr. Emmanuel provided specific resources and action items."
+      notes: "Excellent session on mapping out career transition steps. Emmanuel provided specific resources and action items."
     },
     {
       id: 2,
@@ -153,7 +164,7 @@ const ProgressTracking = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -166,7 +177,7 @@ const ProgressTracking = () => {
               <div className="h-6 w-px bg-gray-300" />
               <h1 className="text-xl font-semibold">Progress Tracking</h1>
             </div>
-            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
+            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
               SkillsConnect
             </Link>
           </div>
@@ -181,9 +192,9 @@ const ProgressTracking = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Sessions</p>
-                  <p className="text-2xl font-bold">12</p>
+                  <p className="text-2xl font-bold">6</p>
                 </div>
-                <Video className="h-8 w-8 text-orange-500" />
+                <Video className="h-8 w-8 text-emerald-500" />
               </div>
             </div>
           </div>
@@ -192,10 +203,10 @@ const ProgressTracking = () => {
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Hours of Mentoring</p>
-                  <p className="text-2xl font-bold">18</p>
+                  <p className="text-sm font-medium text-gray-600">Hours of Mentorship</p>
+                  <p className="text-2xl font-bold">5</p>
                 </div>
-                <Clock className="h-8 w-8 text-amber-500" />
+                <Clock className="h-8 w-8 text-emerald-400" />
               </div>
             </div>
           </div>
@@ -207,7 +218,7 @@ const ProgressTracking = () => {
                   <p className="text-sm font-medium text-gray-600">Goals Achieved</p>
                   <p className="text-2xl font-bold">3</p>
                 </div>
-                <Target className="h-8 w-8 text-green-500" />
+                <Target className="h-8 w-8 text-emerald-500" />
               </div>
             </div>
           </div>
@@ -219,7 +230,7 @@ const ProgressTracking = () => {
                   <p className="text-sm font-medium text-gray-600">Badges Earned</p>
                   <p className="text-2xl font-bold">4</p>
                 </div>
-                <Trophy className="h-8 w-8 text-blue-600" />
+                <Trophy className="h-8 w-8 text-emerald-600" />
               </div>
             </div>
           </div>
@@ -229,7 +240,7 @@ const ProgressTracking = () => {
           <div className="grid w-full grid-cols-4 max-w-2xl mx-auto">
             <button
               onClick={() => setActiveTab("goals")}
-              className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 rounded-md ${activeTab === "goals"
+              className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 rounded-md ${activeTab === "goals"
                 ? "bg-white shadow-sm border border-gray-200"
                 : "text-gray-600 hover:text-gray-900"
                 }`}
@@ -239,7 +250,7 @@ const ProgressTracking = () => {
             </button>
             <button
               onClick={() => setActiveTab("skills")}
-              className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 rounded-md ${activeTab === "skills"
+              className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 rounded-md ${activeTab === "skills"
                 ? "bg-white shadow-sm border border-gray-200"
                 : "text-gray-600 hover:text-gray-900"
                 }`}
@@ -249,7 +260,7 @@ const ProgressTracking = () => {
             </button>
             <button
               onClick={() => setActiveTab("badges")}
-              className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 rounded-md ${activeTab === "badges"
+              className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 rounded-md ${activeTab === "badges"
                 ? "bg-white shadow-sm border border-gray-200"
                 : "text-gray-600 hover:text-gray-900"
                 }`}
@@ -259,7 +270,7 @@ const ProgressTracking = () => {
             </button>
             <button
               onClick={() => setActiveTab("sessions")}
-              className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 rounded-md ${activeTab === "sessions"
+              className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 rounded-md ${activeTab === "sessions"
                 ? "bg-white shadow-sm border border-gray-200"
                 : "text-gray-600 hover:text-gray-900"
                 }`}
@@ -302,7 +313,7 @@ const ProgressTracking = () => {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
-                            className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                            className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${goal.progress}%` }}
                           />
                         </div>
@@ -359,7 +370,7 @@ const ProgressTracking = () => {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
-                            className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                            className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${skill.level}%` }}
                           />
                         </div>
@@ -385,7 +396,7 @@ const ProgressTracking = () => {
                 {badges.map((badge) => (
                   <div
                     key={badge.id}
-                    className={`rounded-lg border border-gray-200 bg-white shadow-sm text-center ${badge.earned ? 'bg-gradient-to-br from-orange-50 to-blue-50' : 'opacity-60'
+                    className={`rounded-lg border border-gray-200 bg-white shadow-sm text-center ${badge.earned ? 'bg-gradient-to-br from-emerald-50 to-teal-50' : 'opacity-60'
                       }`}
                   >
                     <div className="p-6">
@@ -393,7 +404,7 @@ const ProgressTracking = () => {
                       <h3 className="font-semibold mb-2">{badge.name}</h3>
                       {badge.earned ? (
                         <div>
-                          <span className="inline-flex items-center rounded-full border-transparent bg-green-100 text-green-800 px-2.5 py-0.5 text-xs font-semibold mb-2">
+                          <span className="inline-flex items-center rounded-full border-transparent bg-emerald-100 text-emerald-800 px-2.5 py-0.5 text-xs font-semibold mb-2">
                             Earned
                           </span>
                           <p className="text-xs text-gray-600">{badge.date}</p>
@@ -422,12 +433,12 @@ const ProgressTracking = () => {
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <h3 className="font-semibold text-lg">{session.topic}</h3>
-                          <p className="text-blue-600 font-medium">{session.mentor}</p>
+                          <p className="text-emerald-600 font-medium">{session.mentor}</p>
                         </div>
                         <div className="text-right">
                           <div className="flex items-center gap-1 mb-1">
                             {[...Array(session.rating)].map((_, i) => (
-                              <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                              <Star key={i} className="h-4 w-4 fill-emerald-400 text-emerald-400" />
                             ))}
                           </div>
                           <p className="text-sm text-gray-600">{session.date}</p>
