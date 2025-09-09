@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import {
   Calendar,
   Search,
@@ -9,13 +9,30 @@ import {
   Star,
   Target,
   Lightbulb,
-  CheckCircle
+  CheckCircle,
+  X
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
 
 const MenteeDashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<'profile' | 'goals' | 'skills' | 'inspiration'>('profile');
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Check for success message in navigation state
+  useEffect(() => {
+    if (location.state && location.state.message) {
+      setSuccessMessage(location.state.message);
+
+      // Clear the message after 5 seconds
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   // Default mentee data follows
 
@@ -214,6 +231,22 @@ const MenteeDashboard = () => {
       <AuthHeader />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Success message notification */}
+        {successMessage && (
+          <div className="mb-6 flex items-center justify-between p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700">
+            <div className="flex items-center">
+              <CheckCircle className="h-5 w-5 mr-2" />
+              <span>{successMessage}</span>
+            </div>
+            <button
+              onClick={() => setSuccessMessage(null)}
+              className="p-1 rounded-full hover:bg-emerald-100"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
         {/* Quick Actions (Top Section on Mobile, Right Side on Desktop) */}
         <div className="grid grid-cols-3 md:hidden gap-3 mb-6">
           <button

@@ -19,11 +19,12 @@ import EditMentorProfile from "./pages/EditMentorProfile";
 import { AuthProvider } from "./contexts/AuthContext";
 // import ProtectedRoute from "./components/ProtectedRoute";
 import MenteeProfile from "./pages/MenteeProfile";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <Route path="/">
+      <Route path="/" element={<ScrollToTop />}>
         <Route index element={<LandingPage />} />
         <Route path="signup" element={<Signup />} />
         <Route path="login" element={<Login />} />
