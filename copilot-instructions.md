@@ -1,8 +1,16 @@
 # Copilot Instructions for Skills Connect Hackathon Project
 
+## Challenge of the Hackathon
+Challenge:
+Unlocking Diaspora potential for youth empowerment
+The Problem:
+Many educated Rwandan youth lack mentorship, global perspectives, and career readiness tools. The diaspora holds valuable expertise and networks, with an eagerness to contribute to the national development, but this resource is not structured or leveraged.
+The Challenge:
+How might we design a sustainable, inclusive, tech-enabled bridge between diaspora professionals and youth to foster job readiness and meaningful employment?
+
 ## Project Overview
 
-This is a hackathon project called "Skills Connect" - a mentorship platform connecting mentees with mentors. The primary focus is on demonstrating the platform's concept and user experience, rather than implementing a fully production-ready application.
+This is a hackathon project called "Skills Connect" - a mentorship platform connecting mentees with mentors. The primary focus is on demonstrating the platform's concept, user experience, and more importantly how it solves the problem, rather than implementing a fully production-ready application.
 
 ## Tech Stack
 
