@@ -4,6 +4,7 @@ import { Calendar, Clock, Video, MessageCircle, ArrowLeft } from 'lucide-react'
 import { supabasase } from '../supabase_creds/supabase'
 import { useAuthStore } from '../store/authStore'
 import VideoSession from '../components/VideoSession'
+import SimpleVideoSession from '../components/SimpleVideoSession'
 
 interface SessionDetails {
   id: number
@@ -38,6 +39,7 @@ const SessionRoom: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [isInMeeting, setIsInMeeting] = useState(false)
   const [sessionStarted, setSessionStarted] = useState(false)
+  const [useSimpleVideo, setUseSimpleVideo] = useState(false)
 
   useEffect(() => {
     console.log('🚀 SessionRoom: useEffect triggered');
@@ -263,14 +265,23 @@ const SessionRoom: React.FC = () => {
                     <span className="text-sm font-medium">LIVE</span>
                   </div>
                 </div>
-                <VideoSession
-                  roomId={session.jitsiRoomId}
-                  sessionId={session.id}
-                  isHost={isHost}
-                  onJoinSuccess={handleJoinSession}
-                  onLeaveSession={handleLeaveSession}
-                  onError={handleSessionError}
-                />
+                {useSimpleVideo ? (
+                  <SimpleVideoSession
+                    roomId={session.jitsiRoomId}
+                    isHost={isHost}
+                    onJoinSuccess={handleJoinSession}
+                    onLeaveSession={handleLeaveSession}
+                  />
+                ) : (
+                  <VideoSession
+                    roomId={session.jitsiRoomId}
+                    sessionId={session.id}
+                    isHost={isHost}
+                    onJoinSuccess={handleJoinSession}
+                    onLeaveSession={handleLeaveSession}
+                    onError={handleSessionError}
+                  />
+                )}
               </div>
             ) : (
               <div className="bg-white rounded-lg shadow-sm p-8">
@@ -279,12 +290,45 @@ const SessionRoom: React.FC = () => {
                   <h2 className="text-xl font-semibold text-gray-900 mb-2">
                     {sessionStarted ? 'Session Ended' : 'Ready to Join Session?'}
                   </h2>
-                  <p className="text-gray-600 mb-6">
+                  <p className="text-gray-600 mb-4">
                     {sessionStarted 
                       ? 'You have left the video session. You can rejoin if needed.'
                       : 'Click the button below to start your video session with Jitsi Meet. (Testing mode - no time restrictions)'
                     }
                   </p>
+                  
+                  {/* Video Mode Toggle */}
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Video Session Mode:</h3>
+                    <div className="flex justify-center space-x-4">
+                      <button
+                        onClick={() => setUseSimpleVideo(false)}
+                        className={`px-4 py-2 rounded-lg text-sm transition-colors ${
+                          !useSimpleVideo 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        Advanced (External API)
+                      </button>
+                      <button
+                        onClick={() => setUseSimpleVideo(true)}
+                        className={`px-4 py-2 rounded-lg text-sm transition-colors ${
+                          useSimpleVideo 
+                            ? 'bg-green-600 text-white' 
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        Simple (IFrame)
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      {useSimpleVideo 
+                        ? 'Simple mode may avoid authentication issues' 
+                        : 'Advanced mode with full API control'
+                      }
+                    </p>
+                  </div>
                   
                   {isSessionTime() || sessionStarted ? (
                     <button

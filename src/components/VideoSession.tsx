@@ -29,17 +29,34 @@ const VideoSession: React.FC<VideoSessionProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthStore();
+  
+  // Unique instance identifier
+  const instanceId = useRef(`video-session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  
+  console.log('🎭 VideoSession: Component rendered with instance:', instanceId.current);
 
   useEffect(() => {
+    console.log('🎬 VideoSession: useEffect triggered');
+    console.log('📍 VideoSession: roomId:', roomId);
+    console.log('🎭 VideoSession: isHost:', isHost);
+    
+    // Clear any existing API instance first
+    if (apiRef.current) {
+      console.log('🧹 VideoSession: Cleaning up existing API instance');
+      apiRef.current.dispose();
+      apiRef.current = null;
+    }
+    
     loadJitsiAPI();
     
     return () => {
+      console.log('🧹 VideoSession: Component cleanup');
       if (apiRef.current) {
         apiRef.current.dispose();
         apiRef.current = null;
       }
     };
-  }, [roomId]);
+  }, [roomId, isHost]); // Add isHost to dependencies to recreate when role changes
 
   const loadJitsiAPI = async () => {
     try {
@@ -88,11 +105,25 @@ const VideoSession: React.FC<VideoSessionProps> = ({
     console.log('🎭 VideoSession: Is Host:', isHost);
     console.log('📦 VideoSession: Container ref exists:', !!containerRef.current);
     console.log('🌐 VideoSession: JitsiMeetExternalAPI available:', !!window.JitsiMeetExternalAPI);
+    console.log('🔍 VideoSession: Current API instance:', !!apiRef.current);
     
     if (!containerRef.current || !window.JitsiMeetExternalAPI) {
       console.error('❌ VideoSession: Missing container or Jitsi API');
       setIsLoading(false);
       return;
+    }
+
+    // Double check for existing instance
+    if (apiRef.current) {
+      console.warn('⚠️ VideoSession: API instance already exists, disposing first');
+      apiRef.current.dispose();
+      apiRef.current = null;
+    }
+
+    // Clear any existing iframes in the container
+    if (containerRef.current) {
+      console.log('🧹 VideoSession: Clearing container content');
+      containerRef.current.innerHTML = '';
     }
 
     try {
@@ -101,11 +132,11 @@ const VideoSession: React.FC<VideoSessionProps> = ({
         roomName: roomId,
         parentNode: containerRef.current,
         userInfo: {
-          displayName: user?.email ? `${user.email.split('@')[0]}` : 'User',
+          displayName: user?.email ? `${user.email.split('@')[0]}${isHost ? ' (Host)' : ' (Guest)'}` : (isHost ? 'Host' : 'Guest'),
           email: user?.email || undefined,
         },
         configOverwrite: {
-          startWithAudioMuted: !isHost, // Host starts unmuted
+          startWithAudioMuted: !isHost, // Host starts unmuted, guests start muted
           startWithVideoMuted: false,
           enableWelcomePage: false,
           enableClosePage: false,
@@ -113,11 +144,10 @@ const VideoSession: React.FC<VideoSessionProps> = ({
           disableModeratorIndicator: false,
           startScreenSharing: false,
           enableEmailInStats: false,
-          // Disable authentication prompts
+          // Security settings to prevent guest login requirements
           enableUserRolesBasedOnToken: false,
           enableInsecureRoomNameWarning: false,
           enableNoisyMicDetection: true,
-          // Additional security/auth overrides
           requireDisplayName: false,
           enableAutomaticIceFailover: true,
           enableP2P: true,
@@ -127,17 +157,30 @@ const VideoSession: React.FC<VideoSessionProps> = ({
               { urls: 'stun:meet-jit-si-turnrelay.jitsi.net:443' }
             ]
           },
-          // Disable any login/auth flows
           enableFeaturesBasedOnToken: false,
           disableDeepLinking: true,
+          // Prevent any lobby or moderation requirements
+          enableLobby: false,
+          enableKnockingLobby: false,
+          // Disable authentication completely
+          enableAuthenticationUI: false,
+          enableGuestDomain: true,
+          guestDomain: '',
+          // Moderator settings - everyone joins as equal participants
+          moderatedRoomServiceUrl: '',
+          enableModeratedMode: false,
         },
         interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: [
+          TOOLBAR_BUTTONS: isHost ? [
             'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
-            'fodeviceselection', 'hangup', 'chat', 
-            'videoquality', 'filmstrip', 'tileview', 'videobackgroundblur'
+            'fodeviceselection', 'hangup', 'chat', 'settings', 'raisehand',
+            'videoquality', 'filmstrip', 'tileview', 'videobackgroundblur',
+            'invite', 'mute-everyone', 'security'
+          ] : [
+            'microphone', 'camera', 'hangup', 'chat', 'raisehand',
+            'videoquality', 'tileview', 'videobackgroundblur'
           ],
-          SETTINGS_SECTIONS: ['devices', 'language', 'profile'],
+          SETTINGS_SECTIONS: isHost ? ['devices', 'language', 'profile', 'moderator'] : ['devices', 'language', 'profile'],
           SHOW_JITSI_WATERMARK: false,
           SHOW_WATERMARK_FOR_GUESTS: false,
           SHOW_BRAND_WATERMARK: false,
@@ -147,19 +190,21 @@ const VideoSession: React.FC<VideoSessionProps> = ({
           DISPLAY_WELCOME_PAGE_TOOLBAR_ADDITIONAL_CONTENT: false,
           SHOW_CHROME_EXTENSION_BANNER: false,
           // Prevent authentication flows
-          HIDE_INVITE_MORE_HEADER: true,
+          HIDE_INVITE_MORE_HEADER: !isHost, // Only hosts can invite
           DISABLE_JOIN_LEAVE_NOTIFICATIONS: false,
           DISABLE_PRESENCE_STATUS: true,
           DISABLE_FOCUS_INDICATOR: true,
-          // Remove authentication and moderator-related options
+          // Remove authentication and moderator-related options for guests
           AUTHENTICATION_ENABLE: false,
-          ENABLE_DIAL_OUT: false,
+          ENABLE_DIAL_OUT: isHost, // Only hosts can dial out
           ENABLE_FEEDBACK_ANIMATION: false,
         }
       };
 
       console.log('⚙️ VideoSession: Creating Jitsi API with options:', options);
       apiRef.current = new window.JitsiMeetExternalAPI(domain, options);
+
+      console.log('✅ VideoSession: Jitsi API instance created:', !!apiRef.current);
 
       // Event listeners
       apiRef.current.addEventListener('videoConferenceJoined', () => {
@@ -293,6 +338,7 @@ const VideoSession: React.FC<VideoSessionProps> = ({
       
       <div 
         ref={containerRef} 
+        id={instanceId.current}
         className="w-full h-96 bg-black rounded-lg"
         style={{ minHeight: '400px' }}
       />
