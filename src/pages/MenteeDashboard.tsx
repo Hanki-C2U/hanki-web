@@ -846,6 +846,62 @@ const MenteeDashboard = () => {
           </div>
         </div>
 
+        {/* Recommended Mentors */}
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold mb-4">Recommended Mentors</h3>
+           <button
+              onClick={() => navigate('/discover-mentors')}
+              className="text-sm px-3 py-1.5 text-emerald-600 border border-emerald-600 rounded-md hover:bg-emerald-50"
+            >
+              View More
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {recommendedMentors.map(mentor => (
+              <div key={mentor.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <div className="p-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0">
+                      {mentor.image ? (
+                        <img
+                          src={mentor.image}
+                          alt={mentor.name}
+                          className="h-14 w-14 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-14 w-14 rounded-full bg-emerald-100 flex items-center justify-center">
+                          <span className="text-lg font-semibold text-emerald-600">
+                            {mentor.name.split(' ').map(n => n[0]).join('')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium">{mentor.name}</h4>
+                      <p className="text-sm text-emerald-600">{mentor.expertise}</p>
+                      <p className="text-xs text-gray-500">{mentor.location}</p>
+                      <div className="flex items-center mt-1">
+                        <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
+                        <span className="text-xs text-gray-600 ml-1">{mentor.rating} • {mentor.sessions} sessions</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+                    <button
+                      onClick={() => navigate(`/mentor/${mentor.id}`)}
+                      className="px-3 py-1.5 bg-emerald-600 text-white text-sm rounded-md hover:bg-emerald-700"
+                    >
+                      View Profile
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Connect with Peers Section */}
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
@@ -898,54 +954,6 @@ const MenteeDashboard = () => {
                   >
                     Message
                   </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Recommended Mentors */}
-        <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Recommended Mentors</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recommendedMentors.map(mentor => (
-              <div key={mentor.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      {mentor.image ? (
-                        <img
-                          src={mentor.image}
-                          alt={mentor.name}
-                          className="h-14 w-14 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-14 w-14 rounded-full bg-emerald-100 flex items-center justify-center">
-                          <span className="text-lg font-semibold text-emerald-600">
-                            {mentor.name.split(' ').map(n => n[0]).join('')}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium">{mentor.name}</h4>
-                      <p className="text-sm text-emerald-600">{mentor.expertise}</p>
-                      <p className="text-xs text-gray-500">{mentor.location}</p>
-                      <div className="flex items-center mt-1">
-                        <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
-                        <span className="text-xs text-gray-600 ml-1">{mentor.rating} • {mentor.sessions} sessions</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
-                    <button
-                      onClick={() => navigate(`/mentor/${mentor.id}`)}
-                      className="px-3 py-1.5 bg-emerald-600 text-white text-sm rounded-md hover:bg-emerald-700"
-                    >
-                      View Profile
-                    </button>
-                  </div>
                 </div>
               </div>
             ))}
