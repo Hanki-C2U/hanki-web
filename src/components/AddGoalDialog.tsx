@@ -66,7 +66,7 @@ export function AddGoalDialog({ onAddGoal }: AddGoalDialogProps) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 h-10 px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+        className="inline-flex items-center gap-2 h-10 px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
       >
         <Target className="h-4 w-4" />
         Add New Goal
@@ -87,9 +87,9 @@ export function AddGoalDialog({ onAddGoal }: AddGoalDialogProps) {
 
                 <button
                   onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                  className="inline-flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                 >
-                <X className="h-4 w-4" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -105,7 +105,7 @@ export function AddGoalDialog({ onAddGoal }: AddGoalDialogProps) {
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g., Transition to Product Management"
                   required
-                  className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
 
@@ -119,7 +119,7 @@ export function AddGoalDialog({ onAddGoal }: AddGoalDialogProps) {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe your goal and what success looks like..."
                   rows={3}
-                  className="flex min-h-[80px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex min-h-[80px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
 
@@ -133,7 +133,7 @@ export function AddGoalDialog({ onAddGoal }: AddGoalDialogProps) {
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   required
-                  className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
 
@@ -146,13 +146,13 @@ export function AddGoalDialog({ onAddGoal }: AddGoalDialogProps) {
                       value={milestone}
                       onChange={(e) => updateMilestone(index, e.target.value)}
                       placeholder={`Milestone ${index + 1}`}
-                      className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                     />
                     {milestones.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeMilestone(index)}
-                        className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 text-sm font-medium"
+                        className="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 text-sm font-medium"
                       >
                         ×
                       </button>
@@ -162,7 +162,7 @@ export function AddGoalDialog({ onAddGoal }: AddGoalDialogProps) {
                 <button
                   type="button"
                   onClick={addMilestone}
-                  className="w-full inline-flex items-center justify-center gap-2 h-9 px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 text-sm font-medium"
+                  className="w-full inline-flex items-center justify-center gap-2 h-9 px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 text-sm font-medium"
                 >
                   <Plus className="h-4 w-4" />
                   Add Milestone
@@ -173,16 +173,16 @@ export function AddGoalDialog({ onAddGoal }: AddGoalDialogProps) {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 text-sm font-medium mb-2 sm:mb-0"
+                  className="inline-flex items-center justify-center h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 text-sm font-medium mb-2 sm:mb-0"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!title.trim() || !dueDate}
-                  className={`inline-flex items-center justify-center h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!title.trim() || !dueDate
+                  className={`inline-flex items-center justify-center h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${!title.trim() || !dueDate
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                    : 'bg-emerald-500 text-white hover:bg-emerald-600'
                     }`}
                 >
                   Create Goal

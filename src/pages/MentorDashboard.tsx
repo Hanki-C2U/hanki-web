@@ -897,7 +897,10 @@ const MentorDashboard = () => {
               <h3 className="text-lg font-semibold mb-4">Featured Mentees</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-3 border border-gray-200 rounded-lg hover:border-emerald-200 hover:bg-emerald-50 transition-colors cursor-pointer">
+                <div
+                  className="p-3 border border-gray-200 rounded-lg hover:border-emerald-200 hover:bg-emerald-50 transition-colors cursor-pointer"
+                  onClick={() => navigate('/mentee/2')}
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
                       <img src="/professional-headshot-of-african-woman-hr-professi.png" alt="Alice Mukamana" className="h-full w-full object-cover" />
@@ -911,29 +914,32 @@ const MentorDashboard = () => {
                     <div className="flex">
                       {renderStars(5)}
                     </div>
-                    <button className="text-xs text-emerald-600 hover:text-emerald-800">
-                      View Progress
-                    </button>
+                    <span className="text-xs text-emerald-600 hover:text-emerald-800">
+                      View Profile
+                    </span>
                   </div>
                 </div>
 
-                <div className="p-3 border border-gray-200 rounded-lg hover:border-emerald-200 hover:bg-emerald-50 transition-colors cursor-pointer">
+                <div
+                  className="p-3 border border-gray-200 rounded-lg hover:border-emerald-200 hover:bg-emerald-50 transition-colors cursor-pointer"
+                  onClick={() => navigate('/mentee/1')}
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
                       <img src="/professional-headshot-of-confident-hispanic-sales-.png" alt="David Nshuti" className="h-full w-full object-cover" />
                     </div>
                     <div>
-                      <h4 className="font-medium">David Nshuti</h4>
-                      <p className="text-xs text-gray-500">Product Manager • 2 sessions</p>
+                      <h4 className="font-medium">Bienvenu Cyuzuzo</h4>
+                      <p className="text-xs text-gray-500">Student • 2 sessions</p>
                     </div>
                   </div>
                   <div className="mt-2 flex justify-between">
                     <div className="flex">
                       {renderStars(5)}
                     </div>
-                    <button className="text-xs text-emerald-600 hover:text-emerald-800">
-                      View Progress
-                    </button>
+                    <span className="text-xs text-emerald-600 hover:text-emerald-800">
+                      View Profile
+                    </span>
                   </div>
                 </div>
               </div>

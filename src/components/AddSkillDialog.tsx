@@ -44,7 +44,7 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 h-9 px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 text-sm font-medium"
+        className="inline-flex items-center gap-2 h-9 px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 text-sm font-medium"
       >
         <Plus className="h-4 w-4" />
         Add Skill
@@ -66,7 +66,7 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
                 </div>
                 <button
                   onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                  className="inline-flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -84,7 +84,7 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g., Python, Public Speaking, Project Management"
                   required
-                  className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
 
@@ -95,7 +95,7 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
                 <div className="relative flex w-full touch-none select-none items-center">
                   <div className="relative h-2 w-full grow overflow-hidden rounded-full bg-gray-200">
                     <div
-                      className="absolute h-full bg-orange-500 rounded-full transition-all duration-300"
+                      className="absolute h-full bg-emerald-500 rounded-full transition-all duration-300"
                       style={{ width: `${level}%` }}
                     />
                   </div>
@@ -109,7 +109,7 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
                     className="absolute w-full h-5 opacity-0 cursor-pointer"
                   />
                   <div
-                    className="absolute block h-5 w-5 rounded-full border-2 border-orange-500 bg-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                    className="absolute block h-5 w-5 rounded-full border-2 border-emerald-500 bg-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
                     style={{ left: `calc(${level}% - 10px)` }}
                   />
                 </div>
@@ -125,16 +125,16 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 text-sm font-medium mb-2 sm:mb-0"
+                  className="inline-flex items-center justify-center h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 text-sm font-medium mb-2 sm:mb-0"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!name.trim()}
-                  className={`inline-flex items-center justify-center h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!name.trim()
+                  className={`inline-flex items-center justify-center h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${!name.trim()
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                    : 'bg-emerald-500 text-white hover:bg-emerald-600'
                     }`}
                 >
                   Add Skill
