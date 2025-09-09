@@ -432,19 +432,19 @@ const MentorDashboard = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <Users className="h-6 w-6 mx-auto text-emerald-600 mb-2" />
-                  <p className="text-2xl font-bold">12</p>
+                  <p className="text-2xl font-bold">7</p>
                   <p className="text-sm text-gray-600">Mentees</p>
                 </div>
 
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <Clock className="h-6 w-6 mx-auto text-emerald-600 mb-2" />
-                  <p className="text-2xl font-bold">24</p>
+                  <p className="text-2xl font-bold">5</p>
                   <p className="text-sm text-gray-600">Hours</p>
                 </div>
 
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <Video className="h-6 w-6 mx-auto text-emerald-600 mb-2" />
-                  <p className="text-2xl font-bold">8</p>
+                  <p className="text-2xl font-bold">7</p>
                   <p className="text-sm text-gray-600">Sessions</p>
                 </div>
 
