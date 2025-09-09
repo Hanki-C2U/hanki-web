@@ -86,12 +86,12 @@ const ProgressTracking = () => {
   const sessions = [
     {
       id: 1,
-      mentor: "Dr. Emmanuel Ntagungira",
+      mentor: "Emmanuel Ntagungira",
       date: "Jan 15, 2024",
       topic: "Career Transition Planning",
       duration: "60 min",
       rating: 5,
-      notes: "Excellent session on mapping out career transition steps. Dr. Emmanuel provided specific resources and action items."
+      notes: "Excellent session on mapping out career transition steps. Emmanuel provided specific resources and action items."
     },
     {
       id: 2,

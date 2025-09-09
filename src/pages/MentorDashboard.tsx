@@ -122,7 +122,7 @@ const MentorDashboard = () => {
       type: "job",
       link: "https://example.com/job",
       description: "Exciting opportunity for a frontend developer with React experience to join our growing team in Kigali.",
-      postedBy: "Dr. Emmanuel Ntagungira"
+      postedBy: "Emmanuel Ntagungira"
     },
     {
       id: "2",

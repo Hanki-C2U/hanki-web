@@ -19,12 +19,12 @@ const InspirationPage = () => {
         image: null
       },
       mentor: {
-        name: "Dr. Emmanuel Ntagungira",
+        name: "Emmanuel Ntagungira",
         role: "CTO",
         location: "Berlin, Germany",
         image: null
       },
-      story: "As a self-taught developer in Kigali, I struggled to find opportunities in the global tech market. Through Skills Connect, I was matched with Dr. Emmanuel, a Rwandan tech leader now working in Europe. His guidance helped me improve my coding practices and understand international tech standards. After 6 months of mentorship, I secured a remote position with a European startup, doubling my income while staying in Rwanda.",
+      story: "As a self-taught developer in Kigali, I struggled to find opportunities in the global tech market. Through Skills Connect, I was matched with Emmanuel, a Rwandan tech leader now working in Europe. His guidance helped me improve my coding practices and understand international tech standards. After 8 months of mentorship, I secured a remote position with a European startup, doubling my income while staying in Rwanda.",
       outcomes: ["Secured remote job with European company", "Improved coding standards", "Built international network"],
       industry: "Technology",
       featured: true
@@ -76,12 +76,12 @@ const InspirationPage = () => {
         image: null
       },
       mentor: {
-        name: "Dr. Patrick Nduwimana",
+        name: "Patrick Nduwimana",
         role: "Hospital Director",
         location: "Montreal, Canada",
         image: null
       },
-      story: "After working in a small clinic for years, I wanted to improve our healthcare management systems but lacked the knowledge. Dr. Patrick, who had similar beginnings in Rwanda before moving to Canada, mentored me through implementing better patient care protocols and management systems. With his guidance, we've reduced patient wait times by 30% and improved treatment outcomes significantly.",
+      story: "After working in a small clinic for years, I wanted to improve our healthcare management systems but lacked the knowledge. Patrick, who had similar beginnings in Rwanda before moving to Canada, mentored me through implementing better patient care protocols and management systems. With his guidance, we've reduced patient wait times by 30% and improved treatment outcomes significantly.",
       outcomes: ["Reduced wait times by 30%", "Improved patient satisfaction scores", "Implemented digital health records"],
       industry: "Healthcare",
       featured: false

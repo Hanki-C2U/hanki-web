@@ -164,7 +164,7 @@ const MenteeDashboard = () => {
   const upcomingSessions = [
     {
       id: 1,
-      mentor: "Dr. Emmanuel Ntagungira",
+      mentor: "Emmanuel Ntagungira",
       expertise: "Software Engineering",
       time: "Today, 2:00 PM",
       topic: "Career Planning Discussion"
@@ -229,12 +229,15 @@ const MenteeDashboard = () => {
         image: null
       },
       mentor: {
-        name: "Dr. Emmanuel Ntagungira",
+        name: "Emmanuel Ntagungira",
         role: "CTO",
         location: "Berlin, Germany",
         image: null
       },
-      story: "As a self-taught developer in Kigali, I struggled to find opportunities in the global tech market. Through Skills Connect, I was matched with Dr. Emmanuel, a Rwandan tech leader now working in Europe. His guidance helped me improve my coding practices and understand international tech standards. After 6 months of mentorship, I secured a remote position with a European startup, doubling my income while staying in Rwanda.",
+      story: {
+        text: "As a self-taught developer in Kigali, I struggled to find opportunities in the global tech market. Through Skills Connect, I was matched with Emmanuel, a Rwandan tech leader now working in Europe. His guidance helped me improve my coding practices and understand international tech standards.",
+        highlight: "After 8 months of mentorship, I secured a remote position with a European startup, doubling my income while staying in Rwanda."
+      },
       outcomes: ["Secured remote job with European company", "Improved coding standards", "Built international network"],
       industry: "Technology",
       featured: true
@@ -253,7 +256,10 @@ const MenteeDashboard = () => {
         location: "Toronto, Canada",
         image: null
       },
-      story: "Living in Huye, my marketing knowledge was limited to local businesses. Marie Claire, who grew up nearby but built her career in North America, helped me understand global digital marketing strategies. She guided me through international certifications and helped me build an online portfolio. I now manage campaigns for clients across East Africa and have started training other young marketers in my community.",
+      story: {
+        text: "Living in Huye, my marketing knowledge was limited to local businesses. Marie Claire, who grew up nearby but built her career in North America, helped me understand global digital marketing strategies. She guided me through international certifications and helped me build an online portfolio.",
+        highlight: "I now manage campaigns for clients across East Africa and have started training other young marketers in my community."
+      },
       outcomes: ["Expanded client base across East Africa", "Completed international certifications", "Started local training program"],
       industry: "Marketing",
       featured: true
@@ -272,7 +278,10 @@ const MenteeDashboard = () => {
         location: "Amsterdam, Netherlands",
         image: null
       },
-      story: "My family has farmed the same way for generations in northern Rwanda. Through Skills Connect, I met James who introduced me to agricultural technologies being used across Europe that could work in Rwanda's climate. With his guidance, I implemented data-driven farming methods and secured funding to expand. Our crop yield has increased by 40%, and we now export organic produce to three countries.",
+      story: {
+        text: "My family has farmed the same way for generations in northern Rwanda. Through Skills Connect, I met James who introduced me to agricultural technologies being used across Europe that could work in Rwanda's climate. With his guidance, I implemented data-driven farming methods and secured funding to expand.",
+        highlight: "Our crop yield has increased by 40%, and we now export organic produce to three countries."
+      },
       outcomes: ["Increased crop yield by 40%", "Secured international export partnerships", "Implemented sustainable farming methods"],
       industry: "Agriculture",
       featured: false
@@ -761,7 +770,7 @@ const MenteeDashboard = () => {
                                 </div>
 
                                 <div className="text-gray-700 mt-3 mb-4">
-                                  "{story.story}"
+                                  "{story.story.text} <span className="font-bold">{story.story.highlight}</span>"
                                 </div>
 
                                 <div className="mt-4">
@@ -849,8 +858,8 @@ const MenteeDashboard = () => {
         {/* Recommended Mentors */}
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold mb-4">Recommended Mentors</h3>
-           <button
+            <h3 className="text-xl font-semibold mb-4">Recommended Mentors</h3>
+            <button
               onClick={() => navigate('/discover-mentors')}
               className="text-sm px-3 py-1.5 text-emerald-600 border border-emerald-600 rounded-md hover:bg-emerald-50"
             >

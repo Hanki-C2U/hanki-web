@@ -40,7 +40,7 @@ const ResourceLibrary = () => {
         id: 1,
         title: "Complete Guide to Tech Career Transitions",
         description: "A comprehensive roadmap for professionals looking to break into the technology industry from other fields.",
-        author: "Dr. Emmanuel Ntagungira",
+        author: "Emmanuel Ntagungira",
         readTime: "15 min read",
         category: "Career Development",
         tags: ["Career Change", "Tech Industry", "Skills Development"],

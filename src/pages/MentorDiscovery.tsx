@@ -18,7 +18,7 @@ const MentorDiscovery = () => {
   const mentors = [
     {
       id: 1,
-      name: "Dr. Emmanuel Ntagungira",
+      name: "Emmanuel Ntagungira",
       expertise: "Software Engineering",
       specializations: ["AI/ML", "Cloud Computing", "System Design"],
       location: "Toronto, Canada",
@@ -48,7 +48,7 @@ const MentorDiscovery = () => {
     },
     {
       id: 3,
-      name: "Dr. James Gasana",
+      name: "James Gasana",
       expertise: "Data Science",
       specializations: ["Machine Learning", "Statistics", "Business Intelligence"],
       location: "Boston, USA",

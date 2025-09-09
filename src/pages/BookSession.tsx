@@ -22,7 +22,7 @@ const BookSession = () => {
   // Mock mentor data - would fetch based on mentorId in a real application
   const mentor = {
     id: 1,
-    name: "Dr. Emmanuel Ntagungira",
+    name: "Emmanuel Ntagungira",
     expertise: "Software Engineering",
     company: "Microsoft",
     avatar: "EN"

@@ -38,7 +38,7 @@ const MentorProfile = () => {
   // Mock data - in real app, this would be fetched based on ID
   const mentor = {
     id: 1,
-    name: "Dr. Emmanuel Ntagungira",
+    name: "Emmanuel Ntagungira",
     title: "Principal Software Engineer",
     company: "Microsoft",
     expertise: "Software Engineering",
@@ -101,7 +101,7 @@ const MentorProfile = () => {
         id: 1,
         mentee: "Alice Mukamana",
         rating: 5,
-        comment: "Dr. Emmanuel provided invaluable guidance on my career transition into tech. His insights on system design and industry trends were incredibly helpful.",
+        comment: "Emmanuel provided invaluable guidance on my career transition into tech. His insights on system design and industry trends were incredibly helpful.",
         date: "2 weeks ago"
       },
       {
