@@ -165,7 +165,7 @@ const MenteeDiscovery = () => {
               <div className="h-6 w-px bg-gray-300" />
               <h1 className="text-xl font-semibold">Discover Mentees</h1>
             </div>
-            <Link to="/" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
+            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
               SkillsConnect
             </Link>
           </div>
