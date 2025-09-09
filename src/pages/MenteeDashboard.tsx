@@ -10,15 +10,30 @@ import {
   Target,
   Lightbulb,
   CheckCircle,
-  X
+  X,
+  MapPin,
+  Clock,
+  Linkedin,
+  Globe
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
+
+
+// Import the helper function from utils/timezones.ts
+import { getCurrentTimeInTimezone as getTimeInTimezone, getTimezoneOffset } from "../utils/timezones";
+
+// Helper function to get current time in mentee's timezone
+const getCurrentTimeInTimezone = (timezone: string): string => {
+  // Use the imported function for timezone handling
+  return getTimeInTimezone(timezone);
+};
 
 const MenteeDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState<'profile' | 'goals' | 'skills' | 'inspiration'>('profile');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState<string>("");
 
   // Check for success message in navigation state
   useEffect(() => {
@@ -43,9 +58,15 @@ const MenteeDashboard = () => {
     lastName: "Cyuzuzo",
     role: "Student",
     organization: "African Leadership University",
+    location: "Kigali, Rwanda",
+    timezone: "UTC+2",
     profilePicture: "/professional-headshot-of-confident-hispanic-sales-.png",
     bio: "I'm a software engineering student passionate about building web applications. I'm currently focused on full-stack development using JavaScript, React, and SQL. I'm seeking mentorship to strengthen my system design, problem-solving, and career navigation skills.",
     languages: ["English", "Français", "Ikinyarwanda"],
+    socials: {
+      linkedin: "https://linkedin.com/in/bienvenu-cyuzuzo",
+      website: "https://portfolio-bienvenu.com"
+    },
     achievementBadges: [
       { id: 1, name: "First Session Complete", icon: "🎯", earned: true },
       { id: 2, name: "Goal Setter", icon: "📋", earned: true },
@@ -72,6 +93,24 @@ const MenteeDashboard = () => {
   // State to store mentee data
   const [menteeData, setMenteeData] = useState(defaultMenteeData);
 
+  // Update the current time every minute
+  useEffect(() => {
+    const updateTime = () => {
+      if (menteeData.timezone) {
+        setCurrentTime(getCurrentTimeInTimezone(menteeData.timezone));
+      }
+    };
+
+    // Set initial time
+    updateTime();
+
+    // Update time every minute
+    const timer = setInterval(updateTime, 60000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(timer);
+  }, [menteeData.timezone]);
+
   // Load mentee data from localStorage if available
   useEffect(() => {
     // This simulates fetching user data from a backend
@@ -84,7 +123,7 @@ const MenteeDashboard = () => {
 
         // Merge with default data to ensure all required fields exist
         // This ensures backwards compatibility if the data structure changes
-        setMenteeData({
+        const mergedData = {
           ...defaultMenteeData,
           ...profileData,
           // Make sure nested objects are properly merged
@@ -96,11 +135,28 @@ const MenteeDashboard = () => {
             ...defaultMenteeData.learningPreferences,
             ...profileData.learningPreferences
           },
+          // Make sure socials are properly merged
+          socials: {
+            ...defaultMenteeData.socials,
+            ...profileData.socials
+          },
           // Keep achievement badges from default data
           achievementBadges: defaultMenteeData.achievementBadges
-        });
+        };
+
+        setMenteeData(mergedData);
+
+        // Update time with the loaded timezone
+        if (mergedData.timezone) {
+          setCurrentTime(getCurrentTimeInTimezone(mergedData.timezone));
+        }
       } catch (error) {
         console.error("Error parsing profile data:", error);
+      }
+    } else {
+      // If no saved profile, set time based on default data
+      if (defaultMenteeData.timezone) {
+        setCurrentTime(getCurrentTimeInTimezone(defaultMenteeData.timezone));
       }
     }
   }, [defaultMenteeData]);
@@ -316,6 +372,46 @@ const MenteeDashboard = () => {
                     </span>
                   ))}
                 </div>
+
+                {/* Location */}
+                <div className="mt-3 flex items-center gap-1.5 text-gray-600">
+                  <MapPin className="h-4 w-4" />
+                  <span className="text-sm">{menteeData.location}</span>
+                </div>
+
+                {/* Timezone and Current Time */}
+                <div className="mt-2 flex items-center gap-1.5 text-gray-600">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-sm">{currentTime} ({getTimezoneOffset(menteeData.timezone)})</span>
+                </div>
+
+                {/* Social Links */}
+                {menteeData.socials && (
+                  <div className="mt-3 flex items-center justify-center gap-3">
+                    {menteeData.socials.linkedin && (
+                      <a
+                        href={menteeData.socials.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 hover:text-blue-600 transition-colors"
+                        aria-label="LinkedIn Profile"
+                      >
+                        <Linkedin className="h-5 w-5" />
+                      </a>
+                    )}
+                    {menteeData.socials.website && (
+                      <a
+                        href={menteeData.socials.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 hover:text-emerald-600 transition-colors"
+                        aria-label="Personal Website"
+                      >
+                        <Globe className="h-5 w-5" />
+                      </a>
+                    )}
+                  </div>
+                )}
 
                 {/* Sessions and Mentors count */}
                 <div className="flex justify-center gap-8 mt-4 w-full border-t border-gray-100 pt-4">

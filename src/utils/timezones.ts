@@ -125,7 +125,13 @@ export const getCurrentTimeInTimezone = (timezoneValue: string): string => {
   const offsetMatch = timezoneValue.match(/GMT([+-])(\d{2}):(\d{2})/);
 
   if (!offsetMatch) {
-    return now.toLocaleTimeString();
+    // Format time as HH:MM without seconds even for fallback case
+    return now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: undefined,
+      hour12: false,
+    });
   }
 
   const offsetSign = offsetMatch[1] === "+" ? 1 : -1;
@@ -141,9 +147,11 @@ export const getCurrentTimeInTimezone = (timezoneValue: string): string => {
   // Add the timezone offset
   const targetTime = new Date(utcTime + offsetTotalMinutes * 60000);
 
+  // Format time as HH:MM without seconds
   return targetTime.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
+    second: undefined,
     hour12: false,
   });
 };

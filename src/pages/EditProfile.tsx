@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Save, X, Plus, Trash2, Camera } from "lucide-react";
+import { Save, X, Plus, Trash2, Camera, MapPin, Clock, Linkedin, Globe } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
+import TimezoneDropdown from "../components/ui/TimezoneDropdown";
 
 // Define types for our mentee data structure
 interface Experience {
@@ -22,16 +23,24 @@ interface LearningPreferences {
   availability: string;
 }
 
+interface SocialLinks {
+  linkedin?: string;
+  website?: string;
+}
+
 interface MenteeProfile {
   firstName: string;
   lastName: string;
   role: string;
   organization: string;
+  location: string;
+  timezone: string;
   profilePicture: string;
   bio: string;
   languages: string[];
   skills: string[];
   goals: string[];
+  socials: SocialLinks;
   professionalBackground: ProfessionalBackground;
   learningPreferences: LearningPreferences;
 }
@@ -45,11 +54,17 @@ const EditProfile = () => {
     lastName: "Cyuzuzo",
     role: "Student",
     organization: "African Leadership University",
+    location: "Kigali, Rwanda",
+    timezone: "UTC+2",
     profilePicture: "/professional-headshot-of-confident-hispanic-sales-.png",
     bio: "I'm a software engineering student passionate about building web applications. I'm currently focused on full-stack development using JavaScript, React, and SQL. I'm seeking mentorship to strengthen my system design, problem-solving, and career navigation skills.",
     languages: ["English", "Français", "Ikinyarwanda"],
     skills: ["React", "JavaScript", "Node.js", "SQL", "HTML/CSS"],
     goals: ["Master system design patterns", "Improve problem-solving skills", "Prepare for technical interviews", "Build a professional network"],
+    socials: {
+      linkedin: "https://linkedin.com/in/bienvenu-cyuzuzo",
+      website: "https://portfolio-bienvenu.com"
+    },
     professionalBackground: {
       education: "B.S. Computer Science, African Leadership University, 2025 (Expected)",
       experience: [
@@ -87,6 +102,11 @@ const EditProfile = () => {
           learningPreferences: {
             ...defaultMenteeData.learningPreferences,
             ...profileData.learningPreferences
+          },
+          // Make sure socials are properly merged
+          socials: {
+            ...defaultMenteeData.socials,
+            ...profileData.socials
           }
         };
       } catch (error) {
@@ -126,6 +146,18 @@ const EditProfile = () => {
       ...prev,
       learningPreferences: {
         ...prev.learningPreferences,
+        [name]: value
+      }
+    }));
+  };
+
+  // Handle nested field changes for social links
+  const handleSocialChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev: MenteeProfile) => ({
+      ...prev,
+      socials: {
+        ...prev.socials,
         [name]: value
       }
     }));
@@ -432,6 +464,78 @@ const EditProfile = () => {
                     type="text"
                     value={formData.organization}
                     onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Location & Timezone */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    Location*
+                  </label>
+                  <input
+                    id="location"
+                    name="location"
+                    type="text"
+                    required
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="City, Country"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
+                    Timezone*
+                  </label>
+                  <TimezoneDropdown
+                    value={formData.timezone}
+                    onChange={(value) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        timezone: value
+                      }));
+                    }}
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Select your timezone for accurate meeting scheduling
+                  </p>
+                </div>
+              </div>
+
+              {/* Social Links */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <Linkedin className="h-4 w-4 mr-1" />
+                    LinkedIn Profile
+                  </label>
+                  <input
+                    id="linkedin"
+                    name="linkedin"
+                    type="url"
+                    value={formData.socials.linkedin || ""}
+                    onChange={handleSocialChange}
+                    placeholder="https://linkedin.com/in/your-profile"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <Globe className="h-4 w-4 mr-1" />
+                    Personal Website
+                  </label>
+                  <input
+                    id="website"
+                    name="website"
+                    type="url"
+                    value={formData.socials.website || ""}
+                    onChange={handleSocialChange}
+                    placeholder="https://your-website.com"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
                   />
                 </div>

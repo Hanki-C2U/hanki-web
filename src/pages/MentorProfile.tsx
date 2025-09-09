@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
   ArrowLeft,
@@ -9,9 +9,20 @@ import {
   GraduationCap,
   Award,
   Users,
-  MessageSquare
+  MessageSquare,
+  Clock,
+  Linkedin,
+  Globe
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
+import { format } from "date-fns";
+
+// Helper function to get current time in mentor's timezone
+const getCurrentTimeInTimezone = (timezone: string): string => {
+  // In a real implementation, we would use proper timezone conversion
+  // For the hackathon demo, we'll just format the current time
+  return format(new Date(), 'HH:mm');
+};
 
 const MentorProfile = () => {
   // For a real implementation, we would use the id to fetch mentor data
@@ -20,6 +31,7 @@ const MentorProfile = () => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
   const [activeTab, setActiveTab] = useState("experience");
   const [loading, setLoading] = useState(false);
+  const [currentTime, setCurrentTime] = useState<string>("");
 
   const navigate = useNavigate();
 
@@ -32,10 +44,15 @@ const MentorProfile = () => {
     expertise: "Software Engineering",
     specializations: ["AI/ML", "Cloud Computing", "System Design"],
     location: "Toronto, Canada",
+    timezone: "UTC-5",
     rating: 4.9,
     sessions: 120,
     yearsOfExperience: 15,
     languages: ["English", "French", "Kinyarwanda"],
+    socials: {
+      linkedin: "https://linkedin.com/in/emmanuel-ntagungira",
+      website: "https://emmanuelntagungira.com"
+    },
     bio: "15+ years in tech industry, currently Principal Engineer at Microsoft. Passionate about helping African youth break into tech.",
     experience: [
       {
@@ -98,6 +115,22 @@ const MentorProfile = () => {
     profilePicture: "/professional-headshot-of-young-hispanic-freelancer.png"
   };
 
+  // Update the current time every minute
+  useEffect(() => {
+    const updateTime = () => {
+      setCurrentTime(getCurrentTimeInTimezone(mentor.timezone));
+    };
+
+    // Set initial time
+    updateTime();
+
+    // Update time every minute
+    const timer = setInterval(updateTime, 60000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(timer);
+  }, [mentor.timezone]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -155,6 +188,12 @@ const MentorProfile = () => {
                   <span className="text-sm">{mentor.location}</span>
                 </div>
 
+                {/* Timezone and Current Time */}
+                <div className="mt-2 flex items-center gap-1.5 text-gray-600">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-sm">{currentTime} ({mentor.timezone})</span>
+                </div>
+
                 {/* Rating */}
                 <div className="mt-3 flex items-center gap-1.5">
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -162,15 +201,50 @@ const MentorProfile = () => {
                   <span className="text-gray-600">({mentor.sessions} sessions)</span>
                 </div>
 
+                {/* Social Links */}
+                <div className="mt-3 flex items-center justify-center gap-3">
+                  <a
+                    href={mentor.socials.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-600 hover:text-blue-600 transition-colors"
+                    aria-label="LinkedIn Profile"
+                  >
+                    <Linkedin className="h-5 w-5" />
+                  </a>
+                  <a
+                    href={mentor.socials.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-600 hover:text-emerald-600 transition-colors"
+                    aria-label="Personal Website"
+                  >
+                    <Globe className="h-5 w-5" />
+                  </a>
+                </div>
+
                 {/* Action Buttons */}
                 <div className="w-full mt-4 space-y-3">
                   <button
-                    onClick={() => navigate(`/messages/mentor/${mentor.id}`)}
+                    onClick={() => {
+                      const element = document.getElementById('booking-section');
+                      element?.scrollIntoView({ behavior: 'smooth' });
+                    }}
                     className="w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Book a Session
+                  </button>
+
+                  <button
+                    onClick={() => navigate(`/messages/mentor/${mentor.id}`)}
+                    className="w-full inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-emerald-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                   >
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Message {mentor.name.split(' ')[0] + '  ' + mentor.name.split(' ')[1]}
                   </button>
+
                 </div>
 
                 {/* Specializations */}
@@ -190,7 +264,7 @@ const MentorProfile = () => {
             </div>
 
             {/* Booking Sidebar - Kept from original */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div id="booking-section" className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
                 <Calendar className="h-5 w-5" />
                 Book a Session

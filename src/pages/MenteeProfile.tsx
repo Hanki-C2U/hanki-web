@@ -9,10 +9,12 @@ import {
   Briefcase,
   GraduationCap,
   MapPin,
-  MessageSquare
+  MessageSquare,
+  Clock
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
 import getMentee from "../services/getMentee";
+import { getCurrentTimeInTimezone, getTimezoneOffset } from "../utils/timezones";
 
 // Define types for our data structures
 interface Experience {
@@ -67,6 +69,7 @@ interface MenteeData {
   progressData: SkillProgress[];
   completedMilestones: Milestone[];
   location: string;
+  timezone: string;
 }
 
 export default function MenteeProfile() {
@@ -76,6 +79,7 @@ export default function MenteeProfile() {
   const [menteeData, setMenteeData] = useState<MenteeData | null>(null);
   const [activeTab, setActiveTab] = useState<'profile' | 'goals' | 'skills' | 'progress'>('profile');
   const [, setHoveredBadge] = useState<number | null>(null);
+  const [currentTime, setCurrentTime] = useState<string>("");
 
   // Mocked data for mentee profiles
   // In a real app, this would be loaded from an API
@@ -122,7 +126,8 @@ export default function MenteeProfile() {
         { name: "Completed SQL fundamentals course", date: "July 3, 2025" },
         { name: "Created personal portfolio website", date: "August 20, 2025" }
       ],
-      location: "Kigali, Rwanda"
+      location: "Kigali, Rwanda",
+      timezone: "GMT+02:00"
     },
     {
       id: 2,
@@ -166,7 +171,8 @@ export default function MenteeProfile() {
         { name: "Implemented accessible UI components", date: "July 25, 2025" },
         { name: "Completed Advanced React Patterns course", date: "August 15, 2025" }
       ],
-      location: "Kigali, Rwanda"
+      location: "Kigali, Rwanda",
+      timezone: "GMT+02:00"
     }
   ], []);
 
@@ -208,6 +214,24 @@ export default function MenteeProfile() {
 
     if (id) fetchUser();
   }, [id, navigate, menteesData]);
+
+  // Update the current time every minute
+  useEffect(() => {
+    if (!menteeData?.timezone) return;
+
+    const updateTime = () => {
+      setCurrentTime(getCurrentTimeInTimezone(menteeData.timezone));
+    };
+
+    // Set initial time
+    updateTime();
+
+    // Update time every minute
+    const timer = setInterval(updateTime, 60000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(timer);
+  }, [menteeData?.timezone]);
 
   if (loading) {
     return (
@@ -282,6 +306,12 @@ export default function MenteeProfile() {
                 <div className="mt-3 flex items-center gap-1.5 text-gray-600">
                   <MapPin className="h-4 w-4" />
                   <span className="text-sm">{menteeData.location}</span>
+                </div>
+
+                {/* Timezone and Current Time */}
+                <div className="mt-2 flex items-center gap-1.5 text-gray-600">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-sm">{currentTime} ({getTimezoneOffset(menteeData.timezone)})</span>
                 </div>
 
                 {/* Message Button */}
