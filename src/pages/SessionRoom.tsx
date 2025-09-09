@@ -40,13 +40,25 @@ const SessionRoom: React.FC = () => {
   const [sessionStarted, setSessionStarted] = useState(false)
 
   useEffect(() => {
-    if (sessionId) {
+    console.log('🚀 SessionRoom: useEffect triggered');
+    console.log('📍 SessionRoom: sessionId:', sessionId);
+    console.log('👤 SessionRoom: user:', user?.id);
+    console.log('🎭 SessionRoom: userRole:', userRole);
+    
+    if (sessionId && user?.id) {
+      console.log('✅ SessionRoom: Prerequisites met, fetching session details');
       fetchSessionDetails()
+    } else {
+      console.log('⏳ SessionRoom: Waiting for sessionId and user...');
     }
-  }, [sessionId])
+  }, [sessionId, user?.id])
 
   const fetchSessionDetails = async () => {
     try {
+      console.log('🔍 SessionRoom: Fetching session details for ID:', sessionId);
+      console.log('👤 SessionRoom: Current user:', user?.id);
+      console.log('🎭 SessionRoom: User role:', userRole);
+      
       setLoading(true)
       
       const { data, error } = await supabasase
@@ -59,14 +71,22 @@ const SessionRoom: React.FC = () => {
         .eq('id', sessionId)
         .single()
 
+      console.log('📊 SessionRoom: Session data:', data);
+      console.log('❌ SessionRoom: Session error:', error);
+
       if (error) throw error
 
       // Check if user is authorized for this session
       if (data.menteeId !== user?.id && data.mentorId !== user?.id) {
+        console.log('🚫 SessionRoom: User not authorized for session');
+        console.log('🔍 SessionRoom: Session menteeId:', data.menteeId);
+        console.log('🔍 SessionRoom: Session mentorId:', data.mentorId);
+        console.log('🔍 SessionRoom: Current user ID:', user?.id);
         setError('You are not authorized to access this session')
         return
       }
 
+      console.log('✅ SessionRoom: Session loaded successfully');
       setSession(data)
     } catch (err) {
       console.error('Error fetching session:', err)
@@ -104,6 +124,16 @@ const SessionRoom: React.FC = () => {
   }
 
   const handleLeaveSession = async () => {
+    console.log('🚪 SessionRoom: handleLeaveSession called');
+    console.log('🔍 SessionRoom: isInMeeting:', isInMeeting);
+    console.log('🔍 SessionRoom: sessionStarted:', sessionStarted);
+    
+    // Only process if user was actually in a meeting
+    if (!isInMeeting && !sessionStarted) {
+      console.log('⚠️ SessionRoom: Not in meeting, preventing redirect');
+      return;
+    }
+    
     setIsInMeeting(false)
     
     // If session was completed, update status
@@ -111,8 +141,11 @@ const SessionRoom: React.FC = () => {
       await updateSessionStatus('COMPLETED')
     }
 
-    // Navigate back to dashboard
-    navigate(userRole === 'mentor' ? '/mentor-dashboard' : '/mentee-dashboard')
+    // Add a small delay before navigation to prevent immediate redirect
+    setTimeout(() => {
+      console.log('🔄 SessionRoom: Navigating back to dashboard');
+      navigate(userRole === 'mentor' ? '/mentor-dashboard' : '/mentee-dashboard')
+    }, 1000);
   }
 
   const handleSessionError = (errorMsg: string) => {

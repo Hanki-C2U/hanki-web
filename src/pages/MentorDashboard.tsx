@@ -105,9 +105,17 @@ const MentorDashboard = () => {
             .gte('sessionDate', new Date().toISOString().split('T')[0])
             .order('sessionDate', { ascending: true });
 
+          console.log('🔍 Mentor session query params:', {
+            mentorId: user.id,
+            today: new Date().toISOString().split('T')[0],
+            userIdType: typeof user.id
+          });
+
           if (sessionsError) {
-            console.error('Error fetching sessions:', sessionsError);
+            console.error('❌ Error fetching mentor sessions:', sessionsError);
           } else {
+            console.log('📅 Fetched mentor sessions:', sessionsData?.length || 0, 'sessions found');
+            console.log('📋 Mentor session details:', sessionsData);
             setUpcomingSessions(sessionsData || []);
           }
 

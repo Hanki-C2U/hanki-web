@@ -76,12 +76,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         // Get all conversation IDs
         const conversationIds = conversations.map(conv => conv.id);
 
-        // Fetch ALL messages from these conversations (excluding user's own messages for notifications)
+        // Fetch ONLY UNREAD messages from these conversations (excluding user's own messages)
         const { data: messages, error: msgError } = await supabasase
           .from('messages')
           .select('*')
           .in('conversationId', conversationIds)
           .neq('senderId', user.id)
+          .eq('isRead', false)
           .order('createdAt', { ascending: false });
 
         if (msgError) {
@@ -89,7 +90,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
           return;
         }
 
-        console.log('📊 Found ALL messages from others:', messages?.length || 0);
+        console.log('📊 Found UNREAD messages from others:', messages?.length || 0);
 
         if (messages && messages.length > 0) {
           // Get sender information for each message

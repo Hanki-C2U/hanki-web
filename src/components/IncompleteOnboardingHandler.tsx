@@ -15,9 +15,11 @@ const IncompleteOnboardingHandler = ({ children }: { children: React.ReactNode }
   useEffect(() => {
     // Only check if we're not already on onboarding or auth-related pages
     const isOnboardingFlow = ['/onboarding', '/auth/callback', '/login', '/signup', '/'].includes(location.pathname);
+    const isSessionPage = location.pathname.startsWith('/session/');
     
     console.log('🔍 IncompleteOnboardingHandler check:', {
       isOnboardingFlow,
+      isSessionPage,
       isAuthenticated,
       user: !!user,
       userId: user?.id,
@@ -26,12 +28,13 @@ const IncompleteOnboardingHandler = ({ children }: { children: React.ReactNode }
       isLoading,
       hasHydrated,
       pathname: location.pathname,
-      shouldRedirect: !isOnboardingFlow && hasHydrated && isAuthenticated && user && !isLoading && !roleLoading && userRole === null
+      shouldRedirect: !isOnboardingFlow && !isSessionPage && hasHydrated && isAuthenticated && user && !isLoading && !roleLoading && userRole === null
     });
     
     // Wait for hydration, auth loading, and role loading to complete before making redirect decisions
     // Only redirect if we're certain the user has no role (not just loading)
-    if (!isOnboardingFlow && hasHydrated && isAuthenticated && user && !isLoading && !roleLoading && userRole === null) {
+    // Don't redirect from session pages to allow session access even during onboarding
+    if (!isOnboardingFlow && !isSessionPage && hasHydrated && isAuthenticated && user && !isLoading && !roleLoading && userRole === null) {
       console.log('🚨 IncompleteOnboardingHandler: User has session but no role (after hydration complete), redirecting to onboarding');
       console.log('🚨 User ID that has no role:', user.id);
       navigate('/onboarding', { replace: true });

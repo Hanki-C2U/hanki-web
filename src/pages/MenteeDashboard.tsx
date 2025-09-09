@@ -167,10 +167,17 @@ const MenteeDashboard = () => {
             .order('startTime', { ascending: true })
             .limit(10)
 
+          console.log('🔍 Session query params:', {
+            menteeId: user.id,
+            today,
+            userIdType: typeof user.id
+          });
+
           if (error) {
-            console.error('Error fetching sessions:', error)
+            console.error('❌ Error fetching sessions:', error)
           } else {
-            console.log('📅 Fetched mentee sessions:', sessions)
+            console.log('📅 Fetched mentee sessions:', sessions?.length || 0, 'sessions found')
+            console.log('📋 Session details:', sessions)
             setUpcomingSessions(sessions || [])
           }
         } catch (error) {

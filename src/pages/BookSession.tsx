@@ -10,6 +10,7 @@ import {
   Loader2
 } from "lucide-react";
 import { supabasase } from '../supabase_creds/supabase';
+import { useAuthStore } from '../store/authStore';
 
 interface Mentor {
   id: number;
@@ -29,6 +30,7 @@ interface Mentor {
 const BookSession = () => {
   const { mentorId } = useParams();
   const navigate = useNavigate();
+  const { user, userRole } = useAuthStore();
   
   // Form fields matching sessions table
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -119,16 +121,16 @@ const BookSession = () => {
       return;
     }
 
+    if (!user?.id) {
+      alert("You must be logged in to book a session");
+      return;
+    }
+
     // For testing: Skip all time validations - allow any date/time
     setBookingLoading(true);
     
     try {
-      // Get current user (mentee)
-      const { data: { user }, error: userError } = await supabasase.auth.getUser();
-      
-      if (userError || !user) {
-        throw new Error("You must be logged in to book a session");
-      }
+      console.log('🔄 Booking session for user:', user.id, 'with mentor:', mentor.supabaseId);
 
       // Generate unique room ID and meeting URL
       const jitsiRoomId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -142,12 +144,14 @@ const BookSession = () => {
         description: description || null,
         startTime,
         endTime,
-        sessionDate: selectedDate.toISOString(),
+        sessionDate: selectedDate.toISOString().split('T')[0], // Use date only (YYYY-MM-DD)
         jitsiRoomId,
         meetingUrl,
         status: 'PENDING',
         additionalParticipants: additionalParticipants
       };
+
+      console.log('📅 Session data to be inserted:', sessionData);
 
       const { data, error } = await supabasase
         .from('sessions')
@@ -156,14 +160,15 @@ const BookSession = () => {
         .single();
 
       if (error) {
-        console.error('Error booking session:', error);
+        console.error('❌ Error booking session:', error);
+        console.error('❌ Session data that failed:', sessionData);
         if (error.code === '23505') {
           throw new Error("This time slot is already booked. Please choose a different time.");
         }
-        throw new Error("Failed to book session. Please try again.");
+        throw new Error(`Failed to book session: ${error.message}`);
       }
 
-      console.log('Session booked successfully:', data);
+      console.log('✅ Session booked successfully:', data);
       
       // Navigate back with success message
       navigate("/mentee-dashboard", { 

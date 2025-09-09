@@ -27,7 +27,6 @@ const VideoSession: React.FC<VideoSessionProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthStore();
 
@@ -44,21 +43,24 @@ const VideoSession: React.FC<VideoSessionProps> = ({
 
   const loadJitsiAPI = async () => {
     try {
+      console.log('🚀 VideoSession: Starting Jitsi API load process');
       setIsLoading(true);
       setError(null);
 
       // Check if Jitsi API script is already loaded
       if (!window.JitsiMeetExternalAPI) {
+        console.log('📦 VideoSession: Jitsi API not found, loading script...');
         const script = document.createElement('script');
         script.src = 'https://meet.jit.si/external_api.js';
         script.async = true;
         
         script.onload = () => {
-          console.log('✅ Jitsi API loaded successfully');
+          console.log('✅ VideoSession: Jitsi API loaded successfully');
           initializeJitsiMeeting();
         };
         
         script.onerror = () => {
+          console.error('❌ VideoSession: Failed to load Jitsi API');
           const errorMsg = 'Failed to load Jitsi API';
           setError(errorMsg);
           onError?.(errorMsg);
@@ -67,9 +69,11 @@ const VideoSession: React.FC<VideoSessionProps> = ({
         
         document.head.appendChild(script);
       } else {
+        console.log('✅ VideoSession: Jitsi API already loaded, initializing meeting');
         initializeJitsiMeeting();
       }
     } catch (err) {
+      console.error('💥 VideoSession: Error loading video session:', err);
       const errorMsg = 'Error loading video session';
       setError(errorMsg);
       onError?.(errorMsg);
@@ -78,7 +82,18 @@ const VideoSession: React.FC<VideoSessionProps> = ({
   };
 
   const initializeJitsiMeeting = () => {
-    if (!containerRef.current || !window.JitsiMeetExternalAPI) return;
+    console.log('🎬 VideoSession: Initializing Jitsi meeting');
+    console.log('📍 VideoSession: Room ID:', roomId);
+    console.log('👤 VideoSession: User:', user?.email);
+    console.log('🎭 VideoSession: Is Host:', isHost);
+    console.log('📦 VideoSession: Container ref exists:', !!containerRef.current);
+    console.log('🌐 VideoSession: JitsiMeetExternalAPI available:', !!window.JitsiMeetExternalAPI);
+    
+    if (!containerRef.current || !window.JitsiMeetExternalAPI) {
+      console.error('❌ VideoSession: Missing container or Jitsi API');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const domain = 'meet.jit.si';
@@ -98,16 +113,31 @@ const VideoSession: React.FC<VideoSessionProps> = ({
           disableModeratorIndicator: false,
           startScreenSharing: false,
           enableEmailInStats: false,
+          // Disable authentication prompts
+          enableUserRolesBasedOnToken: false,
+          enableInsecureRoomNameWarning: false,
+          enableNoisyMicDetection: true,
+          // Additional security/auth overrides
+          requireDisplayName: false,
+          enableAutomaticIceFailover: true,
+          enableP2P: true,
+          p2p: {
+            enabled: true,
+            stunServers: [
+              { urls: 'stun:meet-jit-si-turnrelay.jitsi.net:443' }
+            ]
+          },
+          // Disable any login/auth flows
+          enableFeaturesBasedOnToken: false,
+          disableDeepLinking: true,
         },
         interfaceConfigOverwrite: {
           TOOLBAR_BUTTONS: [
             'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
-            'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
-            'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
-            'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
-            'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone',
+            'fodeviceselection', 'hangup', 'chat', 
+            'videoquality', 'filmstrip', 'tileview', 'videobackgroundblur'
           ],
-          SETTINGS_SECTIONS: ['devices', 'language', 'moderator', 'profile', 'calendar'],
+          SETTINGS_SECTIONS: ['devices', 'language', 'profile'],
           SHOW_JITSI_WATERMARK: false,
           SHOW_WATERMARK_FOR_GUESTS: false,
           SHOW_BRAND_WATERMARK: false,
@@ -116,49 +146,88 @@ const VideoSession: React.FC<VideoSessionProps> = ({
           DISPLAY_WELCOME_PAGE_CONTENT: false,
           DISPLAY_WELCOME_PAGE_TOOLBAR_ADDITIONAL_CONTENT: false,
           SHOW_CHROME_EXTENSION_BANNER: false,
+          // Prevent authentication flows
+          HIDE_INVITE_MORE_HEADER: true,
+          DISABLE_JOIN_LEAVE_NOTIFICATIONS: false,
+          DISABLE_PRESENCE_STATUS: true,
+          DISABLE_FOCUS_INDICATOR: true,
+          // Remove authentication and moderator-related options
+          AUTHENTICATION_ENABLE: false,
+          ENABLE_DIAL_OUT: false,
+          ENABLE_FEEDBACK_ANIMATION: false,
         }
       };
 
+      console.log('⚙️ VideoSession: Creating Jitsi API with options:', options);
       apiRef.current = new window.JitsiMeetExternalAPI(domain, options);
 
       // Event listeners
       apiRef.current.addEventListener('videoConferenceJoined', () => {
-        console.log('✅ Successfully joined video session');
-        setIsConnected(true);
+        console.log('✅ VideoSession: Successfully joined video session');
         setIsLoading(false);
+        clearTimeout(loadingTimeout);
         onJoinSuccess?.();
       });
 
-      apiRef.current.addEventListener('videoConferenceLeft', () => {
-        console.log('👋 Left video session');
-        setIsConnected(false);
-        onLeaveSession?.();
+      apiRef.current.addEventListener('videoConferenceLeft', (data: any) => {
+        console.log('👋 VideoSession: Left video session');
+        console.log('📊 VideoSession: Leave data:', data);
+        // Don't call onLeaveSession immediately to prevent redirect
+        // onLeaveSession?.();
       });
 
-      apiRef.current.addEventListener('readyToClose', () => {
-        console.log('🔒 Session ready to close');
+      apiRef.current.addEventListener('readyToClose', (data: any) => {
+        console.log('🔒 VideoSession: Session ready to close');
+        console.log('📊 VideoSession: Close data:', data);
+        // Only call onLeaveSession if user explicitly left
         onLeaveSession?.();
       });
 
       apiRef.current.addEventListener('participantJoined', (participant: any) => {
-        console.log('👥 Participant joined:', participant.displayName);
+        console.log('👥 VideoSession: Participant joined:', participant.displayName);
       });
 
       apiRef.current.addEventListener('participantLeft', (participant: any) => {
-        console.log('👋 Participant left:', participant.displayName);
+        console.log('👋 VideoSession: Participant left:', participant.displayName);
+      });
+
+      // Additional event listeners for debugging
+      apiRef.current.addEventListener('videoConferenceWillJoin', () => {
+        console.log('🚀 VideoSession: Will join video conference');
+      });
+
+      apiRef.current.addEventListener('authenticationRequired', () => {
+        console.log('🔐 VideoSession: Authentication required (this should not happen)');
+      });
+
+      apiRef.current.addEventListener('moderationRequired', () => {
+        console.log('👮 VideoSession: Moderation required (this should not happen)');
       });
 
       // Error handling
       apiRef.current.addEventListener('cameraError', () => {
-        console.warn('⚠️ Camera error occurred');
+        console.warn('⚠️ VideoSession: Camera error occurred');
       });
 
       apiRef.current.addEventListener('micError', () => {
-        console.warn('⚠️ Microphone error occurred');
+        console.warn('⚠️ VideoSession: Microphone error occurred');
+      });
+
+      // Add timeout to prevent infinite loading
+      const loadingTimeout = setTimeout(() => {
+        if (isLoading) {
+          console.warn('⏰ VideoSession: Loading timeout reached, forcing loading to false');
+          setIsLoading(false);
+        }
+      }, 15000); // 15 second timeout
+
+      // Clear timeout when component unmounts or loads successfully
+      apiRef.current.addEventListener('videoConferenceJoined', () => {
+        clearTimeout(loadingTimeout);
       });
 
     } catch (err) {
-      console.error('Error initializing Jitsi meeting:', err);
+      console.error('💥 VideoSession: Error initializing Jitsi meeting:', err);
       const errorMsg = 'Failed to initialize video session';
       setError(errorMsg);
       onError?.(errorMsg);
@@ -209,6 +278,15 @@ const VideoSession: React.FC<VideoSessionProps> = ({
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
             <h3 className="text-lg font-semibold mb-2">Connecting to Video Session</h3>
             <p className="text-sm opacity-75">Please wait while we set up your video call...</p>
+            <button
+              onClick={() => {
+                console.log('🔄 VideoSession: User cancelled loading');
+                setIsLoading(false);
+              }}
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Cancel Loading
+            </button>
           </div>
         </div>
       )}
@@ -219,7 +297,8 @@ const VideoSession: React.FC<VideoSessionProps> = ({
         style={{ minHeight: '400px' }}
       />
       
-      {isConnected && (
+      {/* Always show control buttons when not loading */}
+      {!isLoading && (
         <div className="mt-4 flex justify-center space-x-4">
           <button
             onClick={toggleAudio}
