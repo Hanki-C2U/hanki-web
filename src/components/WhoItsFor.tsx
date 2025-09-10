@@ -18,8 +18,8 @@ export default function WhoItsFor() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Empowering Rwanda's Next Generation
           </h2>
-                    <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-            Whether you're a diaspora professional ready to give back or a young Rwandan 
+          <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+            Whether you're a diaspora professional ready to give back or a young Rwandan
             looking to grow, ATLAS is your bridge to success.
           </p>
         </div>
@@ -52,7 +52,6 @@ export default function WhoItsFor() {
               Accelerate your career with guidance from successful Rwandan
               diaspora professionals
             </p>
-          </div>
 
             {/* Feature List */}
             <div className="space-y-4 mb-8">
