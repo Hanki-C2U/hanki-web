@@ -101,7 +101,7 @@ export default function Footer() {
           {/* Footer Bottom */}
           <div className="border-t border-gray-200 mt-12 pt-8 text-center">
             <p className="text-gray-500 text-sm flex items-center justify-center gap-1">
-              © 2024 SkillsConnect Rwanda
+              © 2024 ATLAS
             </p>
           </div>
         </div>

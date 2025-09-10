@@ -47,7 +47,7 @@ const Login = () => {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
             <CardDescription>
-              Sign in to your SkillsConnect account with Google
+              Sign in to your ATLAS account with Google
             </CardDescription>
           </CardHeader>
 

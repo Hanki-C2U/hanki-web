@@ -31,7 +31,7 @@ export default function Header() {
                 role="button"
                 aria-label="Go to homepage"
               >
-                SkillsConnect Rwanda
+                ATLAS
               </h1>
             </div>
           </div>

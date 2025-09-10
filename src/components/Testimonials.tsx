@@ -9,7 +9,7 @@ export default function Testimonials() {
       role: "Software Engineer at Andela",
       avatar: "AM",
       rating: 5,
-      quote: "Through SkillsConnect, I transitioned from finance to tech in 8 months. My mentor guided me through every step, from learning to code to landing my first developer role.",
+      quote: "Through ATLAS, I transitioned from finance to tech in 8 months. My mentor guided me through every step, from learning to code to landing my first developer role.",
       company: "Andela"
     },
     {
@@ -56,7 +56,7 @@ export default function Testimonials() {
             >
               {/* Avatar */}
               <div className="flex justify-center mb-6">
-                <div 
+                <div
                   className="w-16 h-16 bg-gradient-to-br from-amber-400 to-emerald-500 rounded-full flex items-center justify-center"
                   role="img"
                   aria-label={`Avatar for ${testimonial.name}`}

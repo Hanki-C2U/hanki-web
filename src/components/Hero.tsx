@@ -1,5 +1,5 @@
 import { ArrowRight } from 'lucide-react';
-import {Button} from './ui/Button';
+import { Button } from './ui/Button';
 
 export default function Hero() {
   return (
@@ -15,7 +15,7 @@ export default function Hero() {
 
           {/* Main Heading */}
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-balance mb-6 lg:mb-8 leading-tight">
-            Unlock Your Potential with <span className="text-emerald-600">SkillsConnect Rwanda</span>
+            Unlock Your Potential with <span className="text-emerald-600">ATLAS</span>
           </h1>
 
           <p className="text-lg md:text-xl lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-8 lg:mb-12 text-pretty leading-relaxed">
@@ -34,25 +34,25 @@ export default function Hero() {
           </div>
 
           {/* Statistics */}
-         <section className="container mx-auto px-4 py-6 lg:py-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 text-center">
-            <div className="space-y-2 lg:space-y-3">
-              <div className="text-3xl lg:text-4xl font-bold text-emerald-600">500+</div>
-              <div className="text-lg lg:text-xl font-semibold text-foreground">Expert Mentors</div>
-              <div className="text-sm lg:text-base text-muted-foreground">From top companies worldwide</div>
+          <section className="container mx-auto px-4 py-6 lg:py-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 text-center">
+              <div className="space-y-2 lg:space-y-3">
+                <div className="text-3xl lg:text-4xl font-bold text-emerald-600">500+</div>
+                <div className="text-lg lg:text-xl font-semibold text-foreground">Expert Mentors</div>
+                <div className="text-sm lg:text-base text-muted-foreground">From top companies worldwide</div>
+              </div>
+              <div className="space-y-2 lg:space-y-3">
+                <div className="text-3xl lg:text-4xl font-bold text-emerald-600">2,000+</div>
+                <div className="text-lg lg:text-xl font-semibold text-foreground">Successful Matches</div>
+                <div className="text-sm lg:text-base text-muted-foreground">Life-changing connections made</div>
+              </div>
+              <div className="space-y-2 lg:space-y-3">
+                <div className="text-3xl lg:text-4xl font-bold text-emerald-600">85%</div>
+                <div className="text-lg lg:text-xl font-semibold text-foreground">Career Growth Rate</div>
+                <div className="text-sm lg:text-base text-muted-foreground">Within 12 months of mentorship</div>
+              </div>
             </div>
-            <div className="space-y-2 lg:space-y-3">
-              <div className="text-3xl lg:text-4xl font-bold text-emerald-600">2,000+</div>
-              <div className="text-lg lg:text-xl font-semibold text-foreground">Successful Matches</div>
-              <div className="text-sm lg:text-base text-muted-foreground">Life-changing connections made</div>
-            </div>
-            <div className="space-y-2 lg:space-y-3">
-              <div className="text-3xl lg:text-4xl font-bold text-emerald-600">85%</div>
-              <div className="text-lg lg:text-xl font-semibold text-foreground">Career Growth Rate</div>
-              <div className="text-sm lg:text-base text-muted-foreground">Within 12 months of mentorship</div>
-            </div>
-          </div>
-        </section>
+          </section>
         </div>
       </div>
     </section>

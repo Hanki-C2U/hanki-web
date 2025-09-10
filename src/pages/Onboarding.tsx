@@ -9,14 +9,14 @@ import { Textarea } from "../components/ui/textarea";
 import { Users, GraduationCap } from "lucide-react";
 import ChipSelection from "../components/ui/ChipSelectionContext";
 import { supabasase } from "../supabase_creds/supabase";
-import type {User} from "@supabase/supabase-js"
+import type { User } from "@supabase/supabase-js"
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<"mentor" | "mentee">("mentee");
-  
+
   // Form data for additional profile information
   const [profileData, setProfileData] = useState({
     firstName: "",
@@ -31,7 +31,7 @@ const Onboarding = () => {
     location: "",
     goals: ""
   });
-  
+
   const [showChipSelection, setShowChipSelection] = useState(false);
 
   // Get current user on component mount
@@ -74,7 +74,7 @@ const Onboarding = () => {
       if (profileData.profilePic) {
         const fileExt = profileData.profilePic.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-        
+
         const { error: uploadError } = await supabasase.storage
           .from('Project_Pics')
           .upload(fileName, profileData.profilePic);
@@ -87,7 +87,7 @@ const Onboarding = () => {
         const { data: urlData } = supabasase.storage
           .from('Project_Pics')
           .getPublicUrl(fileName);
-        
+
         profilePicUrl = urlData.publicUrl;
       }
 
@@ -102,7 +102,7 @@ const Onboarding = () => {
         experience: parseInt(profileData.experience) || 0,
         phone_number: profileData.number,
         gender: profileData.gender || 'Not specified',
-        profile_picture: profilePicUrl || 
+        profile_picture: profilePicUrl ||
           'https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg',
         location: profileData.location,
         updateAt: new Date().toISOString(),
@@ -172,10 +172,10 @@ const Onboarding = () => {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Complete Your Profile</CardTitle>
             <CardDescription>
-              Welcome {user.user_metadata?.given_name}! Let's set up your SkillsConnect profile.
+              Welcome {user.user_metadata?.given_name}! Let's set up your ATLAS profile.
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             <Tabs value={role} onValueChange={(value) => handleRoleChange(value as "mentor" | "mentee")} className="mb-6">
               <TabsList className="grid w-full grid-cols-2">
@@ -315,7 +315,7 @@ const Onboarding = () => {
                     />
                     {showChipSelection && (
                       <div className="mt-2">
-                        <ChipSelection 
+                        <ChipSelection
                           selectedChips={profileData.expertise}
                           onSelectionChange={handleExpertiseChange}
                           maxSelections={5}
@@ -395,8 +395,8 @@ const Onboarding = () => {
                   </div>
                 </>
               )}
-              
-              <Button 
+
+              <Button
                 type="submit"
                 className="w-full gradient-hero text-white font-medium transition-smooth hover:shadow-elevated"
                 disabled={loading}
@@ -406,7 +406,7 @@ const Onboarding = () => {
             </form>
           </CardContent>
         </Card>
-  <button onClick={() => handleSignOut()}>Sign Out</button>
+        <button onClick={() => handleSignOut()}>Sign Out</button>
       </div>
     </div>
   );
