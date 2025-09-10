@@ -99,7 +99,7 @@ const MentorProfile = () => {
     reviews: [
       {
         id: 1,
-        mentee: "Alice Mukamana",
+        mentee: "Alice Mutoni",
         rating: 5,
         comment: "Emmanuel provided invaluable guidance on my career transition into tech. His insights on system design and industry trends were incredibly helpful.",
         date: "2 weeks ago"
@@ -112,7 +112,7 @@ const MentorProfile = () => {
         date: "1 month ago"
       }
     ],
-    profilePicture: "/professional-headshot-of-young-hispanic-freelancer.png"
+    profilePicture: "/emmanuel-portrait.png"
   };
 
   // Update the current time every minute

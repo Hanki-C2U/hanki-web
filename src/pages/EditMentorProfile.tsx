@@ -54,13 +54,13 @@ const EditMentorProfile = () => {
 
   // Default mentor data
   const defaultMentorData: MentorProfile = {
-    firstName: "Denys",
-    lastName: "Pavlenko",
+    firstName: "Emmanuel",
+    lastName: "Ntagungira",
     role: "Engineering Leader",
     organization: "IntegrityNext",
-    profilePicture: "/professional-headshot-of-young-hispanic-freelancer.png",
+    profilePicture: "/emmanuel-portrait.png",
     bio: "Engineering Leader, former Engineering Manager of Platform Engineering at Personio SE & Co. KG, former Domain Quality Lead at Magento Commerce as a part of eBay Inc. QA Coach at StartIT Training Center for IT Specialists, helping talented people to start their new careers in IT.",
-    languages: ["English", "Deutsch", "русский язык", "українська мова"],
+    languages: ["English", "German"],
     expertiseAreas: [
       { name: "Engineering Leadership" },
       { name: "System Architecture" },

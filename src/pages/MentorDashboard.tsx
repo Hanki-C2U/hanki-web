@@ -178,13 +178,13 @@ const MentorDashboard = () => {
 
   // Default mentor data
   const defaultMentorData: MentorProfile = {
-    firstName: "Denys",
-    lastName: "Pavlenko",
+    firstName: "Emmanuel",
+    lastName: "Ntagungira",
     role: "Engineering Leader",
     organization: "IntegrityNext",
-    profilePicture: "/professional-headshot-of-young-hispanic-freelancer.png",
-    bio: "Denys Pavlenko is an Engineering Leader, former Engineering Manager of Platform Engineering at Personio SE & Co. KG, former Domain Quality Lead at Magento Commerce as a part of eBay Inc. QA Coach at StartIT Training Center for IT Specialists, where he helps talented people to start their new careers in IT.",
-    languages: ["English", "Deutsch", "русский язык", "українська мова"],
+    profilePicture: "/emmanuel-portrait.png",
+    bio: "Emmanuel Ntagungira is an Engineering Leader, former Engineering Manager of Platform Engineering at Personio SE & Co. KG, former Domain Quality Lead at Magento Commerce as a part of eBay Inc. QA Coach at StartIT Training Center for IT Specialists, where he helps talented people to start their new careers in IT.",
+    languages: ["English", "German"],
     expertiseAreas: [
       { name: "Engineering Leadership" },
       { name: "System Architecture" },
@@ -266,7 +266,7 @@ const MentorDashboard = () => {
   const reviews: Review[] = [
     {
       id: 1,
-      mentee: "Alice Mukamana",
+      mentee: "Alice Mutoni",
       rating: 5,
       date: "August 25, 2025",
       comment: "Denys has been an incredible mentor. His guidance on system architecture helped me restructure my project completely."
@@ -284,9 +284,9 @@ const MentorDashboard = () => {
     {
       id: 1,
       menteeId: 101,
-      mentee: "Alice Mukamana",
+      mentee: "Alice Mutoni",
       topic: "Career Transition to Tech",
-      date: "2025-09-06", // Today
+      date: "2025-09-16", // Today
       startTime: "14:00",
       endTime: "15:00",
       duration: "1 hour",
@@ -297,7 +297,7 @@ const MentorDashboard = () => {
       menteeId: 102,
       mentee: "David Nshuti",
       topic: "Startup Strategy Review",
-      date: "2025-09-07", // Tomorrow
+      date: "2025-09-29", // Tomorrow
       startTime: "10:00",
       endTime: "10:45",
       duration: "45 minutes",
@@ -903,10 +903,10 @@ const MentorDashboard = () => {
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-                      <img src="/professional-headshot-of-african-woman-hr-professi.png" alt="Alice Mukamana" className="h-full w-full object-cover" />
+                      <img src="/mary-portrait.webp" alt="Alice Mutoni" className="h-full w-full object-cover" />
                     </div>
                     <div>
-                      <h4 className="font-medium">Alice Mukamana</h4>
+                      <h4 className="font-medium">Alice Mutoni</h4>
                       <p className="text-xs text-gray-500">Software Engineer • 3 sessions</p>
                     </div>
                   </div>
@@ -926,7 +926,7 @@ const MentorDashboard = () => {
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-                      <img src="/professional-headshot-of-confident-hispanic-sales-.png" alt="David Nshuti" className="h-full w-full object-cover" />
+                      <img src="/shema-portrait.png" alt="Bienvenu Cyuzuzo" className="h-full w-full object-cover" />
                     </div>
                     <div>
                       <h4 className="font-medium">Bienvenu Cyuzuzo</h4>

@@ -56,11 +56,11 @@ const EditProfile = () => {
     organization: "African Leadership University",
     location: "Kigali, Rwanda",
     timezone: "UTC+2",
-    profilePicture: "/professional-headshot-of-confident-hispanic-sales-.png",
+    profilePicture: "/shema-portrait.png",
     bio: "I'm a software engineering student passionate about building web applications. I'm currently focused on full-stack development using JavaScript, React, and SQL. I'm seeking mentorship to strengthen my system design, problem-solving, and career navigation skills.",
     languages: ["English", "Français", "Ikinyarwanda"],
     skills: ["React", "JavaScript", "Node.js", "SQL", "HTML/CSS"],
-    goals: ["Master system design patterns", "Improve problem-solving skills", "Prepare for technical interviews", "Build a professional network"],
+    goals: ["Transition to Software Engineering", "Build Professional Network", "Develop Leadership Skills", "Prepare for technical interviews"],
     socials: {
       linkedin: "https://linkedin.com/in/bienvenu-cyuzuzo",
       website: "https://portfolio-bienvenu.com"

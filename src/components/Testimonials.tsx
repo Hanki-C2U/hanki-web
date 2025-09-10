@@ -5,7 +5,7 @@ export default function Testimonials() {
   const testimonials: Testimonial[] = [
     {
       id: 1,
-      name: "Alice Mukamana",
+      name: "Alice Mutoni",
       role: "Software Engineer at Andela",
       avatar: "AM",
       rating: 5,

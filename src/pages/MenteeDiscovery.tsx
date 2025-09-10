@@ -26,17 +26,17 @@ const MenteeDiscovery = () => {
       organization: "African Leadership University",
       field: "Software Engineering",
       skills: ["React", "JavaScript", "Node.js", "SQL", "HTML/CSS"],
-      goals: ["Master system design patterns", "Improve problem-solving skills", "Prepare for technical interviews"],
+      goals: ["Transition to Software Engineering", "Build Professional Network", "Develop Leadership Skills", "Prepare for technical interviews"],
       location: "Kigali, Rwanda",
       rating: 4.8,
       sessions: 6,
       avatar: null,
-      profilePicture: "/professional-headshot-of-confident-hispanic-sales-.png",
+      profilePicture: "/shema-portrait.png",
       bio: "I'm a software engineering student passionate about building web applications. I'm currently focused on full-stack development using JavaScript, React, and SQL. I'm seeking mentorship to strengthen my system design, problem-solving, and career navigation skills."
     },
     {
       id: 2,
-      name: "Alice Mukamana",
+      name: "Alice Mutoni",
       role: "Frontend Developer",
       organization: "TechRwanda",
       field: "Web Development",
@@ -46,7 +46,7 @@ const MenteeDiscovery = () => {
       rating: 4.7,
       sessions: 8,
       avatar: null,
-      profilePicture: "/professional-headshot-of-african-woman-hr-professi.png",
+      profilePicture: "/claudine-portrait.png",
       bio: "Frontend developer with 2 years of experience. Passionate about creating beautiful and accessible user interfaces. Looking to advance my career and take on more challenging projects."
     },
     {
@@ -61,7 +61,7 @@ const MenteeDiscovery = () => {
       rating: 4.9,
       sessions: 12,
       avatar: null,
-      profilePicture: "/professional-headshot-of-confident-hispanic-sales-.png",
+      profilePicture: "/alex-portrait.webp",
       bio: "Data scientist with a passion for extracting insights from complex datasets. Currently working on machine learning projects with social impact in East Africa."
     },
     {
@@ -76,7 +76,7 @@ const MenteeDiscovery = () => {
       rating: 4.6,
       sessions: 5,
       avatar: null,
-      profilePicture: "/professional-headshot-of-african-woman-hr-professi.png",
+      profilePicture: "/alice-portrait.webp",
       bio: "Product manager specializing in financial technology solutions. Passionate about creating products that improve financial inclusion in Africa."
     },
     {
@@ -91,12 +91,12 @@ const MenteeDiscovery = () => {
       rating: 4.8,
       sessions: 9,
       avatar: null,
-      profilePicture: "/professional-headshot-of-young-hispanic-freelancer.png",
+      profilePicture: "/james-portrait.webp",
       bio: "Agricultural entrepreneur using technology to improve farming outcomes. Focused on sustainable practices and increasing crop yields for small-scale farmers."
     },
     {
       id: 6,
-      name: "Jean Claude Mutoni",
+      name: "Cynthia Mutoni",
       role: "Software Developer",
       organization: "Remote Tech",
       field: "Software Engineering",
@@ -106,7 +106,7 @@ const MenteeDiscovery = () => {
       rating: 4.7,
       sessions: 7,
       avatar: null,
-      profilePicture: "/professional-headshot-of-young-hispanic-freelancer.png",
+      profilePicture: "/mary-portrait.webp",
       bio: "Self-taught developer with a passion for creating impactful applications. Currently focused on enhancing my skills to compete in the global tech market."
     }
   ];

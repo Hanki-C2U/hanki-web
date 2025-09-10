@@ -8,7 +8,7 @@ export default function MentorShowcase() {
     {
       id: 1,
       name: "Patricia Nkunda",
-      photo: "/professional-headshot-of-confident-hispanic-sales-.png",
+      photo: "/claudine-portrait.png",
       role: "Senior Data Scientist",
       flag: "🇬🇧",
       rating: 4.9,
@@ -17,7 +17,7 @@ export default function MentorShowcase() {
     {
       id: 2,
       name: "Eric Gasana",
-      photo: "/professional-headshot-of-young-hispanic-freelancer.png",
+      photo: "/emmanuel-portrait.png",
       role: "Product Manager",
       flag: "🇺🇸",
       rating: 4.8,
@@ -25,7 +25,7 @@ export default function MentorShowcase() {
     },
     {
       id: 3,
-      photo: "/professional-headshot-of-african-woman-hr-professi.png",
+      photo: "/mary-portrait.webp",
       name: "Aline Uwimana",
       role: "Marketing Director",
       flag: "🇨🇦",

@@ -25,7 +25,7 @@ const MentorDiscovery = () => {
       rating: 4.9,
       sessions: 120,
       bio: "15+ years in tech industry, currently Principal Engineer at Microsoft. Passionate about helping African youth break into tech.",
-      avatar: "EN",
+      avatar: "/emmanuel-portrait.png",
       availability: "Available this week",
       languages: ["English", "French", "Kinyarwanda"],
       yearsOfExperience: 15,
@@ -33,14 +33,14 @@ const MentorDiscovery = () => {
     },
     {
       id: 2,
-      name: "Marie Claire Uwimana",
+      name: "Marie Claire Ingabire",
       expertise: "Digital Marketing",
       specializations: ["Social Media", "Content Strategy", "Analytics"],
       location: "London, UK",
       rating: 4.8,
       sessions: 85,
       bio: "Marketing Director with expertise in building global brands. Former Google and Facebook marketing executive.",
-      avatar: "MU",
+      avatar: "/claudine-portrait.png",
       availability: "Available next week",
       languages: ["English", "French", "Kinyarwanda"],
       yearsOfExperience: 10,
@@ -55,7 +55,7 @@ const MentorDiscovery = () => {
       rating: 4.9,
       sessions: 95,
       bio: "Data Science Lead at Harvard Medical School. PhD in Statistics with focus on healthcare analytics.",
-      avatar: "JG",
+      avatar: "/shema-portrait.png",
       availability: "Available this week",
       languages: ["English", "French", "Swahili"],
       yearsOfExperience: 8,
@@ -70,7 +70,7 @@ const MentorDiscovery = () => {
       rating: 4.7,
       sessions: 75,
       bio: "Senior Product Manager at Airbnb. Expert in building user-centric products and leading cross-functional teams.",
-      avatar: "SM",
+      avatar: "alice-portrait.webp",
       availability: "Available in 2 days",
       languages: ["English", "Kinyarwanda", "Spanish"],
       yearsOfExperience: 6,
@@ -85,7 +85,7 @@ const MentorDiscovery = () => {
       rating: 4.8,
       sessions: 65,
       bio: "Serial entrepreneur with 3 successful exits. Currently Partner at venture capital firm focused on African startups.",
-      avatar: "DN",
+      avatar: "/james-portrait.webp",
       availability: "Available this week",
       languages: ["English", "Arabic", "Kinyarwanda"],
       yearsOfExperience: 12,
@@ -100,7 +100,7 @@ const MentorDiscovery = () => {
       rating: 4.9,
       sessions: 110,
       bio: "VP at Goldman Sachs with 12 years in investment banking. Specialized in emerging markets and infrastructure finance.",
-      avatar: "GU",
+      avatar: "mary-portrait.webp",
       availability: "Available next week",
       languages: ["English", "French", "Kinyarwanda"],
       yearsOfExperience: 12,
@@ -219,7 +219,11 @@ const MentorDiscovery = () => {
                 {/* Mentor Header */}
                 <div className="flex items-start gap-4 mb-4">
                   <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                    {mentor.avatar}
+                      <img
+                        src={mentor.avatar}
+                        alt={mentor.name}
+                        className="h-full w-full object-cover rounded-full"
+                      />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg text-gray-800 mb-1">{mentor.name}</h3>

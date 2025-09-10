@@ -61,7 +61,7 @@ const MenteeDashboard = () => {
     organization: "African Leadership University",
     location: "Kigali, Rwanda",
     timezone: "UTC+2",
-    profilePicture: "/professional-headshot-of-confident-hispanic-sales-.png",
+    profilePicture: "/shema-portrait.png",
     bio: "I'm a software engineering student passionate about building web applications. I'm currently focused on full-stack development using JavaScript, React, and SQL. I'm seeking mentorship to strengthen my system design, problem-solving, and career navigation skills.",
     languages: ["English", "Français", "Ikinyarwanda"],
     socials: {
@@ -75,7 +75,7 @@ const MenteeDashboard = () => {
       { id: 4, name: "Knowledge Seeker", icon: "📚", earned: true },
     ],
     skills: ["React", "JavaScript", "Node.js", "SQL", "HTML/CSS"],
-    goals: ["Master system design patterns", "Improve problem-solving skills", "Prepare for technical interviews", "Build a professional network"],
+    goals: ["Transition to Software Engineering", "Build Professional Network", "Develop Leadership Skills", "Prepare for technical interviews"],
     professionalBackground: {
       education: "B.S. Computer Science, African Leadership University, 2025 (Expected)",
       experience: [
@@ -182,40 +182,40 @@ const MenteeDashboard = () => {
   const featuredMentees = [
     {
       id: 1,
-      name: "Alice Mukamana",
-      role: "Frontend Developer",
-      company: "TechRwanda",
-      image: null,
-      skills: ["React", "Angular", "UI/UX"]
-    },
-    {
-      id: 2,
       name: "David Nshuti",
       role: "Data Scientist",
       company: "DataInsights Africa",
-      image: null,
+      image: "/alex-portrait.webp",
       skills: ["Python", "Machine Learning", "Data Visualization"]
+    },
+    {
+      id: 2,
+      name: "Alice Mutoni",
+      role: "Frontend Developer",
+      company: "TechRwanda",
+      image: "/claudine-portrait.png",
+      skills: ["React", "Angular", "UI/UX"]
     }
   ];
 
   const recommendedMentors = [
     {
       id: 1,
-      name: "Denys Pavlenko",
+      name: "Emmanuel Ntagungira",
       expertise: "Engineering Leadership",
       rating: 4.9,
       location: "Berlin, Germany",
       sessions: 16,
-      image: "/professional-headshot-of-young-hispanic-freelancer.png"
+      image: "/emmanuel-portrait.png"
     },
     {
       id: 2,
-      name: "Catalina Vrabie",
-      expertise: "Agile Coaching",
+      name: "Marie Claire Ingabire",
+      expertise: "Digital Marketing",
       rating: 4.8,
-      location: "Bucharest, Romania",
+      location: "London, UK",
       sessions: 24,
-      image: null
+      image: "/claudine-portrait.png"
     }
   ];
 
