@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabasase as supabase } from '../supabase_creds/supabase';
+import { mockAuth } from '../lib/mockAuth';
+import { mockUsers, mockMentors, mockMentees } from '../data/mockData';
 
 type UserType = 'mentor' | 'mentee';
 
@@ -23,44 +24,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
+      // Simulate getting session data
+      const stored = localStorage.getItem('mockUser');
 
-      if (sessionData?.session) {
-        setIsLoggedIn(true);
-        setUserId(sessionData.session.user.id);
+      if (stored) {
+        try {
+          const user = JSON.parse(stored);
 
-        // In a real app, you would fetch the user profile from your database
-        // For now, we'll use a simplified example
+          setIsLoggedIn(true);
+          setUserId(user.id);
 
-        // Check if user exists in mentors table
-        const { data: mentorData } = await supabase
-          .from('mentor')
-          .select('first_name, last_name, profile_picture')
-          .eq('supabaseId', sessionData.session.user.id)
-          .single();
-
-        if (mentorData) {
-          setUserType('mentor');
-          setUserName(`${mentorData.first_name} ${mentorData.last_name}`);
-          setUserImage(mentorData.profile_picture);
-        } else {
-          // Check if user exists in mentees table
-          const { data: menteeData } = await supabase
-            .from('mentee')
-            .select('first_name, last_name, profile_picture')
-            .eq('supabaseId', sessionData.session.user.id)
-            .single();
-
-          if (menteeData) {
-            setUserType('mentee');
-            setUserName(`${menteeData.first_name} ${menteeData.last_name}`);
-            setUserImage(menteeData.profile_picture);
+          // Check if user is a mentor or mentee
+          if (user.userType === 'mentor') {
+            const mentor = mockMentors.find(m => m.supabaseId === user.id);
+            if (mentor) {
+              setUserType('mentor');
+              setUserName(`${mentor.firstName} ${mentor.lastName}`);
+              setUserImage(mentor.profilePicture);
+            }
           } else {
-            // User not found in either table
-            setUserType(null);
-            setUserName(sessionData.session.user.email?.split('@')[0] || 'User');
-            setUserImage(null);
+            const mentee = mockMentees.find(m => m.supabaseId === user.id);
+            if (mentee) {
+              setUserType('mentee');
+              setUserName(`${mentee.firstName} ${mentee.lastName}`);
+              setUserImage(mentee.profilePicture);
+            }
           }
+        } catch (error) {
+          console.error('Error parsing stored user', error);
+          // Clear invalid data
+          localStorage.removeItem('mockUser');
         }
       } else {
         setIsLoggedIn(false);
@@ -73,29 +66,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     checkAuth();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        setIsLoggedIn(true);
-        setUserId(session.user.id);
-        // You would fetch user profile data here similar to checkAuth
-      } else if (event === 'SIGNED_OUT') {
-        setIsLoggedIn(false);
-        setUserType(null);
-        setUserId(null);
-        setUserName(null);
-        setUserImage(null);
+    // Listen for storage events to handle auth state changes across tabs
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'mockUser') {
+        if (event.newValue) {
+          try {
+            const user = JSON.parse(event.newValue);
+            setIsLoggedIn(true);
+            setUserId(user.id);
+            setUserType(user.userType);
+
+            if (user.userType === 'mentor') {
+              const mentor = mockMentors.find(m => m.supabaseId === user.id);
+              if (mentor) {
+                setUserName(`${mentor.firstName} ${mentor.lastName}`);
+                setUserImage(mentor.profilePicture);
+              }
+            } else {
+              const mentee = mockMentees.find(m => m.supabaseId === user.id);
+              if (mentee) {
+                setUserName(`${mentee.firstName} ${mentee.lastName}`);
+                setUserImage(mentee.profilePicture);
+              }
+            }
+          } catch (error) {
+            console.error('Error parsing storage event', error);
+          }
+        } else {
+          // User signed out
+          setIsLoggedIn(false);
+          setUserType(null);
+          setUserId(null);
+          setUserName(null);
+          setUserImage(null);
+        }
       }
-    });
+    };
+
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
-      if (authListener?.subscription) {
-        authListener.subscription.unsubscribe();
-      }
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem('mockUser');
+    setIsLoggedIn(false);
+    setUserType(null);
+    setUserId(null);
+    setUserName(null);
+    setUserImage(null);
   };
 
   const value = {

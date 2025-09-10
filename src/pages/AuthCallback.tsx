@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { supabasase } from "../supabase_creds/supabase";
+import { mockMentees, mockMentors } from "../data/mockData";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -8,29 +8,21 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Get the current session
-        const { data: { session }, error } = await supabasase.auth.getSession();
+        // Get the current mock user from localStorage
+        const storedUser = localStorage.getItem('mockUser');
 
-        if (error) {
-          console.error('Error getting session:', error);
-          navigate('/login');
-          return;
-        }
+        if (storedUser) {
+          const mockUser = JSON.parse(storedUser);
+          const userId = mockUser.id;
 
-        if (session && session.user) {
-          // Check if user already has a profile in our database
-          const userId = session.user.id;
-          
-          // Check both mentor and mentee tables
-          const [mentorResult, menteeResult] = await Promise.all([
-            supabasase.from('mentor').select('id').eq('supabaseId', userId).single(),
-            supabasase.from('mentee').select('id').eq('supabaseId', userId).single()
-          ]);
+          // Check if this user exists in our mock mentor or mentee data
+          const existingMentor = mockMentors.find(mentor => mentor.supabaseId === userId);
+          const existingMentee = mockMentees.find(mentee => mentee.supabaseId === userId);
 
-          if (mentorResult.data) {
+          if (existingMentor) {
             // User is a mentor, redirect to mentor dashboard
             navigate('/mentor-dashboard');
-          } else if (menteeResult.data) {
+          } else if (existingMentee) {
             // User is a mentee, redirect to mentee dashboard
             navigate('/mentee-dashboard');
           } else {

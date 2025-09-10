@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import GoogleSignInButton from "../components/ui/GoogleSignInButton";
-import { supabasase } from "../supabase_creds/supabase";
+import { mockUsers } from "../data/mockData";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -11,46 +11,45 @@ const Signup = () => {
 
   useEffect(() => {
     // Check for existing session
-    const getSession = async () => {
-      const { data: { session } } = await supabasase.auth.getSession();
+    const checkForExistingUser = () => {
+      const storedUser = localStorage.getItem('mockUser');
 
-      if (session) {
+      if (storedUser) {
         // User is already logged in, redirect to onboarding
         navigate('/onboarding');
       }
     };
 
-    getSession();
+    checkForExistingUser();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabasase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        // Redirect to onboarding with user info
+    // Listen for storage events to handle auth state changes across tabs
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'mockUser' && event.newValue) {
         navigate('/onboarding');
       }
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [navigate]);
 
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);
     try {
-      const { error } = await supabasase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
+      // Mock sign-up with Google
+      // Store the first user from mockUsers as the logged in user
+      const mockUser = mockUsers[0];
+      localStorage.setItem('mockUser', JSON.stringify(mockUser));
 
-      if (error) {
-        console.error('Google Sign-Up error:', error);
-        throw error;
-      }
+      console.log('Mock Google sign-up successful');
 
-      console.log('Google Sign-Up initiated successfully');
+      // Redirect to callback which will then redirect to onboarding
+      navigate('/auth/callback');
     } catch (error) {
-      console.error('Google Sign-Up error:', error);
+      console.error('Mock Google Sign-Up error:', error);
     } finally {
       setGoogleLoading(false);
     }

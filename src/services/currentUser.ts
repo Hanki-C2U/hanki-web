@@ -1,15 +1,13 @@
-import { supabase } from "../lib/supabaseClient"
-
+// Mock implementation of current user service
 export default async function getCurrentMentee() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("No user signed in")
+  const storedUser = localStorage.getItem("mockUser");
+  if (!storedUser) throw new Error("No user signed in");
 
-  // Replace 'user_id' with the actual column name in your 'mentee' table
-  const { data, error } = await supabase
-    .from('mentee')
-    .select('*')
-    .eq('supabaseId', user.id) // or .eq('auth_id', user.id)
+  const mockUser = JSON.parse(storedUser);
 
-  if (error) throw error
-  return data?.[0] // Return the first (and likely only) result
+  // Get the user profile from localStorage
+  const storedProfile = localStorage.getItem("mockUserProfile");
+  if (!storedProfile) throw new Error("User profile not found");
+
+  return JSON.parse(storedProfile);
 }

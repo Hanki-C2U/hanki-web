@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import GoogleSignInButton from "../components/ui/GoogleSignInButton";
-import { supabasase } from "../supabase_creds/supabase";
+import { mockUsers } from "../data/mockData";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,22 +12,17 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
-      const { data, error } = await supabasase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
+      // Mock sign-in with Google
+      // Store the first user as the logged in user
+      const mockUser = mockUsers[0];
+      localStorage.setItem('mockUser', JSON.stringify(mockUser));
 
-      if (error) {
-        console.error('Google Sign-In error:', error);
-        throw error;
-      }
+      console.log('Mock Google sign-in successful');
 
-      // The redirect will be handled by Supabase
-      console.log('Google Sign-In initiated successfully');
+      // Redirect to callback which will then redirect to dashboard
+      navigate('/auth/callback');
     } catch (error) {
-      console.error('Google Sign-In error:', error);
+      console.error('Mock Google Sign-In error:', error);
     } finally {
       setGoogleLoading(false);
     }

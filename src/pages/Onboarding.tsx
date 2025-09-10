@@ -8,13 +8,12 @@ import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Textarea } from "../components/ui/textarea";
 import { Users, GraduationCap } from "lucide-react";
 import ChipSelection from "../components/ui/ChipSelectionContext";
-import { supabasase } from "../supabase_creds/supabase";
-import type { User } from "@supabase/supabase-js"
+import { mockMentors, mockMentees, type MockUser } from "../data/mockData";
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<MockUser | null>(null);
   const [role, setRole] = useState<"mentor" | "mentee">("mentee");
 
   // Form data for additional profile information
@@ -36,10 +35,10 @@ const Onboarding = () => {
 
   // Get current user on component mount
   useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabasase.auth.getUser();
-      if (user) {
-        setUser(user);
+    const getCurrentUser = () => {
+      const storedUser = localStorage.getItem('mockUser');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
       } else {
         // Redirect to login if no user
         navigate('/login');
@@ -69,79 +68,62 @@ const Onboarding = () => {
 
     setLoading(true);
     try {
-      // Handle profile picture upload
-      let profilePicUrl = '';
+      // Use local profile picture or default
+      let profilePicUrl = 'https://via.placeholder.com/150';
       if (profileData.profilePic) {
-        const fileExt = profileData.profilePic.name.split('.').pop();
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-
-        const { error: uploadError } = await supabasase.storage
-          .from('Project_Pics')
-          .upload(fileName, profileData.profilePic);
-
-        if (uploadError) {
-          console.error('Error uploading profile picture:', uploadError);
-          throw uploadError;
-        }
-
-        const { data: urlData } = supabasase.storage
-          .from('Project_Pics')
-          .getPublicUrl(fileName);
-
-        profilePicUrl = urlData.publicUrl;
+        // Simulate file upload by creating an object URL
+        // This URL will only last for the current session
+        profilePicUrl = URL.createObjectURL(profileData.profilePic);
       }
 
-      // Prepare user data from Google auth + additional profile data
+      // Prepare user data from mock user + additional profile data
       const userData = {
+        id: Math.floor(Math.random() * 10000).toString(), // Generate random ID
         first_name: profileData.firstName || user.user_metadata?.given_name || '',
         last_name: profileData.lastName || user.user_metadata?.family_name || '',
         email: user.email,
-        password: 'OAUTH_USER', // Placeholder for OAuth users
         supabaseId: user.id,
         age: parseInt(profileData.age) || 20,
         experience: parseInt(profileData.experience) || 0,
         phone_number: profileData.number,
         gender: profileData.gender || 'Not specified',
-        profile_picture: profilePicUrl ||
-          'https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg',
+        profile_picture: profilePicUrl,
         location: profileData.location,
         updateAt: new Date().toISOString(),
       };
 
       if (role === 'mentor') {
-        const { data, error } = await supabasase
-          .from('mentor')
-          .insert([{
-            ...userData,
-            expertise: profileData.expertise,
-            Biography: profileData.bio,
-          }])
-          .select();
+        // Create a new mentor in mock data
+        const newMentor = {
+          ...userData,
+          expertise: profileData.expertise,
+          Biography: profileData.bio,
+        };
 
-        if (error) {
-          console.error('Error creating mentor profile:', error);
-          throw error;
-        }
+        // Add to mock mentors (in a real scenario we'd update the mock data)
+        console.log('Mentor profile created successfully:', newMentor);
 
-        console.log('Mentor profile created successfully:', data);
-        navigate('/home');
+        // Store user type in localStorage
+        localStorage.setItem('userType', 'mentor');
+        localStorage.setItem('mockUserProfile', JSON.stringify(newMentor));
+
+        navigate('/mentor-dashboard');
       } else {
-        const { data, error } = await supabasase
-          .from('mentee')
-          .insert([{
-            ...userData,
-            Interests: [profileData.goals],
-            bio: profileData.bio,
-          }])
-          .select();
+        // Create a new mentee in mock data
+        const newMentee = {
+          ...userData,
+          Interests: [profileData.goals],
+          bio: profileData.bio,
+        };
 
-        if (error) {
-          console.error('Error creating mentee profile:', error);
-          throw error;
-        }
+        // Add to mock mentees (in a real scenario we'd update the mock data)
+        console.log('Mentee profile created successfully:', newMentee);
 
-        console.log('Mentee profile created successfully:', data);
-        navigate('/home');
+        // Store user type in localStorage
+        localStorage.setItem('userType', 'mentee');
+        localStorage.setItem('mockUserProfile', JSON.stringify(newMentee));
+
+        navigate('/mentee-dashboard');
       }
     } catch (error) {
       console.error('Onboarding error:', error);
@@ -162,7 +144,11 @@ const Onboarding = () => {
   }
 
   const handleSignOut = () => {
-    return supabasase.auth.signOut()
+    localStorage.removeItem('mockUser');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('mockUserProfile');
+    navigate('/login');
+    return;
   }
 
   return (

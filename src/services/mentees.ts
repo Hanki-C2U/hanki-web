@@ -1,10 +1,6 @@
-import { supabase } from "../lib/supabaseClient"
+import { mockMentees } from "../data/mockData";
 
 export default async function getUsers() {
-  const { data, error } = await supabase
-    .from('mentee')
-    .select('*')
-
-  if (error) throw error
-  return data
+  // Return all mock mentees
+  return mockMentees;
 }

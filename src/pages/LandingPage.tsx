@@ -7,32 +7,29 @@ import HowItWorks from "../components/HowItWorks";
 import MentorShowcase from "../components/MentorShowcase";
 import Testimonials from "../components/Testimonials";
 import WhoItsFor from "../components/WhoItsFor";
-import { supabasase as supabase } from "../supabase_creds/supabase";
 
 export default function LandingPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      const { data } = await supabase.auth.getSession();
-      setIsLoggedIn(!!data.session);
+    const checkAuthStatus = () => {
+      const storedUser = localStorage.getItem('mockUser');
+      setIsLoggedIn(!!storedUser);
     };
 
     checkAuthStatus();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") {
-        setIsLoggedIn(true);
+    // Listen for storage events to handle auth state changes across tabs
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'mockUser') {
+        setIsLoggedIn(!!event.newValue);
       }
-      if (event === "SIGNED_OUT") {
-        setIsLoggedIn(false);
-      }
-    });
+    };
+
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
-      if (authListener?.subscription) {
-        authListener.subscription.unsubscribe();
-      }
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
