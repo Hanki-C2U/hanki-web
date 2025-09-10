@@ -52,7 +52,6 @@ export default function WhoItsFor() {
               Accelerate your career with guidance from successful Rwandan
               diaspora professionals
             </p>
-          </div>
 
             {/* Feature List */}
             <div className="space-y-4 mb-8">
