@@ -17,7 +17,7 @@ export const mockUsers: MockUser[] = [
     userType: "mentee",
     firstName: "Bienvenu",
     lastName: "Cyuzuzo",
-    profilePicture: "/professional-headshot-of-confident-hispanic-sales-.png",
+    profilePicture: "/shema-portrait.png",
   },
   {
     id: "user-2",
@@ -25,7 +25,7 @@ export const mockUsers: MockUser[] = [
     userType: "mentee",
     firstName: "Alice",
     lastName: "Mukamana",
-    profilePicture: "/professional-headshot-of-african-woman-hr-professi.png",
+    profilePicture: "/claudine-portrait.png",
   },
   {
     id: "user-3",
@@ -33,7 +33,7 @@ export const mockUsers: MockUser[] = [
     userType: "mentor",
     firstName: "Emmanuel",
     lastName: "Ntagungira",
-    profilePicture: "/professional-headshot-of-young-hispanic-freelancer.png",
+    profilePicture: "/emmanuel-portrait.png",
   },
 ];
 
@@ -94,7 +94,7 @@ export const mockMentees: MockMentee[] = [
     lastName: "Cyuzuzo",
     role: "Student",
     organization: "African Leadership University",
-    profilePicture: "/professional-headshot-of-confident-hispanic-sales-.png",
+    profilePicture: "/shema-portrait.png",
     bio: "I'm a software engineering student passionate about building web applications. I'm currently focused on full-stack development using JavaScript, React, and SQL. I'm seeking mentorship to strengthen my system design, problem-solving, and career navigation skills.",
     languages: ["English", "Français", "Ikinyarwanda"],
     achievementBadges: [
@@ -179,7 +179,7 @@ export const mockMentees: MockMentee[] = [
     lastName: "Mukamana",
     role: "Frontend Developer",
     organization: "TechRwanda",
-    profilePicture: "/professional-headshot-of-african-woman-hr-professi.png",
+    profilePicture: "/claudine-portrait.png",
     bio: "Frontend developer with 2 years of experience. Passionate about creating beautiful and accessible user interfaces. Looking to advance my career and take on more challenging projects.",
     languages: ["English", "Français", "Ikinyarwanda"],
     achievementBadges: [
@@ -295,7 +295,7 @@ export const mockMentors: MockMentor[] = [
     firstName: "Emmanuel",
     lastName: "Ntagungira",
     email: "emmanuel@example.com",
-    profilePicture: "/professional-headshot-of-young-hispanic-freelancer.png",
+    profilePicture: "/emmanuel-portrait.png",
     role: "Engineering Manager",
     company: "Google",
     bio: "Engineering leader with 10+ years of experience in software development. Passionate about mentoring early-career engineers and helping them build scalable systems.",
@@ -332,7 +332,7 @@ export const mockMentors: MockMentor[] = [
     firstName: "Marie Claire",
     lastName: "Uwimana",
     email: "marieclaire@example.com",
-    profilePicture: "/professional-headshot-of-african-woman-hr-professi.png",
+    profilePicture: "/mary-portrait.webp",
     role: "Digital Marketing Director",
     company: "McKinsey & Company",
     bio: "Marketing expert with a focus on digital transformation and growth strategies. Experienced in helping businesses scale through effective digital marketing.",
