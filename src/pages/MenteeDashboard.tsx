@@ -19,6 +19,7 @@ import {
 import AuthHeader from "../components/AuthHeader";
 
 
+
 // Import the helper function from utils/timezones.ts
 import { getCurrentTimeInTimezone as getTimeInTimezone, getTimezoneOffset } from "../utils/timezones";
 
@@ -697,7 +698,7 @@ const MenteeDashboard = () => {
 
                     <div className="mt-8">
                       <h4 className="font-medium mb-3">Skill Progress</h4>
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         <div>
                           <div className="flex justify-between mb-1">
                             <span className="text-sm font-medium">React</span>
@@ -706,6 +707,9 @@ const MenteeDashboard = () => {
                           <div className="h-2 w-full bg-gray-200 rounded-full">
                             <div className="h-2 bg-emerald-500 rounded-full" style={{ width: '70%' }}></div>
                           </div>
+                          <p className="text-xs text-gray-600 mt-2">
+                            <span className="font-medium">Learning Goal:</span> Build complex applications with React hooks and context API
+                          </p>
                         </div>
 
                         <div>
@@ -716,6 +720,9 @@ const MenteeDashboard = () => {
                           <div className="h-2 w-full bg-gray-200 rounded-full">
                             <div className="h-2 bg-emerald-500 rounded-full" style={{ width: '85%' }}></div>
                           </div>
+                          <p className="text-xs text-gray-600 mt-2">
+                            <span className="font-medium">Learning Goal:</span> Master advanced JavaScript concepts and design patterns
+                          </p>
                         </div>
 
                         <div>
@@ -726,6 +733,9 @@ const MenteeDashboard = () => {
                           <div className="h-2 w-full bg-gray-200 rounded-full">
                             <div className="h-2 bg-emerald-500 rounded-full" style={{ width: '60%' }}></div>
                           </div>
+                          <p className="text-xs text-gray-600 mt-2">
+                            <span className="font-medium">Learning Goal:</span> Learn database optimization and complex query patterns
+                          </p>
                         </div>
                       </div>
                     </div>

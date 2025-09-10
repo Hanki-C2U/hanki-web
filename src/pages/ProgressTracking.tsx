@@ -16,6 +16,7 @@ import { AddGoalDialog } from "../components/AddGoalDialog";
 import { GoalDetailDialog } from "../components/GoalDetailDialog";
 import { AddSkillDialog } from "../components/AddSkillDialog";
 import { SkillDetailDialog } from "../components/SkillDetailDialog";
+import type { Skill } from "../types";
 
 const ProgressTracking = () => {
   const [activeTab, setActiveTab] = useState("goals");
@@ -113,13 +114,13 @@ const ProgressTracking = () => {
     }
   ];
 
-  const [skills, setSkills] = useState([
-    { name: "JavaScript", level: 80 },
-    { name: "React", level: 70 },
-    { name: "Project Management", level: 65 },
-    { name: "Communication", level: 85 },
-    { name: "Leadership", level: 60 },
-    { name: "Data Analysis", level: 45 }
+  const [skills, setSkills] = useState<Skill[]>([
+    { name: "JavaScript", level: 80, learningGoal: "Master advanced JavaScript concepts and design patterns" },
+    { name: "React", level: 70, learningGoal: "Build complex applications with React hooks and context API" },
+    { name: "Project Management", level: 65, learningGoal: "Improve agile methodology implementation and team coordination" },
+    { name: "Communication", level: 85, learningGoal: "Enhance presentation skills for technical and non-technical audiences" },
+    { name: "Leadership", level: 60, learningGoal: "Develop mentoring abilities and lead cross-functional teams" },
+    { name: "Data Analysis", level: 45, learningGoal: "Learn statistical analysis techniques and data visualization" }
   ]);
 
   const [selectedGoal, setSelectedGoal] = useState<typeof goals[0] | null>(null);
@@ -142,7 +143,7 @@ const ProgressTracking = () => {
     ));
   };
 
-  const handleAddSkill = (newSkill: { name: string; level: number }) => {
+  const handleAddSkill = (newSkill: { name: string; level: number; learningGoal?: string }) => {
     setSkills([...skills, newSkill]);
   };
 
@@ -374,11 +375,20 @@ const ProgressTracking = () => {
                             style={{ width: `${skill.level}%` }}
                           />
                         </div>
-                        <p className="text-sm text-gray-600">
-                          {skill.level >= 80 ? "Advanced" :
-                            skill.level >= 60 ? "Intermediate" :
-                              skill.level >= 40 ? "Beginner" : "Starting"}
-                        </p>
+                        <div className="flex justify-between items-center">
+                          <p className="text-sm text-gray-600">
+                            {skill.level >= 80 ? "Advanced" :
+                              skill.level >= 60 ? "Intermediate" :
+                                skill.level >= 40 ? "Beginner" : "Starting"}
+                          </p>
+                        </div>
+                        {skill.learningGoal && (
+                          <div className="pt-2 border-t border-gray-100">
+                            <p className="text-xs text-gray-500 line-clamp-2 h-10 overflow-hidden">
+                              <span className="font-medium">Learning Goal:</span> {skill.learningGoal}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

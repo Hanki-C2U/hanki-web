@@ -45,6 +45,7 @@ interface Badge {
 interface SkillProgress {
   skill: string;
   progress: number;
+  learningGoal?: string;
 }
 
 interface Milestone {
@@ -115,11 +116,11 @@ export default function MenteeProfile() {
         availability: "Evenings and weekends",
       },
       progressData: [
-        { skill: "React", progress: 70 },
-        { skill: "JavaScript", progress: 85 },
-        { skill: "SQL", progress: 60 },
-        { skill: "Node.js", progress: 55 },
-        { skill: "HTML/CSS", progress: 90 }
+        { skill: "React", progress: 70, learningGoal: "Build complex applications with React hooks and context API" },
+        { skill: "JavaScript", progress: 85, learningGoal: "Master advanced JavaScript concepts and design patterns" },
+        { skill: "SQL", progress: 60, learningGoal: "Learn database optimization and complex query patterns" },
+        { skill: "Node.js", progress: 55, learningGoal: "Develop RESTful APIs and microservices architecture" },
+        { skill: "HTML/CSS", progress: 90, learningGoal: "Master responsive design and CSS animations" }
       ],
       completedMilestones: [
         { name: "Built first React application", date: "June 15, 2025" },
@@ -160,11 +161,11 @@ export default function MenteeProfile() {
         availability: "Weekday evenings",
       },
       progressData: [
-        { skill: "React", progress: 80 },
-        { skill: "Angular", progress: 65 },
-        { skill: "UI/UX", progress: 85 },
-        { skill: "CSS", progress: 90 },
-        { skill: "JavaScript", progress: 75 }
+        { skill: "React", progress: 80, learningGoal: "Master React state management libraries like Redux" },
+        { skill: "Angular", progress: 65, learningGoal: "Learn advanced component architecture and state management" },
+        { skill: "UI/UX", progress: 85, learningGoal: "Improve accessibility implementation and user testing methods" },
+        { skill: "CSS", progress: 90, learningGoal: "Master CSS Grid and advanced animations" },
+        { skill: "JavaScript", progress: 75, learningGoal: "Improve knowledge of ES6+ features and functional programming" }
       ],
       completedMilestones: [
         { name: "Redesigned company website", date: "May 10, 2025" },
@@ -353,18 +354,23 @@ export default function MenteeProfile() {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-4">Skills</h3>
               <div className="space-y-4">
-                {menteeData.progressData.map((item: { skill: string; progress: number }, index: number) => (
+                {menteeData.progressData.map((item: { skill: string; progress: number; learningGoal?: string }, index: number) => (
                   <div key={index}>
                     <div className="flex justify-between mb-1">
                       <span className="text-sm font-medium">{item.skill}</span>
                       <span className="text-sm text-gray-500">{item.progress}%</span>
                     </div>
-                    <div className="h-2 w-full bg-gray-200 rounded-full">
+                    <div className="h-2 w-full bg-gray-200 rounded-full mb-1">
                       <div
                         className="h-2 bg-emerald-500 rounded-full"
                         style={{ width: `${item.progress}%` }}
                       ></div>
                     </div>
+                    {item.learningGoal && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        <span className="font-medium">Goal:</span> {item.learningGoal}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -544,19 +550,33 @@ export default function MenteeProfile() {
 
                     <div className="mt-8">
                       <h4 className="font-medium mb-3">Skill Progress</h4>
-                      <div className="space-y-4">
-                        {menteeData.progressData.map((item: { skill: string; progress: number }, index: number) => (
-                          <div key={index}>
+                      <div className="space-y-6">
+                        {menteeData.progressData.map((item: { skill: string; progress: number; learningGoal?: string }, index: number) => (
+                          <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                             <div className="flex justify-between mb-1">
-                              <span className="text-sm font-medium">{item.skill}</span>
+                              <span className="font-medium">{item.skill}</span>
                               <span className="text-sm text-gray-500">{item.progress}%</span>
                             </div>
-                            <div className="h-2 w-full bg-gray-200 rounded-full">
+                            <div className="h-2 w-full bg-gray-200 rounded-full mb-3">
                               <div
                                 className="h-2 bg-emerald-500 rounded-full"
                                 style={{ width: `${item.progress}%` }}
                               ></div>
                             </div>
+                            <div className="flex items-center">
+                              <span className="text-xs font-medium bg-emerald-100 text-emerald-800 px-2 py-1 rounded">
+                                {item.progress >= 80 ? "Advanced" :
+                                  item.progress >= 60 ? "Intermediate" :
+                                    item.progress >= 40 ? "Beginner" : "Starting"}
+                              </span>
+                            </div>
+                            {item.learningGoal && (
+                              <div className="mt-3 pt-3 border-t border-gray-200">
+                                <p className="text-sm text-gray-700">
+                                  <span className="font-medium">Learning Goal:</span> {item.learningGoal}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>

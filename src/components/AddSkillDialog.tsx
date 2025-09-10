@@ -4,6 +4,7 @@ import { TrendingUp, Plus, X } from "lucide-react";
 interface Skill {
   name: string;
   level: number;
+  learningGoal?: string;
 }
 
 interface AddSkillDialogProps {
@@ -14,6 +15,7 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [level, setLevel] = useState(25);
+  const [learningGoal, setLearningGoal] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +24,8 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
 
     const newSkill = {
       name: name.trim(),
-      level: level
+      level: level,
+      learningGoal: learningGoal.trim() || undefined
     };
 
     onAddSkill(newSkill);
@@ -30,6 +33,7 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
     // Reset form
     setName("");
     setLevel(25);
+    setLearningGoal("");
     setOpen(false);
   };
 
@@ -85,6 +89,19 @@ export function AddSkillDialog({ onAddSkill }: AddSkillDialogProps) {
                   placeholder="e.g., Python, Public Speaking, Project Management"
                   required
                   className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="learning-goal" className="text-sm font-medium leading-none">
+                  Learning Goal
+                </label>
+                <textarea
+                  id="learning-goal"
+                  value={learningGoal}
+                  onChange={(e) => setLearningGoal(e.target.value)}
+                  placeholder="What do you want to achieve with this skill? Be specific about your learning objectives..."
+                  className="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50 min-h-[80px]"
                 />
               </div>
 

@@ -242,7 +242,7 @@ const MentorProfile = () => {
                     className="w-full inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-emerald-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                   >
                     <MessageSquare className="h-4 w-4 mr-2" />
-                    Message {mentor.name.split(' ').slice(0, 2).join(' ')}
+                    Message {mentor.name.split(' ')[0]}
                   </button>
 
                 </div>
