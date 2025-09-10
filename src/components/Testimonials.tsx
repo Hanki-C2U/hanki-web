@@ -38,6 +38,7 @@ export default function Testimonials() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const currentUser = testimonies[currentTestimonial];
 
+
   return (
     <section
       id="testimonials"

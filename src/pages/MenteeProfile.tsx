@@ -91,7 +91,7 @@ export default function MenteeProfile() {
       lastName: "Cyuzuzo",
       role: "Student",
       organization: "African Leadership University",
-      profilePicture: "/professional-headshot-of-confident-hispanic-sales-.png",
+      profilePicture: "/shema-portrait.png",
       bio: "I'm a software engineering student passionate about building web applications. I'm currently focused on full-stack development using JavaScript, React, and SQL. I'm seeking mentorship to strengthen my system design, problem-solving, and career navigation skills.",
       languages: ["English", "Français", "Ikinyarwanda"],
       achievementBadges: [
@@ -101,7 +101,7 @@ export default function MenteeProfile() {
         { id: 4, name: "Knowledge Seeker", icon: "📚", earned: true },
       ],
       skills: ["React", "JavaScript", "Node.js", "SQL", "HTML/CSS"],
-      goals: ["Master system design patterns", "Improve problem-solving skills", "Prepare for technical interviews", "Build a professional network"],
+      goals: ["Transition to Software Engineering", "Build Professional Network", "Develop Leadership Skills", "Prepare for technical interviews"],
       professionalBackground: {
         education: "B.S. Computer Science, African Leadership University, 2025 (Expected)",
         experience: [
@@ -133,10 +133,10 @@ export default function MenteeProfile() {
     {
       id: 2,
       firstName: "Alice",
-      lastName: "Mukamana",
+      lastName: "Mutoni",
       role: "Frontend Developer",
       organization: "TechRwanda",
-      profilePicture: "/professional-headshot-of-african-woman-hr-professi.png",
+      profilePicture: "/claudine-portrait.png",
       bio: "Frontend developer with 2 years of experience. Passionate about creating beautiful and accessible user interfaces. Looking to advance my career and take on more challenging projects.",
       languages: ["English", "Français", "Ikinyarwanda"],
       achievementBadges: [
