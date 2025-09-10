@@ -47,6 +47,8 @@ const SimpleChatPage = () => {
   const { user, userRole } = useAuthStore()
   // const { markAsRead } = useNotifications()
   
+  console.log('🎯 SimpleChatPage rendered for target user:', targetUserId);
+  
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
@@ -56,6 +58,24 @@ const SimpleChatPage = () => {
   const [targetUser, setTargetUser] = useState<UserInfo | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const prevTargetUserId = useRef<string | undefined>(targetUserId)
+
+  // Reset state when target user changes
+  useEffect(() => {
+    if (prevTargetUserId.current !== targetUserId) {
+      console.log('🔄 Target user changed from', prevTargetUserId.current, 'to', targetUserId)
+      console.log('🧹 Clearing previous conversation state')
+      
+      // Reset all conversation-related state
+      setConversation(null)
+      setMessages([])
+      setTargetUser(null)
+      setError(null)
+      setLoading(true)
+      
+      prevTargetUserId.current = targetUserId
+    }
+  }, [targetUserId])
 
   // Fetch target user info
   useEffect(() => {
@@ -129,7 +149,14 @@ const SimpleChatPage = () => {
       }
 
       try {
+        console.log('🔄 Setting up conversation for new target user:', targetUserId)
+        
+        // Reset state when changing conversations
+        setConversation(null)
+        setMessages([])
+        setError(null)
         setLoading(true)
+        
         console.log('🔍 Setting up conversation between:', user.id, 'and', targetUserId)
 
         // Try to find existing conversation (check both participant orders)
@@ -156,9 +183,9 @@ const SimpleChatPage = () => {
         let conversation = conv1 || conv2
         
         if (conversation) {
-          console.log('✅ Found existing conversation:', conversation.id)
+          console.log('✅ Found existing conversation:', conversation.id, 'for users:', user.id, 'and', targetUserId)
         } else {
-          console.log('📝 Creating new conversation...')
+          console.log('📝 Creating new conversation between:', user.id, 'and', targetUserId)
           
           // Small delay to prevent race conditions
           await new Promise(resolve => setTimeout(resolve, 100))
@@ -245,6 +272,9 @@ const SimpleChatPage = () => {
   // Fetch messages
   const fetchMessages = async (conversationId: number) => {
     try {
+      console.log('📨 Fetching messages for conversation:', conversationId);
+      console.log('🎯 Target user:', targetUserId);
+      
       const { data, error } = await supabasase
         .from('messages')
         .select('*')
@@ -252,6 +282,8 @@ const SimpleChatPage = () => {
         .order('createdAt', { ascending: true })
 
       if (error) throw error
+      
+      console.log('✅ Fetched', data?.length || 0, 'messages for conversation:', conversationId);
       setMessages(data || [])
       
       // Mark all messages in this conversation as read
@@ -415,7 +447,7 @@ const SimpleChatPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div key={`chat-${targetUserId}`} className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-4">
         <div className="flex items-center justify-between">

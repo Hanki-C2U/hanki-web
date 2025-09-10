@@ -17,6 +17,9 @@ const NotificationBell: React.FC = () => {
   });
 
   const handleNotificationClick = async (notification: any) => {
+    console.log('🔔 NotificationBell: Clicked notification:', notification);
+    console.log('🔔 NotificationBell: Navigating to sender:', notification.senderId);
+    
     // Mark as read locally
     markAsRead(notification.id);
     
@@ -24,8 +27,10 @@ const NotificationBell: React.FC = () => {
     await markMessageAsReadInDB(notification.id);
     
     setIsOpen(false);
+    
     // Navigate to the chat with the sender
-    navigate(`/simple-chat/${notification.senderId}`);
+    // Force navigation even if already on the same route
+    navigate(`/simple-chat/${notification.senderId}`, { replace: true });
   };
 
   const formatTimestamp = (timestamp: string) => {
