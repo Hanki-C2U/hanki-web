@@ -110,7 +110,7 @@ const MentorProfile = () => {
               <h1 className="text-xl font-semibold">Mentor Profile</h1>
             </div>
             <Link to="/" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
-              Hanki
+              ATLAS
             </Link>
           </div>
         </div>

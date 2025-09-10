@@ -182,7 +182,7 @@ const ResourceLibrary = () => {
               <h1 className="text-xl font-semibold">Resource Library</h1>
             </div>
             <Link to="/" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
-              Hanki
+              ATLAS
             </Link>
           </div>
         </div>

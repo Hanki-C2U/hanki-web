@@ -132,7 +132,7 @@ export default function Hero() {
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-8 lg:mb-12">
             <span className="text-white">Unlock Your Potential with </span>
             <span className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent">
-              Hanki
+              ATLAS
             </span>
           </h1>
 

@@ -9,7 +9,7 @@ const testimonies: Testimonial[] = [
     avatar: "AM",
     rating: 5,
     quote:
-      "Through Hanki, I transitioned from finance to tech in 8 months. My mentor guided me through every step, from learning to code to landing my first developer role.",
+      "Through ATLAS, I transitioned from finance to tech in 8 months. My mentor guided me through every step, from learning to code to landing my first developer role.",
     company: "Andela",
   },
   {

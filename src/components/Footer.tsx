@@ -46,7 +46,7 @@ export default function Footer() {
                 <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-lg">SC</span>
                 </div>
-                <span className="text-emerald-400 font-bold text-xl">Hanki</span>
+                <span className="text-emerald-400 font-bold text-xl">ATLAS</span>
               </div>
               <p className="text-gray-300 text-sm leading-relaxed mb-6">
                 Transform careers through mentorship.<br/>
@@ -182,7 +182,7 @@ export default function Footer() {
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="flex items-center gap-4 mb-4 md:mb-0">
                 <p className="text-gray-400 text-sm">
-                  © 2024 Hanki. All rights reserved.
+                  © 2024 ATLAS. All rights reserved.
                 </p>
                 <span className="text-gray-600 text-sm hidden md:inline">Built with 💚 in Rwanda</span>
               </div>

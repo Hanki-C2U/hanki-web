@@ -20,7 +20,7 @@ export default function WhoItsFor() {
           </h2>
                     <p className="text-lg text-gray-300 max-w-3xl mx-auto">
             Whether you're a diaspora professional ready to give back or a young Rwandan 
-            looking to grow, Hanki is your bridge to success.
+            looking to grow, ATLAS is your bridge to success.
           </p>
         </div>
 

@@ -39,7 +39,7 @@ export default function Header() {
                 role="button"
                 aria-label="Go to homepage"
               >
-                Hanki
+                ATLAS
               </h1>
             </div>
           </div>

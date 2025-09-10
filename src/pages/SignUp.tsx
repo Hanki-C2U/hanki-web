@@ -68,7 +68,7 @@ const Signup = () => {
         
         <Card className="shadow-card gradient-card">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Join Hanki</CardTitle>
+            <CardTitle className="text-2xl font-bold">Join ATLAS</CardTitle>
             <CardDescription>
               Create your account with Google to get started
             </CardDescription>

@@ -51,7 +51,7 @@ const MentorDashboard = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to="/" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
-                Hanki
+                ATLAS
               </Link>
               <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-professional-blue-light text-professional-blue">
                 Mentor Dashboard
