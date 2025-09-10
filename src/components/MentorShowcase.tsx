@@ -5,7 +5,7 @@ export default function MentorShowcase() {
   const mentors: Mentor[] = [
     {
       id: 1,
-      name: "Dr. Patricia Nkunda",
+      name: "Patricia Nkunda",
       photo: "/professional-headshot-of-confident-hispanic-sales-.png",
       role: "Senior Data Scientist",
       flag: "🇬🇧",
