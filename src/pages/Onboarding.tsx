@@ -172,7 +172,7 @@ const Onboarding = () => {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Complete Your Profile</CardTitle>
             <CardDescription>
-              Welcome {user.user_metadata?.given_name}! Let's set up your SkillsConnect profile.
+              Welcome {user.user_metadata?.given_name}! Let's set up your Hanki profile.
             </CardDescription>
           </CardHeader>
           

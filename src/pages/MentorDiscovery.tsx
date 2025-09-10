@@ -148,7 +148,7 @@ const MentorDiscovery = () => {
               <h1 className="text-xl font-semibold">Discover Mentors</h1>
             </div>
             <Link to="/" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
-              SkillsConnect
+              Hanki
             </Link>
           </div>
         </div>

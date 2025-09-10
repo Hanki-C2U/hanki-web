@@ -65,7 +65,7 @@ const MenteeDashboard = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to="/" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
-                SkillsConnect
+                Hanki
               </Link>
               <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-accent/20 text-accent">
                 Mentee Dashboard

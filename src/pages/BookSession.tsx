@@ -69,7 +69,7 @@ const BookSession = () => {
               <h1 className="text-xl font-semibold">Book Session</h1>
             </div>
             <Link to="/" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
-              SkillsConnect
+              Hanki
             </Link>
           </div>
         </div>
