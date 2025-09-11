@@ -18,7 +18,7 @@ import AuthHeader from "../components/AuthHeader";
 import { format } from "date-fns";
 
 // Helper function to get current time in mentor's timezone
-const getCurrentTimeInTimezone = (timezone: string): string => {
+const getCurrentTimeInTimezone = (_: string): string => {
   // In a real implementation, we would use proper timezone conversion
   // For the hackathon demo, we'll just format the current time
   return format(new Date(), 'HH:mm');
@@ -30,7 +30,7 @@ const MentorProfile = () => {
 
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
   const [activeTab, setActiveTab] = useState("experience");
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>("");
 
   const navigate = useNavigate();

@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { mockAuth } from '../lib/mockAuth';
-import { mockUsers, mockMentors, mockMentees } from '../data/mockData';
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+// Import only what we need to avoid unused warnings
+import { mockMentors, mockMentees } from '../data/mockData';
 
 type UserType = 'mentor' | 'mentee';
 

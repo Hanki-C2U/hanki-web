@@ -3,7 +3,8 @@ export default async function getCurrentMentee() {
   const storedUser = localStorage.getItem("mockUser");
   if (!storedUser) throw new Error("No user signed in");
 
-  const mockUser = JSON.parse(storedUser);
+  // We don't need this variable anymore, but we'll keep the check for null
+  // const mockUser = JSON.parse(storedUser);
 
   // Get the user profile from localStorage
   const storedProfile = localStorage.getItem("mockUserProfile");

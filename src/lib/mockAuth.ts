@@ -71,7 +71,7 @@ export const mockAuth = {
   },
 
   // Add listener for auth state changes
-  onAuthStateChange: (callback: (event: string, session: any) => void) => {
+  onAuthStateChange: (_: (event: string, session: any) => void) => {
     // In a real implementation, this would set up listeners
     // For mock, we'll just return an empty cleanup function
     return {
@@ -88,10 +88,10 @@ export const mockData = {
   from: (tableName: string) => {
     return {
       // Select fields to return
-      select: (fields?: string) => {
+      select: (_?: string) => {
         return {
           // Filter by a field value
-          eq: (field: string, value: any) => {
+          eq: (_field: string, value: unknown) => {
             return {
               // Return a single result
               single: async () => {

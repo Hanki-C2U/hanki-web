@@ -331,14 +331,15 @@ const MentorDashboard = () => {
     }
   ];
 
-  const renderStars = (rating: number) => {
-    return Array(5).fill(0).map((_, i) => (
-      <Star
-        key={i}
-        className={`h-4 w-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
-      />
-    ));
-  };
+  // Rating display function - kept for future use
+  // const renderStars = (rating: number) => {
+  //   return Array(5).fill(0).map((_, i) => (
+  //     <Star
+  //       key={i}
+  //       className={`h-4 w-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
+  //     />
+  //   ));
+  // };
 
   // Handle edit profile button click
   const handleEditProfile = () => {
@@ -685,7 +686,7 @@ const MentorDashboard = () => {
                               <h4 className="font-medium">{review.mentee}</h4>
                               <span className="text-sm text-gray-500">{review.date}</span>
                             </div>
-                          
+
                             <p className="text-gray-700">{review.comment}</p>
                           </div>
                         ))}
@@ -930,7 +931,7 @@ const MentorDashboard = () => {
                     </div>
                   </div>
                   <div className="mt-2 flex justify-between">
-                   
+
                     <span className="text-xs text-emerald-600 hover:text-emerald-800">
                       View Profile
                     </span>

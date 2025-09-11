@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Textarea } from "../components/ui/textarea";
 import { Users, GraduationCap } from "lucide-react";
 import ChipSelection from "../components/ui/ChipSelectionContext";
-import { mockMentors, mockMentees, type MockUser } from "../data/mockData";
+import type { MockUser } from "../data/mockData";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -79,8 +79,8 @@ const Onboarding = () => {
       // Prepare user data from mock user + additional profile data
       const userData = {
         id: Math.floor(Math.random() * 10000).toString(), // Generate random ID
-        first_name: profileData.firstName || user.user_metadata?.given_name || '',
-        last_name: profileData.lastName || user.user_metadata?.family_name || '',
+        first_name: profileData.firstName || user.firstName || '',
+        last_name: profileData.lastName || user.lastName || '',
         email: user.email,
         supabaseId: user.id,
         age: parseInt(profileData.age) || 20,
@@ -158,7 +158,7 @@ const Onboarding = () => {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Complete Your Profile</CardTitle>
             <CardDescription>
-              Welcome {user.user_metadata?.given_name}! Let's set up your ATLAS profile.
+              Welcome {user.firstName}! Let's set up your ATLAS profile.
             </CardDescription>
           </CardHeader>
 
