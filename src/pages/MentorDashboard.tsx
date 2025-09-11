@@ -364,6 +364,69 @@ const MentorDashboard = () => {
     fetchPendingRequests();
   }, [user?.id, userRole]);
 
+  // Handle session approval/rejection
+  const handleSessionAction = async (sessionId: number, action: 'ACCEPTED' | 'REJECTED') => {
+    try {
+      const { error } = await supabasase
+        .from('sessions')
+        .update({ 
+          status: action,
+          statusUpdatedAt: new Date().toISOString(),
+          statusUpdatedBy: user?.id
+        })
+        .eq('id', sessionId);
+
+      if (error) {
+        console.error('Error updating session:', error);
+        alert('Failed to update session. Please try again.');
+        return;
+      }
+
+      // Remove from pending requests and optionally add to upcoming sessions
+      setPendingRequests(prev => prev.filter(req => req.id !== sessionId));
+      
+      if (action === 'ACCEPTED') {
+        // Refetch upcoming sessions to include the newly accepted session
+        const { data: updatedSession } = await supabasase
+          .from('sessions')
+          .select(`
+            *,
+            mentee:menteeId (
+              first_name,
+              last_name,
+              profile_picture
+            )
+          `)
+          .eq('id', sessionId)
+          .single();
+
+        if (updatedSession) {
+          // Transform the data to match our Session interface
+          const transformedSession: Session = {
+            id: updatedSession.id,
+            menteeId: updatedSession.menteeId,
+            mentee: `${updatedSession.mentee?.first_name || 'Unknown'} ${updatedSession.mentee?.last_name || 'User'}`,
+            topic: updatedSession.title || 'General Mentoring',
+            date: updatedSession.sessionDate,
+            startTime: updatedSession.startTime,
+            endTime: updatedSession.endTime,
+            duration: calculateDuration(updatedSession.startTime, updatedSession.endTime),
+            status: 'scheduled'
+          };
+
+          setUpcomingSessions(prev => [...prev, transformedSession].sort((a, b) => 
+            new Date(a.date).getTime() - new Date(b.date).getTime()
+          ));
+        }
+      }
+
+      alert(`Session ${action.toLowerCase()} successfully!`);
+    } catch (error) {
+      console.error('Error handling session action:', error);
+      alert('An error occurred. Please try again.');
+    }
+  };
+
   // Helper function to calculate session duration
   const calculateDuration = (startTime: string, endTime: string): string => {
     const start = new Date(`2000-01-01T${startTime}`);
@@ -656,10 +719,16 @@ const MentorDashboard = () => {
                       <p className="text-sm font-medium text-emerald-600 mb-1">{request.topic}</p>
                       <p className="text-sm text-gray-600 mb-3 line-clamp-2">{request.message}</p>
                       <div className="flex gap-2">
-                        <button className="flex-1 px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
+                        <button 
+                          onClick={() => handleSessionAction(request.id, 'ACCEPTED')}
+                          className="flex-1 px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm"
+                        >
                           Accept
                         </button>
-                        <button className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 text-sm">
+                        <button 
+                          onClick={() => handleSessionAction(request.id, 'REJECTED')}
+                          className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 text-sm"
+                        >
                           Decline
                         </button>
                       </div>
@@ -710,7 +779,10 @@ const MentorDashboard = () => {
                       {upcomingSessions[0].startTime} • {upcomingSessions[0].duration}
                     </p>
                   </div>
-                  <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 hover:scale-105 cursor-pointer">
+                  <button 
+                    onClick={() => navigate(`/session/${upcomingSessions[0].id}`)}
+                    className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 hover:scale-105 cursor-pointer"
+                  >
                     <Video className="h-4 w-4" />
                     <span>Join</span>
                   </button>
@@ -1013,7 +1085,10 @@ const MentorDashboard = () => {
                                 </div>
                                 <h4 className="font-medium mt-1">{session.mentee}</h4>
                                 <p className="text-sm text-gray-600">{session.topic}</p>
-                                <button className="mt-2 inline-flex items-center text-xs text-emerald-600 hover:text-emerald-800">
+                                <button 
+                                  onClick={() => navigate(`/session/${session.id}`)}
+                                  className="mt-2 inline-flex items-center text-xs text-emerald-600 hover:text-emerald-800"
+                                >
                                   <Video className="h-3.5 w-3.5 mr-1" />
                                   Join Session
                                 </button>
@@ -1067,7 +1142,10 @@ const MentorDashboard = () => {
                                       {displayDate}, {session.startTime} • {session.duration}
                                     </p>
                                   </div>
-                                  <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700">
+                                  <button 
+                                    onClick={() => navigate(`/session/${session.id}`)}
+                                    className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700"
+                                  >
                                     <Video className="h-4 w-4" />
                                     <span>Join</span>
                                   </button>
