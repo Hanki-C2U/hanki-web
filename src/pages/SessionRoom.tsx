@@ -243,15 +243,6 @@ const SessionRoom: React.FC = () => {
         </div>
       </div>
 
-      {/* Testing Mode Banner */}
-      <div className="bg-orange-100 border-b border-orange-200 px-6 py-2">
-        <div className="max-w-6xl mx-auto">
-          <p className="text-center text-sm text-orange-800">
-            🧪 <strong>Testing Mode:</strong> Time restrictions disabled - You can join any accepted session immediately
-          </p>
-        </div>
-      </div>
-
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Video Session Area */}
@@ -293,7 +284,7 @@ const SessionRoom: React.FC = () => {
                   <p className="text-gray-600 mb-4">
                     {sessionStarted 
                       ? 'You have left the video session. You can rejoin if needed.'
-                      : 'Click the button below to start your video session with Jitsi Meet. (Testing mode - no time restrictions)'
+                      : 'Click the button below to start your video session with Jitsi Meet.'
                     }
                   </p>
                   

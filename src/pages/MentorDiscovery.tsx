@@ -2,17 +2,18 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
   Search,
-  Filter,
   MapPin,
   Star,
   Clock,
   ArrowLeft,
   Calendar,
   Loader2,
-  MessageCircle
+  MessageCircle,
+  Linkedin
 } from "lucide-react";
 import { supabasase } from "../supabase_creds/supabase";
 import { useAuthStore } from "../store/authStore";
+import { createLinkedInRoute } from "../utils/linkedInUtils";
 
 const MentorDiscovery = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -91,15 +92,15 @@ const MentorDiscovery = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to="/mentee-dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-smooth">
+              <Link to="/mentee-dashboard" className="flex items-center gap-2 text-gray-600 hover:text-emerald-700 transition-smooth">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Dashboard
               </Link>
               <div className="h-6 w-px bg-gray-300" />
               <h1 className="text-xl font-semibold">Discover Mentors</h1>
             </div>
-            <Link to="/" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
-              SkillsConnect
+            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+              ATLAS
             </Link>
           </div>
         </div>
@@ -108,7 +109,7 @@ const MentorDiscovery = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filter Section */}
         <div className="bg-white rounded-xl shadow-card p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-6">Find Your Perfect Mentor</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Find Your Perfect Mentor</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-2 relative">
@@ -118,14 +119,14 @@ const MentorDiscovery = () => {
                 placeholder="Search by name, expertise, or skills..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
             </div>
 
             <select
               value={selectedExpertise}
               onChange={(e) => setSelectedExpertise(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
             >
               <option value="">Expertise Area</option>
               {expertiseAreas.map((area) => (
@@ -136,7 +137,7 @@ const MentorDiscovery = () => {
             <select
               value={selectedLocation}
               onChange={(e) => setSelectedLocation(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
             >
               <option value="">Location</option>
               {locations.map((location) => (
@@ -149,10 +150,6 @@ const MentorDiscovery = () => {
             <p className="text-gray-600">
               Showing {filteredMentors.length} mentor{filteredMentors.length !== 1 ? 's' : ''}
             </p>
-            <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
-              <Filter className="h-4 w-4 mr-2" />
-              More Filters
-            </button>
           </div>
         </div>
 
@@ -305,6 +302,19 @@ const MentorDiscovery = () => {
                         Chat with Mentor
                       </button>
                     </div>
+                    
+                    {/* LinkedIn Button */}
+                    {mentor.LinkedIn && (
+                      <div className="mt-2">
+                        <Link
+                          to={createLinkedInRoute(mentor.LinkedIn) || '#'}
+                          className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-blue-300 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-blue-700 hover:text-blue-800"
+                        >
+                          <Linkedin className="h-4 w-4" />
+                          View LinkedIn Profile
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

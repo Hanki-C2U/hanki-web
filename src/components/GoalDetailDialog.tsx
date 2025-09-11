@@ -79,7 +79,7 @@ export function GoalDetailDialog({ goal, open, onOpenChange, onUpdateGoal }: Goa
                 </div>
                 <button
                   onClick={() => onOpenChange(false)}
-                  className="inline-flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                  className="inline-flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -94,7 +94,7 @@ export function GoalDetailDialog({ goal, open, onOpenChange, onUpdateGoal }: Goa
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600">{currentProgress}%</span>
                     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${currentProgress === 100
-                      ? "border-transparent bg-green-100 text-green-800"
+                      ? "border-transparent bg-emerald-100 text-emerald-800"
                       : "border-transparent bg-gray-100 text-gray-800"
                       }`}>
                       {currentProgress === 100 ? "Completed" : "In Progress"}
@@ -103,7 +103,7 @@ export function GoalDetailDialog({ goal, open, onOpenChange, onUpdateGoal }: Goa
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
-                    className="bg-orange-500 h-3 rounded-full transition-all duration-300"
+                    className="bg-emerald-500 h-3 rounded-full transition-all duration-300"
                     style={{ width: `${currentProgress}%` }}
                   />
                 </div>
@@ -121,7 +121,7 @@ export function GoalDetailDialog({ goal, open, onOpenChange, onUpdateGoal }: Goa
                           id={`milestone-${index}`}
                           checked={milestone.completed}
                           onChange={() => handleMilestoneToggle(index)}
-                          className="h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500 focus:ring-2"
+                          className="h-4 w-4 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500 focus:ring-2"
                         />
                       </div>
                       <label
@@ -134,7 +134,7 @@ export function GoalDetailDialog({ goal, open, onOpenChange, onUpdateGoal }: Goa
                         {milestone.title}
                       </label>
                       {milestone.completed && (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-4 w-4 text-emerald-500" />
                       )}
                     </div>
                   ))}
@@ -148,14 +148,14 @@ export function GoalDetailDialog({ goal, open, onOpenChange, onUpdateGoal }: Goa
                     value={newSubGoal}
                     onChange={(e) => setNewSubGoal(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleAddSubGoal()}
-                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                   />
                   <button
                     onClick={handleAddSubGoal}
                     disabled={!newSubGoal.trim()}
-                    className={`inline-flex items-center justify-center h-10 w-10 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${!newSubGoal.trim()
+                    className={`inline-flex items-center justify-center h-10 w-10 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${!newSubGoal.trim()
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-orange-500 text-white hover:bg-orange-600'
+                      : 'bg-emerald-500 text-white hover:bg-emerald-600'
                       }`}
                   >
                     <Plus className="h-4 w-4" />
@@ -178,7 +178,7 @@ export function GoalDetailDialog({ goal, open, onOpenChange, onUpdateGoal }: Goa
                   <div className="text-sm text-gray-600">Remaining</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-2xl font-bold text-emerald-600">
                     {goal.milestones.length}
                   </div>
                   <div className="text-sm text-gray-600">Total</div>

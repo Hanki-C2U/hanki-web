@@ -6,7 +6,6 @@ interface Message {
   id: number
   conversationId: number
   senderId: string
-  senderRole: 'mentor' | 'mentee'
   content: string
   messageType: string
   isRead: boolean
@@ -73,30 +72,30 @@ function useRealtimeChat() {
           // Try to fetch from mentor table first, then mentee table
           let otherParticipant = null
 
-          try {
-            const { data: mentorData } = await supabasase
-              .from('mentor')
+          // First try mentor table
+          const { data: mentorData, error: mentorError } = await supabasase
+            .from('mentor')
+            .select('supabaseId, first_name, last_name, profile_picture')
+            .eq('supabaseId', otherParticipantId)
+            .single()
+
+          if (mentorData && !mentorError) {
+            otherParticipant = { ...mentorData, id: mentorData.supabaseId, role: 'mentor' as const }
+          } else {
+            // If not found in mentor table, try mentee table
+            const { data: menteeData, error: menteeError } = await supabasase
+              .from('mentee')
               .select('supabaseId, first_name, last_name, profile_picture')
               .eq('supabaseId', otherParticipantId)
               .single()
 
-            if (mentorData) {
-              otherParticipant = { ...mentorData, id: mentorData.supabaseId, role: 'mentor' as const }
-            }
-          } catch (e) {
-            // Not a mentor, try mentee
-            try {
-              const { data: menteeData } = await supabasase
-                .from('mentee')
-                .select('supabaseId, first_name, last_name, profile_picture')
-                .eq('supabaseId', otherParticipantId)
-                .single()
-
-              if (menteeData) {
-                otherParticipant = { ...menteeData, id: menteeData.supabaseId, role: 'mentee' as const }
-              }
-            } catch (e2) {
-              console.warn('Could not find participant details for:', otherParticipantId)
+            if (menteeData && !menteeError) {
+              otherParticipant = { ...menteeData, id: menteeData.supabaseId, role: 'mentee' as const }
+            } else {
+              console.warn('❌ Could not find participant details for:', otherParticipantId, {
+                mentorError: mentorError?.message,
+                menteeError: menteeError?.message
+              })
             }
           }
 
@@ -114,6 +113,12 @@ function useRealtimeChat() {
       setLoading(false)
     }
   }, [user?.id, userRole])
+
+  // Force refresh conversations (useful when participant data is missing)
+  const refreshConversations = useCallback(async () => {
+    console.log('🔄 Force refreshing conversations...');
+    await fetchConversations();
+  }, [fetchConversations]);
 
   // Fetch messages for specific conversation
   const fetchMessages = useCallback(async (conversationId: number) => {
@@ -165,9 +170,8 @@ function useRealtimeChat() {
         id: tempId,
         conversationId,
         senderId: user.id,
-        senderRole: userRole,
         content: messageContent,
-        messageType: 'text',
+        messageType: 'TEXT',
         isRead: false,
         createdAt: new Date().toISOString()
       }
@@ -184,9 +188,8 @@ function useRealtimeChat() {
           {
             conversationId,
             senderId: user.id,
-            senderRole: userRole,
             content: messageContent,
-            messageType: 'text'
+            messageType: 'TEXT'
           }
         ])
         .select()
@@ -558,6 +561,7 @@ function useRealtimeChat() {
     sendMessage,
     createOrFindConversation,
     fetchConversations,
+    refreshConversations,
     markConversationAsRead,
     error,
     sendingMessage

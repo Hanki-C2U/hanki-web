@@ -11,7 +11,3 @@ export const supabasase = createClient(url, key, {
   },
 })
 
-// Test the connection and log real-time status
-console.log('🔌 Supabase client initialized with real-time enabled')
-console.log('📡 Supabase URL:', url?.substring(0, 30) + '...')
-console.log('🔑 API Key configured:', key ? 'Yes' : 'No')

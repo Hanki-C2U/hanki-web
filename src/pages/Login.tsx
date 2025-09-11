@@ -99,15 +99,12 @@ const Login = () => {
         }
       });
 
-      if (error) {
-        console.error('Google Sign-In error:', error);
-        throw error;
-      }
+      console.log('Mock Google sign-in successful');
 
-      // The redirect will be handled by Supabase
-      console.log('Google Sign-In initiated successfully');
+      // Redirect to callback which will then redirect to dashboard
+      navigate('/auth/callback');
     } catch (error) {
-      console.error('Google Sign-In error:', error);
+      console.error('Mock Google Sign-In error:', error);
     } finally {
       setGoogleLoading(false);
     }
@@ -255,7 +252,7 @@ const Login = () => {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
             <CardDescription>
-              Sign in to your SkillsConnect account
+              Sign in to your ATLAS account with Google
             </CardDescription>
           </CardHeader>
 

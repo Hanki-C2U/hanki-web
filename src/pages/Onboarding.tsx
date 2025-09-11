@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -14,11 +14,15 @@ import { useAuthStore } from "../store/authStore";
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<"mentor" | "mentee">("mentee");
   const [chosen, setChosen] = useState(true);
   const [Data, setData] = useState<{ results: any[] }>({ results: [] });
+
+  // Get password from navigation state (from signup)
+  const userPassword = location.state?.userPassword || 'SUPABASE_AUTH';
 
   // Use Zustand store for session management
   // You can now access user session data from anywhere in your app!
@@ -153,8 +157,6 @@ const Onboarding = () => {
 
     getCurrentUser();
   }, [navigate, setSession, setUser]);
-
-
 
   // Handle expertise selection from ChipSelection component
   const handleExpertiseChange = (selectedExpertise: string[]) => {
@@ -295,16 +297,16 @@ const Onboarding = () => {
         console.log('✅ Profile picture uploaded successfully:', profilePicUrl);
       }
 
-      // Prepare user data from Google auth + additional profile data
+      // Prepare user data from mock user + additional profile data
       const userData = {
         first_name: currentData.firstName || user.user_metadata?.given_name || '',
         last_name: currentData.lastName || user.user_metadata?.family_name || '',
         email: user.email,
-        password: 'OAUTH_USER', // Placeholder for OAuth users
         supabaseId: user.id,
         age: parseInt(currentData.age) || 20,
         phone_number: currentData.number || `TEMP_${user.id.slice(0, 8)}`, // Fallback to prevent conflicts
         gender: currentData.gender || 'Not specified',
+        password: userPassword, // Use actual password from signup
         profile_picture: profilePicUrl || 
           'https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg',
         location: currentData.location,
@@ -408,7 +410,13 @@ const Onboarding = () => {
     );
   }
 
-
+  const handleSignOut = () => {
+    localStorage.removeItem('mockUser');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('mockUserProfile');
+    navigate('/login');
+    return;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center p-4">
@@ -417,10 +425,10 @@ const Onboarding = () => {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Complete Your Profile</CardTitle>
             <CardDescription>
-              Welcome {user.user_metadata?.given_name}! Let's set up your SkillsConnect profile.
+              Welcome {user.user_metadata?.given_name}! Let's set up your ATLAS profile.
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             <Tabs value={role} onValueChange={(value) => handleRoleChange(value as "mentor" | "mentee")} className="mb-6">
               <TabsList className="grid w-full grid-cols-2">
@@ -903,8 +911,8 @@ const Onboarding = () => {
                   </div>
                 </>
               )}
-              
-              <Button 
+
+              <Button
                 type="submit"
                 className="w-full gradient-hero text-white font-medium transition-smooth hover:shadow-elevated"
                 disabled={loading}

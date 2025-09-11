@@ -54,7 +54,11 @@ const Signup = () => {
 
   const handleGoogleSignUp = async () => {
     setGoogleLoading(true);
+    setSignupError(null);
+    
     try {
+      console.log('🚀 Starting Google sign-up...');
+      
       const { error } = await supabasase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -63,13 +67,17 @@ const Signup = () => {
       });
 
       if (error) {
-        console.error('Google Sign-Up error:', error);
-        throw error;
+        console.error('❌ Google sign-up error:', error);
+        setSignupError('Google sign-up failed. Please try again.');
+        return;
       }
 
-      console.log('Google Sign-Up initiated successfully');
-    } catch (error) {
-      console.error('Google Sign-Up error:', error);
+      console.log('✅ Google sign-up initiated successfully');
+      // The redirect to Google will happen automatically
+      
+    } catch (error: any) {
+      console.error('❌ Unexpected Google sign-up error:', error);
+      setSignupError('An unexpected error occurred with Google sign-up. Please try again.');
     } finally {
       setGoogleLoading(false);
     }
@@ -181,7 +189,10 @@ const Signup = () => {
         if (data.session) {
           console.log('✅ User has immediate session, going to onboarding');
           // User has immediate session, can go to onboarding
-          navigate('/onboarding', { replace: true });
+          navigate('/onboarding', { 
+            replace: true,
+            state: { userPassword: password }
+          });
         } else {
           console.log('📧 Email confirmation required');
           // Email confirmation required
@@ -241,15 +252,15 @@ const Signup = () => {
             Back to Home
           </Link>
         </div>
-        
+
         <Card className="shadow-card gradient-card">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Join SkillsConnect</CardTitle>
+            <CardTitle className="text-2xl font-bold">Join ATLAS</CardTitle>
             <CardDescription>
               Create your account to get started
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             {/* Error Display */}
             {signupError && (
@@ -336,12 +347,12 @@ const Signup = () => {
             </div>
 
             {/* Google Sign-Up Button */}
-            <GoogleSignInButton 
+            <GoogleSignInButton
               onGoogleSignIn={handleGoogleSignUp}
               loading={googleLoading}
               variant="signup"
             />
-            
+
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link to="/login" className="text-primary hover:underline">

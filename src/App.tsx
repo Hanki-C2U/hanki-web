@@ -4,6 +4,7 @@ import { router } from './RouteLayout'
 import { NotificationProvider } from './contexts/NotificationContext'
 
 function App() {
+  
   return (
     <div>
       <AuthProvider>

@@ -22,9 +22,17 @@ import MenteeDashboard from "./pages/MenteeDashboard";
 import ChatPage from "./pages/ChatPage"
 import SimpleChatPage from "./pages/SimpleChatPage"
 import SessionRoom from "./pages/SessionRoom"
+import ScrollToTop from "./components/ScrollToTop";
+import { AuthProvider } from "./contexts/AuthContext";
+import InspirationPage from "./pages/InspirationPage";
+import EditProfile from "./pages/EditProfile";
+import EditMentorProfile from "./pages/EditMentorProfile";
+import LinkedInRedirect from "./components/LinkedInRedirect";
+
+
 export const router = createBrowserRouter(createRoutesFromElements(
     <Route path="/">
-          <Route index element={<Login/>}/>
+          <Route index element={<LandingPage />}/>
           <Route path="signup" element={<Signup/>}/>
           <Route path="landing" element={<LandingPage />} />
           <Route path="resources" element={<ResourceLibrary />} />
@@ -39,13 +47,13 @@ export const router = createBrowserRouter(createRoutesFromElements(
           <Route path="auth/callback" element={<AuthCallback/>}/>
           <Route path="onboarding" element={<Onboarding/>}/>
           <Route path="*" element={<NotFound />} />
-          <Route path='home' element={
+          {/* <Route path='home' element={
             <ProtectedComp>
               <IncompleteOnboardingHandler>
                 <HomePage/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
-            }/>
+            }/> */}
           {/* <Route path="/" element={<LandingPage/>} /> */}
           <Route path="/mentor-dashboard" element={
             <ProtectedComp allowedRoles={['mentor']}>
@@ -96,6 +104,28 @@ export const router = createBrowserRouter(createRoutesFromElements(
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
+          <Route path="/edit-profile" element={
+            <ProtectedComp allowedRoles={['mentee']}>
+              <IncompleteOnboardingHandler>
+                <EditProfile/>
+              </IncompleteOnboardingHandler>
+            </ProtectedComp>
+          } />
+          <Route path="/edit-mentor-profile" element={
+            <ProtectedComp allowedRoles={['mentor']}>
+              <IncompleteOnboardingHandler>
+                <EditMentorProfile/>
+              </IncompleteOnboardingHandler>
+            </ProtectedComp>
+          } />
+          <Route path="/inspiration" element={
+            <ProtectedComp>
+              <IncompleteOnboardingHandler>
+                <InspirationPage/>
+              </IncompleteOnboardingHandler>
+            </ProtectedComp>
+          } />
+          <Route path="/linkedin/:username" element={<LinkedInRedirect />} />
       </Route>
   ))
 

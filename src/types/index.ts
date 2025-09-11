@@ -20,6 +20,12 @@ export interface Mentor {
   certified: boolean;
 }
 
+export interface Skill {
+  name: string;
+  level: number;
+  learningGoal?: string;
+}
+
 export interface Statistic {
   id: number;
   value: string;
@@ -34,8 +40,8 @@ export interface NavigationItem {
 }
 
 // Button component types
-export type ButtonVariant = 'primary' | 'secondary' | 'outline';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonVariant = "primary" | "secondary" | "outline";
+export type ButtonSize = "sm" | "md" | "lg";
 
 // Hero section types
 export interface HeroContent {

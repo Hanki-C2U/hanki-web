@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import { 
   ArrowLeft, 
@@ -7,8 +7,12 @@ import {
   MessageCircle,
   User,
   CheckCircle,
-  Loader2
+  Loader2,
+  Clock
 } from "lucide-react";
+import { DayPicker } from 'react-day-picker';
+import 'react-day-picker/style.css';
+import '../styles/day-picker.css';
 import { supabasase } from '../supabase_creds/supabase';
 import { useAuthStore } from '../store/authStore';
 
@@ -30,7 +34,7 @@ interface Mentor {
 const BookSession = () => {
   const { mentorId } = useParams();
   const navigate = useNavigate();
-  const { user, userRole } = useAuthStore();
+  const { user } = useAuthStore();
   
   // Form fields matching sessions table
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -39,6 +43,8 @@ const BookSession = () => {
   const [endTime, setEndTime] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [goals, setGoals] = useState("");
+  const [experience, setExperience] = useState("");
   const [additionalParticipants] = useState<string[]>([]);
   
   // Component state
@@ -82,14 +88,8 @@ const BookSession = () => {
     fetchMentor();
   }, [mentorId]);
 
-  const availableDates = [
-    { date: "2025-09-08", label: "Mon, Sep 8" },
-    { date: "2025-09-10", label: "Wed, Sep 10" }, 
-    { date: "2025-09-12", label: "Fri, Sep 12" },
-    { date: "2025-09-15", label: "Mon, Sep 15" }
-  ];
-
-  const timeSlots = [
+  // Generate available time slots for any day
+  const timeSlots = useMemo(() => [
     { start: "09:00", end: "10:00", label: "9:00 AM - 10:00 AM" },
     { start: "10:00", end: "11:00", label: "10:00 AM - 11:00 AM" },
     { start: "11:00", end: "12:00", label: "11:00 AM - 12:00 PM" },
@@ -98,7 +98,16 @@ const BookSession = () => {
     { start: "15:00", end: "16:00", label: "3:00 PM - 4:00 PM" },
     { start: "16:00", end: "17:00", label: "4:00 PM - 5:00 PM" },
     { start: "17:00", end: "18:00", label: "5:00 PM - 6:00 PM" }
-  ];
+  ], []);
+
+  // Function to check if a date is available for booking
+  const isDateAvailable = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    
+    // Allow dates from today onwards
+    return date >= today;
+  };
 
   // Helper function to check if a time slot is available 
   // For testing: All time slots are always available
@@ -106,13 +115,12 @@ const BookSession = () => {
     return true; // Always return true for testing purposes
   };
 
-  const sessionTitles = [
-    "Career Guidance Session",
-    "Technical Code Review",
-    "Interview Preparation",
-    "Project Discussion",
-    "General Mentoring Session",
-    "Skill Development Planning"
+  const sessionTypes = [
+    { value: "career-guidance", label: "Career Guidance" },
+    { value: "technical-review", label: "Technical Review" },
+    { value: "interview-prep", label: "Interview Preparation" },
+    { value: "project-discussion", label: "Project Discussion" },
+    { value: "general-mentoring", label: "General Mentoring" }
   ];
 
   const handleBookSession = async () => {
@@ -136,12 +144,19 @@ const BookSession = () => {
       const jitsiRoomId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const meetingUrl = `https://meet.jit.si/${jitsiRoomId}`;
       
+      // Combine description, goals, and experience into a comprehensive description
+      const fullDescription = [
+        description && `Session Description: ${description}`,
+        goals && `Goals: ${goals}`,
+        experience && `Background: ${experience}`
+      ].filter(Boolean).join(' | ');
+      
       // Create session in database
       const sessionData = {
         menteeId: user.id,
         mentorId: mentor.supabaseId,
         title,
-        description: description || null,
+        description: fullDescription || null,
         startTime,
         endTime,
         sessionDate: selectedDate.toISOString().split('T')[0], // Use date only (YYYY-MM-DD)
@@ -184,34 +199,25 @@ const BookSession = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-subtle border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to={`/mentor/${mentorId}`} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-smooth">
+              <Link to={`/mentor/${mentorId}`} className="flex items-center gap-2 text-gray-600 hover:text-emerald-700 transition-smooth">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Profile
               </Link>
               <div className="h-6 w-px bg-gray-300" />
               <h1 className="text-xl font-semibold">Book Session</h1>
             </div>
-            <Link to="/" className="text-2xl font-bold gradient-hero bg-clip-text text-transparent">
+            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
               SkillsConnect
             </Link>
           </div>
         </div>
       </header>
-
-      {/* Testing Mode Banner */}
-      <div className="bg-green-100 border-b border-green-200 px-4 sm:px-6 lg:px-8 py-2">
-        <div className="max-w-7xl mx-auto">
-          <p className="text-center text-sm text-green-800">
-            🧪 <strong>Testing Mode:</strong> All time slots are available - No time restrictions for testing purposes
-          </p>
-        </div>
-      </div>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading ? (
@@ -227,7 +233,7 @@ const BookSession = () => {
               <p className="text-gray-600 mb-4">{error}</p>
               <Link 
                 to="/mentee-dashboard"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700"
               >
                 Back to Dashboard
               </Link>
@@ -248,89 +254,143 @@ const BookSession = () => {
                 </p>
               </div>
               <div className="p-6 pt-0 space-y-6">
-                {/* Session Title */}
+                {/* Session Type */}
                 <div className="space-y-2">
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700">Session Title</label>
-                  <select 
-                    value={title} 
+                  <label htmlFor="session-type" className="block text-sm font-medium text-gray-700">Session Type</label>
+                  <select
+                    value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                   >
                     <option value="">What would you like to discuss?</option>
-                    {sessionTitles.map((sessionTitle) => (
-                      <option key={sessionTitle} value={sessionTitle}>
-                        {sessionTitle}
+                    {sessionTypes.map((type) => (
+                      <option key={type.value} value={type.label}>
+                        {type.label}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {/* Date Selection */}
+                {/* Date Selection with React Day Picker */}
                 <div className="space-y-3">
                   <label className="block text-sm font-medium text-gray-700">Select Date</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {availableDates.map((dateOption) => (
-                      <button
-                        key={dateOption.date}
-                        className={`inline-flex items-center justify-start gap-2 h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${
-                          selectedDate && selectedDate.toISOString().split('T')[0] === dateOption.date
-                            ? 'bg-orange-500 text-white hover:bg-orange-600'
-                            : 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-900'
-                        }`}
-                        onClick={() => setSelectedDate(new Date(dateOption.date))}
-                      >
-                        <Calendar className="h-4 w-4 mr-2" />
-                        {dateOption.label}
-                      </button>
-                    ))}
+                  <div className="border border-gray-300 rounded-md p-4 bg-white">
+                    <DayPicker
+                      mode="single"
+                      selected={selectedDate || undefined}
+                      onSelect={(date) => {
+                        setSelectedDate(date || null);
+                        // Reset time selection when date changes
+                        setSelectedTime("");
+                        setStartTime("");
+                        setEndTime("");
+                      }}
+                      disabled={[
+                        { before: new Date() }, // Disable past dates
+                        { dayOfWeek: [0] } // Optionally disable Sundays (0 = Sunday)
+                      ]}
+                      modifiers={{
+                        available: isDateAvailable
+                      }}
+                      modifiersClassNames={{
+                        selected: 'bg-emerald-500 text-white hover:bg-emerald-600',
+                        today: 'font-bold text-emerald-600',
+                        available: 'hover:bg-emerald-50'
+                      }}
+                      className="mx-auto"
+                      captionLayout="dropdown"
+                      fromYear={2024}
+                      toYear={2026}
+                    />
                   </div>
+                  {selectedDate && (
+                    <p className="text-sm text-emerald-600 font-medium">
+                      Selected: {selectedDate.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </p>
+                  )}
                 </div>
 
-                {/* Time Selection */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium text-gray-700">Select Time Slot</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {timeSlots.map((timeSlot) => {
-                      const isAvailable = isTimeSlotAvailable(); // Always true for testing
-                      const isSelected = startTime === timeSlot.start && endTime === timeSlot.end;
-                      
-                      return (
-                        <button
-                          key={`${timeSlot.start}-${timeSlot.end}`}
-                          className={`inline-flex items-center justify-center gap-2 h-12 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${
-                            !isAvailable 
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                              : isSelected
-                                ? 'bg-orange-500 text-white hover:bg-orange-600'
-                                : 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-900'
-                          }`}
-                          onClick={() => {
-                            if (isAvailable) {
-                              setSelectedTime(timeSlot.label);
-                              setStartTime(timeSlot.start);
-                              setEndTime(timeSlot.end);
-                            }
-                          }}
-                          disabled={!isAvailable}
-                        >
-                          <Video className="h-4 w-4" />
-                          {timeSlot.label}
-                        </button>
-                      );
-                    })}
+                {/* Time Selection - Only show when date is selected */}
+                {selectedDate && (
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      <Clock className="h-4 w-4 inline mr-2" />
+                      Select Time Slot
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {timeSlots.map((timeSlot) => {
+                        const isAvailable = isTimeSlotAvailable(); // Always true for testing
+                        const isSelected = startTime === timeSlot.start && endTime === timeSlot.end;
+                        
+                        return (
+                          <button
+                            key={`${timeSlot.start}-${timeSlot.end}`}
+                            className={`inline-flex items-center justify-center gap-2 h-12 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${
+                              !isAvailable 
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                : isSelected
+                                  ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                  : 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-900'
+                            }`}
+                            onClick={() => {
+                              if (isAvailable) {
+                                setSelectedTime(timeSlot.label);
+                                setStartTime(timeSlot.start);
+                                setEndTime(timeSlot.end);
+                              }
+                            }}
+                            disabled={!isAvailable}
+                          >
+                            <Video className="h-4 w-4" />
+                            {timeSlot.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
+                )}
+
+                {/* Goals */}
+                <div className="space-y-2">
+                  <label htmlFor="goals" className="block text-sm font-medium text-gray-700">Session Goals</label>
+                  <textarea
+                    id="goals"
+                    placeholder="What specific goals do you want to achieve in this session? Be as detailed as possible to help your mentor prepare."
+                    value={goals}
+                    onChange={(e) => setGoals(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-vertical"
+                  />
+                </div>
+
+                {/* Experience Level */}
+                <div className="space-y-2">
+                  <label htmlFor="experience" className="block text-sm font-medium text-gray-700">Your Background</label>
+                  <textarea
+                    id="experience"
+                    placeholder="Briefly describe your current experience level, background, and any relevant context for this session."
+                    value={experience}
+                    onChange={(e) => setExperience(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-vertical"
+                  />
                 </div>
 
                 {/* Session Description */}
                 <div className="space-y-2">
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">Session Description (Optional)</label>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">Additional Notes (Optional)</label>
                   <textarea
                     id="description"
-                    placeholder="What specific topics would you like to cover in this session?"
+                    placeholder="Any additional information or specific topics you'd like to cover?"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-vertical"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-vertical"
                   />
                 </div>
 
@@ -351,7 +411,7 @@ const BookSession = () => {
                     </div>
                     <div>
                       <p className="font-medium">Cost</p>
-                      <p className="text-success font-medium">Free</p>
+                      <p className="text-emerald-600 font-medium">Free</p>
                     </div>
                     <div>
                       <p className="font-medium">Reschedule</p>
@@ -372,53 +432,66 @@ const BookSession = () => {
               <div className="p-6 pt-0 space-y-4">
                 {/* Mentor Info */}
                 <div className="flex items-center gap-3 p-3 border rounded-lg">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary to-professional-blue rounded-full flex items-center justify-center text-white font-semibold">
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
                     {mentor.first_name ? mentor.first_name.charAt(0).toUpperCase() : 'M'}
                   </div>
                   <div>
                     <h4 className="font-medium">{mentor.first_name} {mentor.last_name}</h4>
-                    <p className="text-sm text-professional-blue">{mentor.expertise?.join(', ') || 'Mentor'}</p>
+                    <p className="text-sm text-emerald-600">{mentor.expertise?.join(', ') || 'Mentor'}</p>
                     <p className="text-xs text-gray-600">{mentor.location || 'Professional Mentor'}</p>
                   </div>
                 </div>
 
                 {/* Session Details */}
                 <div className="space-y-3">
-                  
+                  {title && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Type:</span>
+                      <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-emerald-50 text-emerald-700">
+                        {title}
+                      </span>
+                    </div>
+                  )}
+
                   {selectedDate && (
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Date:</span>
                       <span className="text-sm font-medium">
-                        {availableDates.find(d => d.date === selectedDate.toISOString().split('T')[0])?.label}
+                        {selectedDate.toLocaleDateString('en-US', { 
+                          weekday: 'short', 
+                          month: 'short', 
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
                       </span>
                     </div>
                   )}
-                  
+
                   {selectedTime && (
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Time:</span>
                       <span className="text-sm font-medium">{selectedTime}</span>
                     </div>
                   )}
-                  
+
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Duration:</span>
                     <span className="text-sm font-medium">60 minutes</span>
                   </div>
-                  
+
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Cost:</span>
-                    <span className="text-sm font-bold text-success">Free</span>
+                    <span className="text-sm font-bold text-emerald-600">Free</span>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="space-y-3 pt-4 border-t">
                   <button 
-                    className={`w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${
+                    className={`w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${
                       !selectedDate || !startTime || !endTime || !title || bookingLoading
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-orange-500 text-white hover:bg-orange-600'
+                        : 'bg-emerald-500 text-white hover:bg-emerald-600'
                     }`}
                     onClick={handleBookSession}
                     disabled={!selectedDate || !startTime || !endTime || !title || bookingLoading}
@@ -436,7 +509,7 @@ const BookSession = () => {
                     )}
                   </button>
                   
-                  <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                  <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Message Mentor
                   </button>
@@ -444,6 +517,7 @@ const BookSession = () => {
 
                 <div className="text-xs text-gray-600 pt-4 border-t">
                   <p>By booking this session, you agree to our terms of service and cancellation policy.</p>
+                  <p className="mt-2 text-emerald-600">This mentor offers complimentary sessions to support professional growth.</p>
                 </div>
               </div>
             </div>
