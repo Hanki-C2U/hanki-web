@@ -21,7 +21,7 @@ const MentorDiscovery = () => {
       name: "Emmanuel Ntagungira",
       expertise: "Software Engineering",
       specializations: ["AI/ML", "Cloud Computing", "System Design"],
-      location: "Toronto, Canada",
+      location: "Berlin, Germany",
       rating: 4.9,
       sessions: 120,
       bio: "15+ years in tech industry, currently Principal Engineer at Microsoft. Passionate about helping African youth break into tech.",

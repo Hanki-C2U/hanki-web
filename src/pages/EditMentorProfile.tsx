@@ -97,7 +97,7 @@ const EditMentorProfile = () => {
       ],
     },
     location: "Berlin, Germany",
-    timezone: "GMT+01:00",
+    timezone: "UTC +02:00",
     linkedIn: "https://linkedin.com/in/denyspavlenko",
     website: "https://denys-portfolio.dev",
     availability: [

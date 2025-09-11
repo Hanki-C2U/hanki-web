@@ -313,7 +313,7 @@ export const mockMentors: MockMentor[] = [
       "BSc Computer Engineering, Carnegie Mellon",
     ],
     location: "Berlin, Germany",
-    timezone: "GMT+01:00",
+    timezone: "UTC +02:00",
     rating: 4.9,
     sessionCount: 48,
     availability: {
