@@ -686,7 +686,7 @@ const MentorDashboard = () => {
                               <h4 className="font-medium">{review.mentee}</h4>
                               <span className="text-sm text-gray-500">{review.date}</span>
                             </div>
-                          
+
                             <p className="text-gray-700">{review.comment}</p>
                           </div>
                         ))}
@@ -931,7 +931,7 @@ const MentorDashboard = () => {
                     </div>
                   </div>
                   <div className="mt-2 flex justify-between">
-                   
+
                     <span className="text-xs text-emerald-600 hover:text-emerald-800">
                       View Profile
                     </span>
