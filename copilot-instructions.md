@@ -1,6 +1,7 @@
-# Copilot Instructions for Skills Connect Hackathon Project
+# Copilot Instructions for ATLAS Hackathon Project
 
 ## Challenge of the Hackathon
+
 Challenge:
 Unlocking Diaspora potential for youth empowerment
 The Problem:
@@ -10,7 +11,7 @@ How might we design a sustainable, inclusive, tech-enabled bridge between diaspo
 
 ## Project Overview
 
-This is a hackathon project called "Skills Connect" - a mentorship platform connecting mentees with mentors. The primary focus is on demonstrating the platform's concept, user experience, and more importantly how it solves the problem, rather than implementing a fully production-ready application.
+This is a hackathon project called "ATLAS" - a mentorship platform connecting mentees with mentors. The primary focus is on demonstrating the platform's concept, user experience, and more importantly how it solves the problem, rather than implementing a fully production-ready application.
 
 ## Tech Stack
 
