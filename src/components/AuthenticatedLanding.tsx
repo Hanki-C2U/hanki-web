@@ -30,7 +30,7 @@ export default function AuthenticatedLanding() {
   };
 
   return (
-    <header className="bg-white shadow-lg sticky top-0 z-50">
+    <header className="bg-slate-800 shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4 md:py-6">
           {/* Logo */}
@@ -55,7 +55,7 @@ export default function AuthenticatedLanding() {
               <li>
                 <button
                   onClick={() => scrollToSection('who-its-for')}
-                  className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:text-emerald-600 "
+                  className="text-gray-300 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:text-emerald-600 "
                   aria-label="Navigate to Who It's For section"
                 >
                   Who It's For
@@ -64,7 +64,7 @@ export default function AuthenticatedLanding() {
               <li>
                 <button
                   onClick={() => scrollToSection('mentor-showcase')}
-                  className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:text-emerald-600"
+                  className="text-gray-300 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:text-emerald-600"
                   aria-label="Navigate to Mentors section"
                 >
                   Mentors
@@ -73,7 +73,7 @@ export default function AuthenticatedLanding() {
               <li>
                 <button
                   onClick={() => scrollToSection('how-it-works')}
-                  className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:text-emerald-600"
+                  className="text-gray-300 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:text-emerald-600"
                   aria-label="Navigate to How It Works section"
                 >
                   How it works
@@ -82,7 +82,7 @@ export default function AuthenticatedLanding() {
               <li>
                 <button
                   onClick={() => scrollToSection('testimonials')}
-                  className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:text-emerald-600"
+                  className="text-gray-300 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:text-emerald-600"
                   aria-label="Navigate to Success Stories section"
                 >
                   Success Stories
@@ -101,7 +101,7 @@ export default function AuthenticatedLanding() {
                   aria-expanded={isDropdownOpen}
                   aria-haspopup="true"
                 >
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-gray-300">
                     {userName || 'User'}
                   </span>
                   <div className="h-8 w-8 rounded-full overflow-hidden bg-emerald-100 flex items-center justify-center">
@@ -186,11 +186,11 @@ export default function AuthenticatedLanding() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden" id="mobile-menu">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50 rounded-lg mb-4" role="menu">
+          <div className="md:hidden bg-slate-800 border-b border-slate-700" id="mobile-menu">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-slate-800 rounded-lg mb-4 border border-slate-700" role="menu">
               <button
                 onClick={() => scrollToSection('who-its-for')}
-                className="text-gray-700 hover:text-emerald-600 block px-3 py-2 rounded-md text-base font-medium w-full text-left focus:outline-none focus:text-emerald-500"
+                className="text-gray-200 hover:text-emerald-400 block px-3 py-2 rounded-md text-base font-medium w-full text-left focus:outline-none focus:text-emerald-400"
                 role="menuitem"
                 aria-label="Navigate to Who It's For section"
               >
@@ -198,7 +198,7 @@ export default function AuthenticatedLanding() {
               </button>
               <button
                 onClick={() => scrollToSection('mentor-showcase')}
-                className="text-gray-500 hover:text-emerald-600 block px-3 py-2 rounded-md text-base font-medium w-full text-left focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="text-gray-200 hover:text-emerald-400 block px-3 py-2 rounded-md text-base font-medium w-full text-left focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 role="menuitem"
                 aria-label="Navigate to Mentors section"
               >
@@ -206,7 +206,7 @@ export default function AuthenticatedLanding() {
               </button>
               <button
                 onClick={() => scrollToSection('how-it-works')}
-                className="text-gray-700 hover:text-emerald-600 block px-3 py-2 rounded-md text-base font-medium w-full text-left focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="text-gray-200 hover:text-emerald-400 block px-3 py-2 rounded-md text-base font-medium w-full text-left focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 role="menuitem"
                 aria-label="Navigate to How It Works section"
               >
@@ -214,7 +214,7 @@ export default function AuthenticatedLanding() {
               </button>
               <button
                 onClick={() => scrollToSection('testimonials')}
-                className="text-gray-700 hover:text-emerald-600 block px-3 py-2 rounded-md text-base font-medium w-full text-left focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="text-gray-200 hover:text-emerald-400 block px-3 py-2 rounded-md text-base font-medium w-full text-left focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 role="menuitem"
                 aria-label="Navigate to Success Stories section"
               >
@@ -222,26 +222,26 @@ export default function AuthenticatedLanding() {
               </button>
 
               {userType ? (
-                <div className="pt-4 pb-2 border-t border-gray-200">
+                <div className="pt-4 pb-2 border-t border-slate-600">
                   <div className="flex flex-col space-y-2">
                     <button
                       onClick={navigateToDashboard}
-                      className="hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 px-3 py-2 rounded-md text-base font-medium text-left"
+                      className="hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 px-3 py-2 rounded-md text-base font-medium text-left"
                     >
                       Dashboard
                     </button>
                     <button
                       onClick={handleSignOut}
-                      className="hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 px-3 py-2 rounded-md text-base font-medium text-left"
+                      className="hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 px-3 py-2 rounded-md text-base font-medium text-left"
                     >
                       Sign Out
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="pt-4 pb-2 border-t border-gray-200">
+                <div className="pt-4 pb-2 border-t border-slate-600">
                   <div className="flex flex-col space-y-2">
-                    <Link to="/login" className="hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 px-3 py-2 rounded-md text-base font-medium text-left">
+                    <Link to="/login" className="hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 px-3 py-2 rounded-md text-base font-medium text-left">
                       Sign In
                     </Link>
                     <Link to="/signup" className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-base font-medium">
