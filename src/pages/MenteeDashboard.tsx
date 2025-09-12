@@ -236,7 +236,7 @@ const MenteeDashboard = () => {
         image: null
       },
       story: {
-        text: "As a self-taught developer in Kigali, I struggled to find opportunities in the global tech market. Through Skills Connect, I was matched with Emmanuel, a Rwandan tech leader now working in Europe. His guidance helped me improve my coding practices and understand international tech standards.",
+        text: "As a self-taught developer in Kigali, I struggled to find opportunities in the global tech market. Through ATLAS, I was matched with Emmanuel, a Rwandan tech leader now working in Europe. His guidance helped me improve my coding practices and understand international tech standards.",
         highlight: "After 8 months of mentorship, I secured a remote position with a European startup, doubling my income while staying in Rwanda."
       },
       outcomes: ["Secured remote job with European company", "Improved coding standards", "Built international network"],
@@ -280,7 +280,7 @@ const MenteeDashboard = () => {
         image: null
       },
       story: {
-        text: "My family has farmed the same way for generations in northern Rwanda. Through Skills Connect, I met James who introduced me to agricultural technologies being used across Europe that could work in Rwanda's climate. With his guidance, I implemented data-driven farming methods and secured funding to expand.",
+        text: "My family has farmed the same way for generations in northern Rwanda. Through ATLAS, I met James who introduced me to agricultural technologies being used across Europe that could work in Rwanda's climate. With his guidance, I implemented data-driven farming methods and secured funding to expand.",
         highlight: "Our crop yield has increased by 40%, and we now export organic produce to three countries."
       },
       outcomes: ["Increased crop yield by 40%", "Secured international export partnerships", "Implemented sustainable farming methods"],

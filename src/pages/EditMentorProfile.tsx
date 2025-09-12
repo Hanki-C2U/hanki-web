@@ -618,7 +618,7 @@ const EditMentorProfile = () => {
                     </div>
                     <div className="ml-3">
                       <p className="text-sm text-emerald-700">
-                        Mentorship on Skills Connect is provided for free to support the community.
+                        Mentorship on ATLAS is provided for free to support the community.
                       </p>
                     </div>
                   </div>
