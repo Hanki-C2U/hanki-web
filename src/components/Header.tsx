@@ -166,12 +166,12 @@ export default function Header() {
               </button>
               <div className="pt-4 pb-2 border-t border-slate-600">
                 <div className="flex flex-col space-y-2">
-                  <button className="hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 px-3 py-2 rounded-md text-base font-medium text-left transition-colors">
+                  <Link to='login' className="hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 px-3 py-2 rounded-md text-base font-medium text-left transition-colors">
                     Sign In
-                  </button>
-                  <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-base font-medium transition-colors">
+                  </Link>
+                  <Link to='signup' className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-base font-medium transition-colors">
                     Get Started
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
