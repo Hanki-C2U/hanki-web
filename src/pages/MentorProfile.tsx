@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
 import { format } from "date-fns";
-import { createLinkedInRoute } from "../utils/linkedInUtils";
 
 // Types for mentor data
 interface MentorData {
@@ -288,13 +287,15 @@ const MentorProfile = () => {
 
                 {/* Social Links */}
                 <div className="mt-3 flex items-center justify-center gap-3">
-                  <Link
-                    to={createLinkedInRoute(mentor.socials.linkedin) || '#'}
+                  <a
+                    href={mentor.socials.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-gray-600 hover:text-blue-600 transition-colors"
                     aria-label="LinkedIn Profile"
                   >
                     <Linkedin className="h-5 w-5" />
-                  </Link>
+                  </a>
                   <a
                     href={mentor.socials.website}
                     target="_blank"

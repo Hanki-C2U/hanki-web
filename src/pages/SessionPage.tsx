@@ -63,7 +63,7 @@ function SessionPage() {
     <div className='flex flex-col gap-5 justify-center items-center py-10 max-w-4xl mx-auto px-4'>
       {/* Session Header */}
       <div className='w-full text-center mb-4'>
-        <h1 className='text-2xl font-bold text-gray-800 mb-2'>Video Session</h1>
+        <h1 className='text-2xl font-bold text-gray-800 mb-2'>Session Testing Page</h1>
         <p className='text-gray-600'>Test Jitsi API connection and video conferencing functionality</p>
         {user && (
           <p className='text-sm text-gray-500 mt-1'>User ID: {user.id}</p>
@@ -169,6 +169,23 @@ function SessionPage() {
           </button>
         </div>
       </div>
+
+      {/* Debug Information */}
+      {sessionStarted && (
+        <div className='w-full max-w-2xl mt-6'>
+          <div className='bg-gray-100 rounded-lg p-4'>
+            <h3 className='font-medium text-gray-800 mb-2'>Debug Information</h3>
+            <div className='text-sm text-gray-600 space-y-1'>
+              <p><strong>Room Name:</strong> {roomName}</p>
+              <p><strong>Connection Status:</strong> {connectionStatus}</p>
+              <p><strong>Jitsi API:</strong> {jitsiApi ? 'Ready' : 'Not initialized'}</p>
+              <p><strong>Microphone:</strong> {micOn ? 'On' : 'Off'}</p>
+              <p><strong>Camera:</strong> {vidOn ? 'On' : 'Off'}</p>
+              <p><strong>Screen Share:</strong> {screenOn ? 'On' : 'Off'}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

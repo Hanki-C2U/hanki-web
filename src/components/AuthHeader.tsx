@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
-import { User, LogOut, Home, Bell } from "lucide-react";
+import { User, LogOut, Home } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { supabasase } from "../supabase_creds/supabase";
 import { getProfilePictureUrl } from "../utils/profilePicture";
@@ -70,35 +70,23 @@ export default function AuthHeader() {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/landing" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+            <Link to="/home" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
               ATLAS
             </Link>
           </div>
 
-          {/* Navigation and Notification */}
-          <div className="flex items-center space-x-4">
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Main navigation">
-              <Link to="/landing" className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">
-                Home
-              </Link>
-              <Link to="/discover-mentors" className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">
-                Find Mentors
-              </Link>
-              <Link to="/resources" className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">
-                Resources
-              </Link>
-            </nav>
-
-            {/* Notification Bell */}
-            <div className="relative">
-              <button className="p-2 text-gray-700 hover:text-emerald-600 rounded-full hover:bg-gray-100">
-                <Bell className="h-5 w-5" />
-                {/* Notification Badge */}
-                <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-              </button>
-            </div>
-          </div>
+          {/* Navigation */}
+          <nav className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Main navigation">
+            <Link to="/home" className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">
+              Home
+            </Link>
+            <Link to="/discover-mentors" className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">
+              Find Mentors
+            </Link>
+            <Link to="/resources" className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">
+              Resources
+            </Link>
+          </nav>
 
           {/* User Menu */}
           <div className="relative">

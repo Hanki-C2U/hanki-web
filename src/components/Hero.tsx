@@ -1,5 +1,4 @@
 import { Button } from "./ui/Button";
-import { Link } from "react-router";
 
 export default function Hero() {
   return (
@@ -146,15 +145,13 @@ export default function Hero() {
 
           {/* Single CTA Button */}
           <div>
-            <Link to="/signup">
-              <Button
-                variant="outline"
-                size="lg"
-                className="bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-600 font-semibold px-10 py-4 text-lg min-w-[220px] transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-emerald-500/25"
-              >
-                Start Your Journey
-              </Button>
-            </Link>
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-600 font-semibold px-10 py-4 text-lg min-w-[220px] transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-emerald-500/25"
+            >
+              Start Your Journey
+            </Button>
           </div>
         </div>
       </div>

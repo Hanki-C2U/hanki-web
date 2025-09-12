@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, Link, useNavigate } from "react-router";
+import { useParams, Link, useNavigate, useLocation } from "react-router";
 import { 
   ArrowLeft, 
   Calendar, 
@@ -7,12 +7,8 @@ import {
   MessageCircle,
   User,
   CheckCircle,
-  Loader2,
-  Clock
+  Loader2
 } from "lucide-react";
-import { DayPicker } from 'react-day-picker';
-import 'react-day-picker/style.css';
-import '../styles/day-picker.css';
 import { supabasase } from '../supabase_creds/supabase';
 import { useAuthStore } from '../store/authStore';
 
@@ -34,6 +30,7 @@ interface Mentor {
 const BookSession = () => {
   const { mentorId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuthStore();
   
   // Form fields matching sessions table
@@ -88,7 +85,14 @@ const BookSession = () => {
     fetchMentor();
   }, [mentorId]);
 
-  // Generate available time slots for any day
+  // Use useMemo to prevent arrays from being recreated on each render
+  const availableDates = useMemo(() => [
+    { date: "2025-09-08", label: "Mon, Sep 8" },
+    { date: "2025-09-10", label: "Wed, Sep 10" }, 
+    { date: "2025-09-12", label: "Fri, Sep 12" },
+    { date: "2025-09-15", label: "Mon, Sep 15" }
+  ], []);
+
   const timeSlots = useMemo(() => [
     { start: "09:00", end: "10:00", label: "9:00 AM - 10:00 AM" },
     { start: "10:00", end: "11:00", label: "10:00 AM - 11:00 AM" },
@@ -99,15 +103,6 @@ const BookSession = () => {
     { start: "16:00", end: "17:00", label: "4:00 PM - 5:00 PM" },
     { start: "17:00", end: "18:00", label: "5:00 PM - 6:00 PM" }
   ], []);
-
-  // Function to check if a date is available for booking
-  const isDateAvailable = (date: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day
-    
-    // Allow dates from today onwards
-    return date >= today;
-  };
 
   // Helper function to check if a time slot is available 
   // For testing: All time slots are always available
@@ -122,6 +117,36 @@ const BookSession = () => {
     { value: "project-discussion", label: "Project Discussion" },
     { value: "general-mentoring", label: "General Mentoring" }
   ];
+
+  // Parse the selected slot from URL query parameters
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const slotParam = searchParams.get('slot');
+
+    if (slotParam) {
+      // Format: "day-time" (e.g., "Friday-11:00 AM")
+      const [day, time] = slotParam.split('-');
+
+      // Find the matching date for the day
+      const dateOption = availableDates.find(date => date.label.includes(day.substring(0, 3)));
+      if (dateOption) {
+        setSelectedDate(new Date(dateOption.date));
+      }
+
+      // Find the matching time slot
+      const timeSlot = timeSlots.find(slot => slot.label.includes(time));
+      if (timeSlot) {
+        setSelectedTime(timeSlot.label);
+        setStartTime(timeSlot.start);
+        setEndTime(timeSlot.end);
+      }
+
+      // Also set a default session type for better UX
+      if (!title) {
+        setTitle("General Mentoring Session");
+      }
+    }
+  }, [location.search, availableDates, timeSlots, title]);
 
   const handleBookSession = async () => {
     if (!mentor || !selectedDate || !startTime || !endTime || !title) {
@@ -219,6 +244,15 @@ const BookSession = () => {
         </div>
       </header>
 
+      {/* Testing Mode Banner */}
+      <div className="bg-green-100 border-b border-green-200 px-4 sm:px-6 lg:px-8 py-2">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-center text-sm text-green-800">
+            🧪 <strong>Testing Mode:</strong> All time slots are available - No time restrictions for testing purposes
+          </p>
+        </div>
+      </div>
+
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading ? (
           <div className="text-center py-12">
@@ -271,89 +305,61 @@ const BookSession = () => {
                   </select>
                 </div>
 
-                {/* Date Selection with React Day Picker */}
+                {/* Date Selection */}
                 <div className="space-y-3">
                   <label className="block text-sm font-medium text-gray-700">Select Date</label>
-                  <div className="border border-gray-300 rounded-md p-4 bg-white">
-                    <DayPicker
-                      mode="single"
-                      selected={selectedDate || undefined}
-                      onSelect={(date) => {
-                        setSelectedDate(date || null);
-                        // Reset time selection when date changes
-                        setSelectedTime("");
-                        setStartTime("");
-                        setEndTime("");
-                      }}
-                      disabled={[
-                        { before: new Date() }, // Disable past dates
-                        { dayOfWeek: [0] } // Optionally disable Sundays (0 = Sunday)
-                      ]}
-                      modifiers={{
-                        available: isDateAvailable
-                      }}
-                      modifiersClassNames={{
-                        selected: 'bg-emerald-500 text-white hover:bg-emerald-600',
-                        today: 'font-bold text-emerald-600',
-                        available: 'hover:bg-emerald-50'
-                      }}
-                      className="mx-auto"
-                      captionLayout="dropdown"
-                      fromYear={2024}
-                      toYear={2026}
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    {availableDates.map((dateOption) => (
+                      <button
+                        key={dateOption.date}
+                        className={`inline-flex items-center justify-start gap-2 h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${
+                          selectedDate && selectedDate.toISOString().split('T')[0] === dateOption.date
+                            ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                            : 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-900'
+                        }`}
+                        onClick={() => setSelectedDate(new Date(dateOption.date))}
+                      >
+                        <Calendar className="h-4 w-4 mr-2" />
+                        {dateOption.label}
+                      </button>
+                    ))}
                   </div>
-                  {selectedDate && (
-                    <p className="text-sm text-emerald-600 font-medium">
-                      Selected: {selectedDate.toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}
-                    </p>
-                  )}
                 </div>
 
-                {/* Time Selection - Only show when date is selected */}
-                {selectedDate && (
-                  <div className="space-y-3">
-                    <label className="block text-sm font-medium text-gray-700">
-                      <Clock className="h-4 w-4 inline mr-2" />
-                      Select Time Slot
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      {timeSlots.map((timeSlot) => {
-                        const isAvailable = isTimeSlotAvailable(); // Always true for testing
-                        const isSelected = startTime === timeSlot.start && endTime === timeSlot.end;
-                        
-                        return (
-                          <button
-                            key={`${timeSlot.start}-${timeSlot.end}`}
-                            className={`inline-flex items-center justify-center gap-2 h-12 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${
-                              !isAvailable 
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                                : isSelected
-                                  ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                                  : 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-900'
-                            }`}
-                            onClick={() => {
-                              if (isAvailable) {
-                                setSelectedTime(timeSlot.label);
-                                setStartTime(timeSlot.start);
-                                setEndTime(timeSlot.end);
-                              }
-                            }}
-                            disabled={!isAvailable}
-                          >
-                            <Video className="h-4 w-4" />
-                            {timeSlot.label}
-                          </button>
-                        );
-                      })}
-                    </div>
+                {/* Time Selection */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-gray-700">Select Time Slot</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {timeSlots.map((timeSlot) => {
+                      const isAvailable = isTimeSlotAvailable(); // Always true for testing
+                      const isSelected = startTime === timeSlot.start && endTime === timeSlot.end;
+                      
+                      return (
+                        <button
+                          key={`${timeSlot.start}-${timeSlot.end}`}
+                          className={`inline-flex items-center justify-center gap-2 h-12 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${
+                            !isAvailable 
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                              : isSelected
+                                ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                : 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-900'
+                          }`}
+                          onClick={() => {
+                            if (isAvailable) {
+                              setSelectedTime(timeSlot.label);
+                              setStartTime(timeSlot.start);
+                              setEndTime(timeSlot.end);
+                            }
+                          }}
+                          disabled={!isAvailable}
+                        >
+                          <Video className="h-4 w-4" />
+                          {timeSlot.label}
+                        </button>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
 
                 {/* Goals */}
                 <div className="space-y-2">
@@ -457,12 +463,7 @@ const BookSession = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Date:</span>
                       <span className="text-sm font-medium">
-                        {selectedDate.toLocaleDateString('en-US', { 
-                          weekday: 'short', 
-                          month: 'short', 
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
+                        {availableDates.find(d => d.date === selectedDate.toISOString().split('T')[0])?.label}
                       </span>
                     </div>
                   )}

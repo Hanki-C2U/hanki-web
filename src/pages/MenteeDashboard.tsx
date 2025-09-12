@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect } from "react";
-import { useNavigate, useLocation, Link } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import {
   Calendar,
   Search,
@@ -42,7 +42,7 @@ const MenteeDashboard = () => {
   const [currentTime, setCurrentTime] = useState<string>("");
   const [username, setUserName] = useState('');
   const [mentors, setMentors] = useState<any[]>([]);
-  const [mentorsLoading, setMentorsLoading] = useState(true);
+  // const [mentorsLoading, setMentorsLoading] = useState(true);
   const [upcomingSessions, setUpcomingSessions] = useState<any[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [menteeData, setMenteeData] = useState<any>(null);
@@ -332,7 +332,7 @@ const MenteeDashboard = () => {
       
       if (userRole === 'mentee') {
         try {
-          setMentorsLoading(true);
+          // setMentorsLoading(true);
           console.log('📡 Fetching mentors from database...');
           
           const { data: mentor, error } = await supabasase
@@ -672,7 +672,7 @@ const MenteeDashboard = () => {
                 <p className="text-gray-600">{menteeData.role} at {menteeData.organization}</p>
 
                 <div className="flex flex-wrap justify-center gap-1 mt-3">
-                  {menteeData.languages.map((language, index) => (
+                  {menteeData.languages.map((language: string, index: number) => (
                     <span
                       key={index}
                       className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full"
@@ -746,7 +746,7 @@ const MenteeDashboard = () => {
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {menteeData.skills.slice(0, 3).map((skill, index) => (
+                    {menteeData.skills.slice(0, 3).map((skill: any, index: number) => (
                       <div key={index} className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">
                         {skill.name}
                       </div>
@@ -766,7 +766,7 @@ const MenteeDashboard = () => {
                     </button>
                   </div>
                   <ul className="text-left text-sm pl-5 space-y-1">
-                    {menteeData.goals.slice(0, 2).map((goal, index) => (
+                    {menteeData.goals.slice(0, 2).map((goal: string, index: number) => (
                       <li key={index} className="list-disc text-gray-700">{goal}</li>
                     ))}
                   </ul>
@@ -784,7 +784,7 @@ const MenteeDashboard = () => {
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-4 mt-2">
-                    {menteeData.achievementBadges.filter(badge => badge.earned).map((badge) => (
+                    {menteeData.achievementBadges.filter((badge: any) => badge.earned).map((badge: any) => (
                       <div
                         key={badge.id}
                         className="relative group cursor-pointer"
@@ -929,7 +929,7 @@ const MenteeDashboard = () => {
                         <div>
                           <h4 className="text-sm font-medium text-gray-700">Experience</h4>
                           <ul className="mt-1 space-y-2">
-                            {menteeData.professionalBackground.experience.map((exp, index) => (
+                            {menteeData.professionalBackground.experience.map((exp: any, index: number) => (
                               <li key={index} className="text-gray-600">
                                 <div className="font-medium">{exp.position}</div>
                                 <div className="text-sm">{exp.company} • {exp.duration}</div>
@@ -976,7 +976,7 @@ const MenteeDashboard = () => {
                       </button>
                     </div>
 
-                    {menteeData.goals.map((goal, index) => (
+                    {menteeData.goals.map((goal: string, index: number) => (
                       <div key={index} className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-100 flex items-center gap-3">
                         <Target className="h-5 w-5 text-emerald-600 flex-shrink-0" />
                         <span>{goal}</span>
@@ -997,7 +997,7 @@ const MenteeDashboard = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-2 mb-6">
-                      {menteeData.skills.map((skill, index) => (
+                      {menteeData.skills.map((skill: any, index: number) => (
                         <div key={index} className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-sm">
                           {skill.name}
                         </div>

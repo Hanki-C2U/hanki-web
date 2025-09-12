@@ -189,10 +189,7 @@ const Signup = () => {
         if (data.session) {
           console.log('✅ User has immediate session, going to onboarding');
           // User has immediate session, can go to onboarding
-          navigate('/onboarding', { 
-            replace: true,
-            state: { userPassword: password }
-          });
+          navigate('/onboarding', { replace: true });
         } else {
           console.log('📧 Email confirmation required');
           // Email confirmation required

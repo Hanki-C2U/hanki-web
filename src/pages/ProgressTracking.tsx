@@ -6,7 +6,9 @@ import {
   Award,
   Clock,
   CheckCircle,
+  Star,
   ArrowLeft,
+  Users,
   Video,
   Trophy
 } from "lucide-react";
@@ -24,7 +26,7 @@ const ProgressTracking = () => {
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get('tab');
 
-    if (tabParam && ['goals', 'skills', 'badges'].includes(tabParam)) {
+    if (tabParam && ['goals', 'skills', 'badges', 'sessions'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, []);
@@ -80,6 +82,36 @@ const ProgressTracking = () => {
     { id: 6, name: "Career Changer", icon: "🚀", earned: false, date: null },
     { id: 7, name: "Interview Master", icon: "💼", earned: false, date: null },
     { id: 8, name: "Industry Expert", icon: "🏆", earned: false, date: null }
+  ];
+
+  const sessions = [
+    {
+      id: 1,
+      mentor: "Emmanuel Ntagungira",
+      date: "Jan 15, 2024",
+      topic: "Career Transition Planning",
+      duration: "60 min",
+      rating: 5,
+      notes: "Excellent session on mapping out career transition steps. Emmanuel provided specific resources and action items."
+    },
+    {
+      id: 2,
+      mentor: "Sarah Mukamana",
+      date: "Jan 22, 2024",
+      topic: "Product Management Fundamentals",
+      duration: "45 min",
+      rating: 5,
+      notes: "Great overview of PM role and responsibilities. Received framework for analyzing product decisions."
+    },
+    {
+      id: 3,
+      mentor: "Marie Claire Uwimana",
+      date: "Jan 29, 2024",
+      topic: "Digital Marketing Strategy",
+      duration: "60 min",
+      rating: 4,
+      notes: "Learned about social media marketing strategies and analytics. Need to implement learnings in practice project."
+    }
   ];
 
   const [skills, setSkills] = useState<Skill[]>([
@@ -206,7 +238,7 @@ const ProgressTracking = () => {
         </div>
 
         <div className="space-y-6">
-          <div className="grid w-full grid-cols-3 max-w-xl mx-auto">
+          <div className="grid w-full grid-cols-4 max-w-2xl mx-auto">
             <button
               onClick={() => setActiveTab("goals")}
               className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 rounded-md ${activeTab === "goals"
@@ -236,6 +268,16 @@ const ProgressTracking = () => {
             >
               <Award className="h-4 w-4" />
               Badges
+            </button>
+            <button
+              onClick={() => setActiveTab("sessions")}
+              className={`flex items-center justify-center gap-2 h-10 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 rounded-md ${activeTab === "sessions"
+                ? "bg-white shadow-sm border border-gray-200"
+                : "text-gray-600 hover:text-gray-900"
+                }`}
+            >
+              <Users className="h-4 w-4" />
+              Sessions
             </button>
           </div>
 
@@ -382,6 +424,42 @@ const ProgressTracking = () => {
                           Not Earned
                         </span>
                       )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Sessions Tab */}
+          {activeTab === "sessions" && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold">Mentoring Sessions</h2>
+
+              <div className="space-y-4">
+                {sessions.map((session) => (
+                  <div key={session.id} className="rounded-lg border border-gray-200 bg-white shadow-sm">
+                    <div className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="font-semibold text-lg">{session.topic}</h3>
+                          <p className="text-emerald-600 font-medium">{session.mentor}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-1 mb-1">
+                            {[...Array(session.rating)].map((_, i) => (
+                              <Star key={i} className="h-4 w-4 fill-emerald-400 text-emerald-400" />
+                            ))}
+                          </div>
+                          <p className="text-sm text-gray-600">{session.date}</p>
+                          <p className="text-sm text-gray-600">{session.duration}</p>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <h4 className="font-medium mb-2">Session Notes</h4>
+                        <p className="text-sm text-gray-600">{session.notes}</p>
+                      </div>
                     </div>
                   </div>
                 ))}

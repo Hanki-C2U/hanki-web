@@ -166,20 +166,12 @@ export default function Header() {
               </button>
               <div className="pt-4 pb-2 border-t border-slate-600">
                 <div className="flex flex-col space-y-2">
-                  <Link 
-                    to="/login" 
-                    className="hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 px-3 py-2 rounded-md text-base font-medium text-left transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  <button className="hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 px-3 py-2 rounded-md text-base font-medium text-left transition-colors">
                     Sign In
-                  </Link>
-                  <Link 
-                    to="/signup" 
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-base font-medium transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  </button>
+                  <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-base font-medium transition-colors">
                     Get Started
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>

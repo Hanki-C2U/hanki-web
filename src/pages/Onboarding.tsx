@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate } from "react-router";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -14,15 +14,11 @@ import { useAuthStore } from "../store/authStore";
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<"mentor" | "mentee">("mentee");
   const [chosen, setChosen] = useState(true);
   const [Data, setData] = useState<{ results: any[] }>({ results: [] });
-
-  // Get password from navigation state (from signup)
-  const userPassword = location.state?.userPassword || 'SUPABASE_AUTH';
 
   // Use Zustand store for session management
   // You can now access user session data from anywhere in your app!
@@ -306,7 +302,6 @@ const Onboarding = () => {
         age: parseInt(currentData.age) || 20,
         phone_number: currentData.number || `TEMP_${user.id.slice(0, 8)}`, // Fallback to prevent conflicts
         gender: currentData.gender || 'Not specified',
-        password: userPassword, // Use actual password from signup
         profile_picture: profilePicUrl || 
           'https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg',
         location: currentData.location,
