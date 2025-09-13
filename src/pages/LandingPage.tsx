@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
-import AuthenticatedLanding from "../components/AuthenticatedHeader";
+import AuthenticatedHeader from "../components/AuthenticatedHeader";
 import Hero from "../components/Hero";
 import HowItWorks from "../components/HowItWorks";
 import MentorShowcase from "../components/MentorShowcase";
@@ -35,7 +35,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen">
-      {isLoggedIn ? <AuthenticatedLanding /> : <Header />}
+      {isLoggedIn ? <AuthenticatedHeader /> : <Header />}
       <main>
         <Hero />
         <WhoItsFor />
