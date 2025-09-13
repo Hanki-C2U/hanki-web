@@ -40,6 +40,7 @@ interface Mentee {
   email: string;
   bio: string;
   goals: string[];
+  Interests?: string[];
   location: string;
   profile_picture: string;
   age: number;
@@ -138,7 +139,13 @@ const MenteeProfile = () => {
           return;
         }
 
-        setMentee(menteeData);
+        // Normalize DB shape: map `Interests` (DB column) to `goals` so the UI can safely use `goals.map`.
+        const normalized = {
+          ...menteeData,
+          goals: menteeData.goals ?? menteeData.Interests ?? menteeData.Goals ?? [],
+        } as Mentee;
+
+        setMentee(normalized);
         setLoading(false);
       } catch (err) {
         console.error('Error:', err);
@@ -316,6 +323,14 @@ const MenteeProfile = () => {
                     Message {menteeData.firstName}
                   </button>
                 )}
+
+                <Link
+                  to="/inspiration"
+                  className="mt-3 w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  Inspiration
+                </Link>
 
                 {/* Achievement Badges */}
                 <div className="w-full mt-4 border-t border-gray-100 pt-4">

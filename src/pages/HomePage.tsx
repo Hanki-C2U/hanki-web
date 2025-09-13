@@ -77,7 +77,7 @@ function HomePage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 p-4">
             <div className="max-w-4xl mx-auto">
-                <h1 className="text-3xl font-bold mb-6">Welcome to SkillsConnect - DEBUG MODE</h1>
+                <h1 className="text-3xl font-bold mb-6">Welcome to ATLAS - DEBUG MODE</h1>
                 
                 {user && (
                     <div className="bg-white rounded-lg shadow-md p-6 mb-6">

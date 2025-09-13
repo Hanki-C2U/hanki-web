@@ -313,13 +313,26 @@ const EditProfile = () => {
       console.log('🔄 Updating mentee profile for user:', user.id);
       
       // Prepare data for Supabase update
+      // Normalize LinkedIn: accept username or full URL
+      const rawLinkedIn = (formData.socials.linkedin || '').trim();
+      let normalizedLinkedIn: string | null = null;
+      if (rawLinkedIn.length > 0) {
+        const lower = rawLinkedIn.toLowerCase();
+        if (lower.includes('linkedin.com')) {
+          normalizedLinkedIn = rawLinkedIn;
+        } else {
+          const username = rawLinkedIn.replace(/^@+/, '').replace(/(^\/+|\/+$)/g, '');
+          normalizedLinkedIn = `https://linkedin.com/in/${username}`;
+        }
+      }
+
       const updateData: any = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         location: formData.location,
         bio: formData.bio,
         Interests: formData.goals,
-        LinkedIn: formData.socials.linkedin || null,
+        LinkedIn: normalizedLinkedIn || null,
         Website: formData.socials.website || null,
         updateAt: new Date().toISOString()
       };
@@ -611,17 +624,18 @@ const EditProfile = () => {
                     <div>
                       <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-2">
                         <Linkedin className="inline h-4 w-4 mr-1" />
-                        LinkedIn
+                        LinkedIn (username or URL)
                       </label>
                       <input
-                        type="url"
+                        type="text"
                         id="linkedin"
                         name="linkedin"
                         value={formData.socials.linkedin || ""}
                         onChange={handleSocialChange}
-                        placeholder="https://linkedin.com/in/yourprofile"
+                        placeholder="e.g. your-username or https://linkedin.com/in/your-username"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       />
+                      <p className="text-xs text-gray-500 mt-1">Enter either your LinkedIn username (we'll save as <code>https://linkedin.com/in/username</code>) or the full LinkedIn URL.</p>
                     </div>
                     <div>
                       <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-2">

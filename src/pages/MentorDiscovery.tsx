@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import {
   Search,
   MapPin,
   Star,
   Clock,
-  ArrowLeft,
   Calendar,
   Loader2,
   MessageCircle
 } from "lucide-react";
 import { supabasase } from "../supabase_creds/supabase";
 import { useAuthStore } from "../store/authStore";
+import AuthHeader from "../components/AuthHeader";
 
 const MentorDiscovery = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,7 +22,7 @@ const MentorDiscovery = () => {
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { userRole } = useAuthStore();
 
   // Fetch mentors from database
   useEffect(() => {
@@ -86,23 +86,30 @@ const MentorDiscovery = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
       {/* Header */}
-      <header className="bg-white shadow-subtle border-b">
+      <AuthHeader />
+
+      {/* Breadcrumb */}
+      <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/mentee-dashboard" className="flex items-center gap-2 text-gray-600 hover:text-emerald-700 transition-smooth">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
-              </Link>
-              <div className="h-6 w-px bg-gray-300" />
-              <h1 className="text-xl font-semibold">Discover Mentors</h1>
-            </div>
-            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
-              ATLAS
-            </Link>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => navigate(userRole === 'mentor' ? '/mentor-dashboard' : '/mentee-dashboard')}
+              className="text-emerald-600 hover:text-emerald-700 font-medium"
+            >
+              ← Back to Dashboard
+            </button>
+            <div className="h-6 w-px bg-gray-300" />
+            <h1 className="text-xl font-semibold text-gray-900">Discover Mentors</h1>
+            <div className="h-6 w-px bg-gray-300" />
+            <button
+              onClick={() => navigate('/discover-mentees')}
+              className="text-indigo-600 hover:text-indigo-700 font-medium"
+            >
+              Find Mentees
+            </button>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filter Section */}
@@ -238,6 +245,20 @@ const MentorDiscovery = () => {
                     <p className="text-sm text-gray-600 mb-4 line-clamp-3">
                       {mentor.bio || 'Experienced mentor ready to help you achieve your goals.'}
                     </p>
+
+                    {/* Interests / Expertise Tags */}
+                    {specializations && specializations.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-sm font-medium mb-2">Interests</p>
+                        <div className="flex flex-wrap gap-2">
+                          {specializations.slice(0, 4).map((int: string, idx: number) => (
+                            <span key={idx} className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800">
+                              {int}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Stats */}
                     <div className="flex items-center justify-between mb-4 text-sm">

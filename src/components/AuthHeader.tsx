@@ -70,14 +70,14 @@ export default function AuthHeader() {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/home" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
               ATLAS
             </Link>
           </div>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Main navigation">
-            <Link to="/home" className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">
+            <Link to="/" className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">
               Home
             </Link>
             <Link to="/discover-mentors" className="text-gray-700 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium">

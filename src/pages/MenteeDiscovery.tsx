@@ -28,6 +28,7 @@ interface Mentee {
   email: string;
   bio: string;
   goals: string[];
+  Interests?: string[];
   location: string;
   profile_picture: string;
   age: number;
@@ -95,8 +96,15 @@ const MenteeDiscovery = () => {
           return;
         }
 
+        // Normalize DB shape: some rows store Interests (DB column) which maps to our `goals` concept.
+        const raw = data || [];
+        const normalized = raw.map((m: any) => ({
+          ...m,
+          goals: m.goals ?? m.Interests ?? m.Goals ?? [],
+        }));
+
         // Filter out current user
-        const filteredData = data?.filter(mentee => mentee.supabaseId !== user?.id) || [];
+        const filteredData = normalized.filter((mentee: any) => mentee.supabaseId !== user?.id) || [];
         setMentees(filteredData);
         setFilteredMentees(filteredData);
       } catch (err) {
@@ -185,15 +193,19 @@ const MenteeDiscovery = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <Link to="/mentor-dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-smooth">
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Dashboard
-                </Link>
-                <div className="h-6 w-px bg-gray-300" />
-                <h1 className="text-xl font-semibold">Discover Mentees</h1>
-              </div>
+              <Link to="/mentor-dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-smooth">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Link>
+              <div className="h-6 w-px bg-gray-300" />
+              <h1 className="text-xl font-semibold">Discover Mentees</h1>
+              <div className="h-6 w-px bg-gray-300" />
+              <Link to="/discover-mentors" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                Find Mentors
+              </Link>
+            </div>
               <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
-                SkillsConnect
+                ATLAS
               </Link>
             </div>
           </div>
@@ -223,7 +235,7 @@ const MenteeDiscovery = () => {
                 <h1 className="text-xl font-semibold">Discover Mentees</h1>
               </div>
               <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
-                SkillsConnect
+                ATLAS
               </Link>
             </div>
           </div>
@@ -259,7 +271,7 @@ const MenteeDiscovery = () => {
               <h1 className="text-xl font-semibold">Discover Mentees</h1>
             </div>
             <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
-              SkillsConnect
+              ATLAS
             </Link>
           </div>
         </div>
@@ -360,18 +372,18 @@ const MenteeDiscovery = () => {
                       <span>{enhancedData.organization}</span>
                     </div>
 
-                    {/* Skills (using goals as skills) */}
+                    {/* Interests (from DB 'goals' / aliased 'Interests') */}
                     <div className="mb-4">
                       <p className="text-sm font-medium mb-1">Interests</p>
                       <div className="flex flex-wrap gap-1">
-                        {enhancedData.skills.slice(0, 3).map((skill, index) => (
-                          <span key={index} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-emerald-100 text-emerald-800">
-                            {skill}
+                        {(mentee.goals || []).slice(0, 4).map((interest, index) => (
+                          <span key={index} className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800">
+                            {interest}
                           </span>
                         ))}
-                        {enhancedData.skills.length > 3 && (
-                          <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-gray-100 text-gray-700">
-                            +{enhancedData.skills.length - 3} more
+                        {(mentee.goals || []).length > 4 && (
+                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-gray-100 text-gray-700">
+                            +{(mentee.goals || []).length - 4} more
                           </span>
                         )}
                       </div>

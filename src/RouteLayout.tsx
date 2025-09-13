@@ -31,99 +31,115 @@ import EditMentorProfile from "./pages/EditMentorProfile";
 
 export const router = createBrowserRouter(createRoutesFromElements(
     <Route path="/">
-          <Route index element={<Login/>}/>
-          <Route path="signup" element={<Signup/>}/>
-          <Route path="landing" element={<LandingPage />} />
-          <Route path="resources" element={<ResourceLibrary />} />
+          {/* Landing page as index route */}
+          <Route index element={<LandingPage />} />
+          
+          {/* Authentication routes */}
           <Route path="login" element={<Login/>}/>
+          <Route path="signup" element={<Signup/>}/>
+          <Route path="auth/callback" element={<AuthCallback/>}/>
+          <Route path="onboarding" element={<Onboarding/>}/>
+          
+          {/* Public routes */}
+          <Route path="resources" element={<ResourceLibrary />} />
           <Route path="progress" element={<ProgressTracking />} />
-          <Route path="book-session/:mentorId" element={<BookSession />} />
           <Route path="discover-mentors" element={<MentorDiscovery />} />
           <Route path="mentor-discovery" element={<MentorDiscovery />} />
           <Route path="discover-mentees" element={<MenteeDiscovery />} />
           <Route path="mentor/:id" element={<MentorProfile />} />
           <Route path="mentee/:id" element={<MenteeProfile />} />
-          <Route path="auth/callback" element={<AuthCallback/>}/>
-          <Route path="onboarding" element={<Onboarding/>}/>
-          <Route path="*" element={<NotFound />} />
-          <Route path='home' element={
-            <ProtectedComp>
-              <IncompleteOnboardingHandler>
-                <HomePage/>
-              </IncompleteOnboardingHandler>
-            </ProtectedComp>
-            }/>
-          {/* <Route path="/" element={<LandingPage/>} /> */}
-          <Route path="/mentor-dashboard" element={
+          <Route path="book-session/:mentorId" element={<BookSession />} />
+          
+          {/* Protected dashboard routes */}
+          <Route path="mentor-dashboard" element={
             <ProtectedComp allowedRoles={['mentor']}>
               <IncompleteOnboardingHandler>
                 <MentorDashboard/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
-          <Route path="/mentee-dashboard" element={
+          <Route path="mentee-dashboard" element={
             <ProtectedComp allowedRoles={['mentee']}>
               <IncompleteOnboardingHandler>
                 <MenteeDashboard/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
-          <Route path="/session-page" element={
+          
+          {/* Protected session and chat routes */}
+          <Route path="session-page" element={
             <ProtectedComp allowedRoles={['mentee']}>
               <IncompleteOnboardingHandler>
                 <SessionPage/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           }/>
-          <Route path="/chat" element={
+          <Route path="chat" element={
             <ProtectedComp>
               <IncompleteOnboardingHandler>
                 <ChatPage/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
-          <Route path="/chat/:conversationId" element={
+          <Route path="chat/:conversationId" element={
             <ProtectedComp>
               <IncompleteOnboardingHandler>
                 <ChatPage/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
-          <Route path="/simple-chat/:userId" element={
+          <Route path="simple-chat/:userId" element={
             <ProtectedComp>
               <IncompleteOnboardingHandler>
                 <SimpleChatPage/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
-          <Route path="/session/:sessionId" element={
+          <Route path="session/:sessionId" element={
             <ProtectedComp>
               <IncompleteOnboardingHandler>
                 <SessionRoom/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
-          <Route path="/edit-profile" element={
+          
+          {/* Protected profile editing routes */}
+          <Route path="edit-profile" element={
             <ProtectedComp allowedRoles={['mentee']}>
               <IncompleteOnboardingHandler>
                 <EditProfile/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
-          <Route path="/edit-mentor-profile" element={
+          <Route path="edit-mentor-profile" element={
             <ProtectedComp allowedRoles={['mentor']}>
               <IncompleteOnboardingHandler>
                 <EditMentorProfile/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
-          <Route path="/inspiration" element={
+          
+          {/* Other protected routes */}
+          <Route path="inspiration" element={
             <ProtectedComp>
               <IncompleteOnboardingHandler>
                 <InspirationPage/>
               </IncompleteOnboardingHandler>
             </ProtectedComp>
           } />
+          
+          {/* Legacy route redirects for backward compatibility */}
+          <Route path="landing" element={<LandingPage />} />
+          <Route path="home" element={
+            <ProtectedComp>
+              <IncompleteOnboardingHandler>
+                <HomePage/>
+              </IncompleteOnboardingHandler>
+            </ProtectedComp>
+          }/>
+          
+          {/* 404 catch-all */}
+          <Route path="*" element={<NotFound />} />
       </Route>
   ))
 

@@ -1,5 +1,5 @@
 import { useState,useEffect } from "react";
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
 import { 
   Search, 
   BookOpen, 
@@ -7,17 +7,20 @@ import {
   Video, 
   Download,
   ExternalLink,
-  ArrowLeft,
   Clock,
   Users,
   Briefcase
 } from "lucide-react";  
 import OpportunityCard from "../components/OpportunityCard";
 import type { Opportunity } from "../components/OpportunityCard";
+import AuthHeader from "../components/AuthHeader";
+import { useAuthStore } from "../store/authStore";
 
 const ResourceLibrary = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("articles");
+  const navigate = useNavigate();
+  const { userRole } = useAuthStore();
 
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
 
@@ -226,23 +229,23 @@ const ResourceLibrary = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
       {/* Header */}
-      <header className="bg-white shadow-subtle border-b">
+      <AuthHeader />
+
+      {/* Breadcrumb */}
+      <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/mentee-dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-smooth">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
-              </Link>
-              <div className="h-6 w-px bg-gray-300" />
-              <h1 className="text-xl font-semibold">Resource Library</h1>
-            </div>
-            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
-              ATLAS
-            </Link>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => navigate(userRole === 'mentor' ? '/mentor-dashboard' : '/mentee-dashboard')}
+              className="text-emerald-600 hover:text-emerald-700 font-medium"
+            >
+              ← Back to Dashboard
+            </button>
+            <div className="h-6 w-px bg-gray-300" />
+            <h1 className="text-xl font-semibold text-gray-900">Resource Library</h1>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}

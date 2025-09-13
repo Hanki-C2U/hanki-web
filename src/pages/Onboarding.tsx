@@ -313,6 +313,19 @@ const Onboarding = () => {
       if (role === 'mentor') {
         console.log('📝 Creating mentor profile...');
         
+        // Normalize LinkedIn input to full URL if needed
+        const rawLinkedIn = (currentData.LinkedIn || '').trim();
+        let normalizedLinkedIn: string | null = null;
+        if (rawLinkedIn.length > 0) {
+          const lower = rawLinkedIn.toLowerCase();
+          if (lower.includes('linkedin.com')) {
+            normalizedLinkedIn = rawLinkedIn;
+          } else {
+            const username = rawLinkedIn.replace(/^@+/, '').replace(/(^\/+|\/+$)/g, '');
+            normalizedLinkedIn = `https://linkedin.com/in/${username}`;
+          }
+        }
+
         const mentorInsertData = {
           ...userData,
           expertise: mentorData.expertise,
@@ -320,7 +333,7 @@ const Onboarding = () => {
           bio: currentData.bio, // Using 'bio' field name for mentor table
           Github: currentData.Github || null,
           Instagram: currentData.Instagram || null,
-          LinkedIn: currentData.LinkedIn, // Required field for mentors
+          LinkedIn: normalizedLinkedIn || null, // Required field for mentors
           Twitter: currentData.Twitter || null,
           Website: currentData.Website || null,
         };
@@ -348,13 +361,25 @@ const Onboarding = () => {
       } else {
         console.log('📝 Creating mentee profile...');
         
+        const rawLinkedInMentee = (currentData.LinkedIn || '').trim();
+        let normalizedLinkedInMentee: string | null = null;
+        if (rawLinkedInMentee.length > 0) {
+          const lower = rawLinkedInMentee.toLowerCase();
+          if (lower.includes('linkedin.com')) {
+            normalizedLinkedInMentee = rawLinkedInMentee;
+          } else {
+            const username = rawLinkedInMentee.replace(/^@+/, '').replace(/(^\/+|\/+$)/g, '');
+            normalizedLinkedInMentee = `https://linkedin.com/in/${username}`;
+          }
+        }
+
         const menteeInsertData = {
           ...userData,
           Interests: menteeData.goals, // Using database column name 'Interests' (mapped from goals)
           bio: currentData.bio,
           Github: currentData.Github || null,
           Instagram: currentData.Instagram || null,
-          LinkedIn: currentData.LinkedIn || null,
+          LinkedIn: normalizedLinkedInMentee || null,
           Twitter: currentData.Twitter || null,
           Website: currentData.Website || null,
         };

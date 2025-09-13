@@ -384,6 +384,20 @@ const EditMentorProfile = () => {
       console.log('🔄 Updating mentor profile for user:', user.id);
       
       // Prepare data for Supabase update
+      // Normalize LinkedIn: accept username or full URL
+      const rawLinkedIn = (formData.socials.linkedin || '').trim();
+      let normalizedLinkedIn: string | null = null;
+      if (rawLinkedIn.length > 0) {
+        const lower = rawLinkedIn.toLowerCase();
+        if (lower.includes('linkedin.com')) {
+          normalizedLinkedIn = rawLinkedIn;
+        } else {
+          // remove leading @ or slashes and any leading/trailing slashes
+              const username = rawLinkedIn.replace(/^@+/, '').replace(/(^\/+|\/+$)/g, '');
+          normalizedLinkedIn = `https://linkedin.com/in/${username}`;
+        }
+      }
+
       const updateData: any = {
         first_name: formData.firstName,
         last_name: formData.lastName,
@@ -391,7 +405,7 @@ const EditMentorProfile = () => {
         bio: formData.bio,
         expertise: formData.expertiseAreas.map(area => area.name),
         experience: JSON.stringify(formData.professionalBackground.experience),
-        LinkedIn: formData.socials.linkedin || null,
+        LinkedIn: normalizedLinkedIn || null,
         Website: formData.socials.website || null,
         Github: formData.socials.github || null,
         Instagram: formData.socials.instagram || null,
@@ -406,31 +420,100 @@ const EditMentorProfile = () => {
         updateData.profile_picture = formData.profilePicture;
       }
 
+      console.log('🔁 Sending update to Supabase:', updateData);
+
       const { data, error } = await supabasase
         .from('mentor')
         .update(updateData)
         .eq('supabaseId', user.id)
         .select()
-        .single();
+        .maybeSingle();
+
+      console.log('📤 Update response:', { data, error });
 
       if (error) {
         console.error('❌ Error updating mentor profile:', error);
         throw new Error(error.message);
       }
 
-      console.log('✅ Profile updated successfully:', data);
+      if (!data) {
+        console.warn('⚠️ Update succeeded but no mentor row was returned (no matching record).');
+        setFeedback({ type: 'error', message: 'No mentor record found to update. Please ensure your account has a mentor profile.' });
+        setIsSubmitting(false);
+        return;
+      }
 
-      setFeedback({
-        type: "success",
-        message: "Profile updated successfully!"
-      });
+      // Map returned DB row back into form shape so UI reflects saved values
+      try {
+        const returned = data as any;
+        const parsedExperience = (() => {
+          try {
+            return returned.experience && typeof returned.experience === 'string'
+              ? JSON.parse(returned.experience)
+              : returned.experience || [];
+          } catch (e) {
+            console.warn('⚠️ Could not parse returned experience JSON:', e);
+            return [];
+          }
+        })();
+
+        setFormData(prev => ({
+          ...prev,
+          firstName: returned.first_name || prev.firstName,
+          lastName: returned.last_name || prev.lastName,
+          profilePicture: returned.profile_picture || prev.profilePicture,
+          bio: returned.bio || prev.bio,
+          location: returned.location || prev.location,
+          expertiseAreas: (returned.expertise || []).map((e: string) => ({ name: e })),
+          professionalBackground: {
+            ...prev.professionalBackground,
+            experience: parsedExperience
+          },
+          socials: {
+            linkedin: returned.LinkedIn || '',
+            website: returned.Website || '',
+            github: returned.Github || '',
+            instagram: returned.Instagram || '',
+            twitter: returned.Twitter || ''
+          }
+        }));
+      
+      // Also write a normalized mentorProfile object to localStorage so dashboard reflects changes immediately
+      try {
+        const mappedProfile = {
+          firstName: returned.first_name || '',
+          lastName: returned.last_name || '',
+          role: '',
+          organization: '',
+          profilePicture: returned.profile_picture || 'https://nuxcfyhkrkiihdiztzcy.supabase.co/storage/v1/object/public/Project_Pics/anonymous.jpg',
+          bio: returned.bio || '',
+          languages: [],
+          expertiseAreas: (returned.expertise || []).map((e: string) => ({ name: e })),
+          professionalBackground: {
+            education: [],
+            experience: parsedExperience
+          },
+          location: returned.location || '',
+          timezone: 'Africa/Kigali',
+          linkedIn: returned.LinkedIn || '',
+          website: returned.Website || '',
+          availability: []
+        };
+        localStorage.setItem('mentorProfile', JSON.stringify(mappedProfile));
+      } catch (e) {
+        console.warn('Failed to write mentorProfile to localStorage', e);
+      }
+      } catch (mapErr) {
+        console.warn('⚠️ Failed to map returned mentor row to formData:', mapErr);
+      }
+
+      console.log('✅ Profile updated successfully:', data);
+      setFeedback({ type: 'success', message: 'Profile updated successfully!' });
 
       // Navigate back to dashboard after a short delay
       setTimeout(() => {
-        navigate("/mentor-dashboard", {
-          state: { message: "Profile updated successfully!" }
-        });
-      }, 2000);
+        navigate('/mentor-dashboard', { state: { message: 'Profile updated successfully!' } });
+      }, 1200);
     } catch (error) {
       console.error('💥 Error updating profile:', error);
       setFeedback({
@@ -686,17 +769,18 @@ const EditMentorProfile = () => {
                     <div>
                       <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-2">
                         <Linkedin className="inline h-4 w-4 mr-1" />
-                        LinkedIn
+                        LinkedIn (username or URL)
                       </label>
                       <input
-                        type="url"
+                        type="text"
                         id="linkedin"
                         name="linkedin"
                         value={formData.socials.linkedin || ""}
                         onChange={handleSocialChange}
-                        placeholder="https://linkedin.com/in/yourprofile"
+                        placeholder="e.g. your-username or https://linkedin.com/in/your-username"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       />
+                      <p className="text-xs text-gray-500 mt-1">Enter either your LinkedIn username (we'll save as <code>https://linkedin.com/in/username</code>) or the full LinkedIn URL.</p>
                     </div>
                     <div>
                       <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-2">
