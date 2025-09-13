@@ -1,7 +1,10 @@
 import { Award, Star } from "lucide-react";
 import type { Mentor } from "../types";
+import { useNavigate } from "react-router";
+
 
 export default function MentorShowcase() {
+const navigate = useNavigate();
   const mentors: Mentor[] = [
     {
       id: 1,
@@ -10,7 +13,7 @@ export default function MentorShowcase() {
       role: "Senior Data Scientist",
       flag: "🇬🇧",
       rating: 4.9,
-      certified: false
+      certified: false,
     },
     {
       id: 2,
@@ -19,7 +22,7 @@ export default function MentorShowcase() {
       role: "Product Manager",
       flag: "🇺🇸",
       rating: 4.8,
-      certified: true
+      certified: true,
     },
     {
       id: 3,
@@ -28,14 +31,17 @@ export default function MentorShowcase() {
       role: "Marketing Director",
       flag: "🇨🇦",
       rating: 5.0,
-      certified: false
+      certified: false,
     },
   ];
 
   return (
-    <section id="mentor-showcase" className="relative bg-slate-900 py-16 lg:py-24 overflow-hidden">
+    <section
+      id="mentor-showcase"
+      className="relative bg-slate-900 py-16 lg:py-24 overflow-hidden"
+    >
       {/* Subtle grain texture overlay */}
-      <div 
+      <div
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.2'/%3E%3C/svg%3E")`,
@@ -68,7 +74,9 @@ export default function MentorShowcase() {
               {mentors[0].rating && (
                 <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
                   <Star className="w-4 h-4 fill-emerald-400 text-emerald-400" />
-                  <span className="font-semibold text-sm text-white">{mentors[0].rating}</span>
+                  <span className="font-semibold text-sm text-white">
+                    {mentors[0].rating}
+                  </span>
                 </div>
               )}
               {mentors[0].certified && (
@@ -80,7 +88,9 @@ export default function MentorShowcase() {
             </div>
             <div className="p-6">
               <div className="flex items-center gap-2 mb-2">
-                <h3 className="font-bold text-xl text-white">{mentors[0].name}</h3>
+                <h3 className="font-bold text-xl text-white">
+                  {mentors[0].name}
+                </h3>
                 <span className="text-lg">{mentors[0].flag}</span>
               </div>
               <p className="text-gray-300 mb-4">{mentors[0].role}</p>
@@ -100,7 +110,9 @@ export default function MentorShowcase() {
               {mentors[1].rating && (
                 <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
                   <Star className="w-4 h-4 fill-emerald-400 text-emerald-400" />
-                  <span className="font-semibold text-sm text-white">{mentors[1].rating}</span>
+                  <span className="font-semibold text-sm text-white">
+                    {mentors[1].rating}
+                  </span>
                 </div>
               )}
               {mentors[1].certified && (
@@ -112,7 +124,9 @@ export default function MentorShowcase() {
             </div>
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2">
-                <h3 className="font-bold text-lg text-white">{mentors[1].name}</h3>
+                <h3 className="font-bold text-lg text-white">
+                  {mentors[1].name}
+                </h3>
                 <span className="text-sm">{mentors[1].flag}</span>
               </div>
               <p className="text-gray-300 text-sm mb-3">{mentors[1].role}</p>
@@ -132,7 +146,9 @@ export default function MentorShowcase() {
               {mentors[2].rating && (
                 <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1">
                   <Star className="w-4 h-4 fill-emerald-400 text-emerald-400" />
-                  <span className="font-semibold text-sm text-white">{mentors[2].rating}</span>
+                  <span className="font-semibold text-sm text-white">
+                    {mentors[2].rating}
+                  </span>
                 </div>
               )}
               {mentors[2].certified && (
@@ -144,7 +160,9 @@ export default function MentorShowcase() {
             </div>
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2">
-                <h3 className="font-bold text-lg text-white">{mentors[2].name}</h3>
+                <h3 className="font-bold text-lg text-white">
+                  {mentors[2].name}
+                </h3>
                 <span className="text-sm">{mentors[2].flag}</span>
               </div>
               <p className="text-gray-300 text-sm mb-3">{mentors[2].role}</p>
@@ -155,8 +173,12 @@ export default function MentorShowcase() {
           {/* Stats Card */}
           <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 hover:border-emerald-500/30 transition-all duration-300">
             <div className="text-center">
-              <div className="text-3xl font-bold text-emerald-400 mb-2">500+</div>
-              <div className="text-white font-semibold mb-1">Expert Mentors</div>
+              <div className="text-3xl font-bold text-emerald-400 mb-2">
+                500+
+              </div>
+              <div className="text-white font-semibold mb-1">
+                Expert Mentors
+              </div>
               <div className="text-gray-400 text-sm">Ready to guide you</div>
             </div>
           </div>
@@ -165,8 +187,10 @@ export default function MentorShowcase() {
           <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 hover:border-emerald-500/30 transition-all duration-300">
             <div className="text-center">
               <h3 className="text-white font-bold mb-2">Meet Our Mentors</h3>
-              <p className="text-gray-300 text-sm mb-4">Discover expertise across industries</p>
-              <button className="w-full border border-emerald-500 text-emerald-400 hover:bg-emerald-600/10 hover:text-emerald-300 px-4 py-2 rounded-lg font-semibold transition-all duration-300">
+              <p className="text-gray-300 text-sm mb-4">
+                Discover expertise across industries
+              </p>
+              <button  className="w-full border border-emerald-500 text-emerald-400 hover:bg-emerald-600/10 hover:text-emerald-300 px-4 py-2 rounded-lg font-semibold transition-all duration-300" onClick = {() => navigate("discover-mentors")}>
                 Browse All
               </button>
             </div>

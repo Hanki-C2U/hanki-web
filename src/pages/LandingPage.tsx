@@ -13,7 +13,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     const checkAuthStatus = () => {
-      const storedUser = localStorage.getItem('mockUser');
+      const storedUser = localStorage.getItem("mockUser");
       setIsLoggedIn(!!storedUser);
     };
 
@@ -21,15 +21,15 @@ export default function LandingPage() {
 
     // Listen for storage events to handle auth state changes across tabs
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'mockUser') {
+      if (event.key === "mockUser") {
         setIsLoggedIn(!!event.newValue);
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
 
@@ -45,5 +45,5 @@ export default function LandingPage() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }
