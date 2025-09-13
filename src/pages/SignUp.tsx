@@ -62,7 +62,7 @@ const Signup = () => {
       const { error } = await supabasase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${import.meta.env.VITE_APP_BASE_URL ?? window.location.origin}/auth/callback`
         }
       });
 
@@ -145,7 +145,7 @@ const Signup = () => {
         options: {
           // This tells Supabase where to redirect after email confirmation
           // But if email confirmation is disabled in dashboard, this won't be needed
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo: `${import.meta.env.VITE_APP_BASE_URL ?? window.location.origin}/auth/callback`
         }
       });
 

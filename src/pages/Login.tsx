@@ -95,7 +95,7 @@ const Login = () => {
       const { error: _googleError } = await supabasase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${import.meta.env.VITE_APP_BASE_URL ?? window.location.origin}/auth/callback`
         }
       });
 
