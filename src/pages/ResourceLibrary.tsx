@@ -1,23 +1,26 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router";
-import {
-  Search,
-  BookOpen,
-  FileText,
-  Video,
+import { useState,useEffect } from "react";
+import { useNavigate } from "react-router";
+import { 
+  Search, 
+  BookOpen, 
+  FileText, 
+  Video, 
   Download,
   ExternalLink,
-  ArrowLeft,
   Clock,
   Users,
   Briefcase
-} from "lucide-react";
+} from "lucide-react";  
 import OpportunityCard from "../components/OpportunityCard";
 import type { Opportunity } from "../components/OpportunityCard";
+import AuthHeader from "../components/AuthHeader";
+import { useAuthStore } from "../store/authStore";
 
 const ResourceLibrary = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("articles");
+  const navigate = useNavigate();
+  const { userRole } = useAuthStore();
 
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
 
@@ -28,6 +31,53 @@ const ResourceLibrary = () => {
       setOpportunities(JSON.parse(storedOpportunities));
     }
   }, []);
+
+  // Type interfaces
+  interface BaseResource {
+    id: number | string;
+    title: string;
+    description: string;
+    tags: string[];
+  }
+
+  interface ArticleResource extends BaseResource {
+    author: string;
+    readTime: string;
+    category: string;
+    downloadUrl: string;
+  }
+
+  interface TemplateResource extends BaseResource {
+    category: string;
+    format: string;
+    downloads: number;
+    downloadUrl: string;
+  }
+
+  interface VideoResource extends BaseResource {
+    duration: string;
+    speaker: string;
+    views: number;
+    category: string;
+    videoUrl: string;
+  }
+
+  interface ToolResource extends BaseResource {
+    category: string;
+    completionTime: string;
+    users: number;
+    toolUrl: string;
+  }
+
+  // Generic filter function
+  function filterResources<T extends BaseResource>(resources: T[]): T[] {
+    if (!searchTerm) return resources;
+    return resources.filter(resource =>
+      resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      resource.tags.some((tag: string) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }
 
   const resources: {
     articles: ArticleResource[];
@@ -51,7 +101,7 @@ const ResourceLibrary = () => {
         title: "Building Your Professional Network in Rwanda",
         description: "Strategic approaches to building meaningful professional connections within Rwanda's growing business ecosystem.",
         author: "Marie Claire Uwimana",
-        readTime: "10 min read",
+        readTime: "10 min read", 
         category: "Networking",
         tags: ["Networking", "Professional Growth", "Rwanda"],
         downloadUrl: "#"
@@ -116,7 +166,7 @@ const ResourceLibrary = () => {
         title: "Effective Remote Work Strategies",
         description: "Best practices for productivity, communication, and career growth while working remotely.",
         duration: "22:18",
-        speaker: "Sarah Mukamana",
+        speaker: "Sarah Mukamana", 
         views: 1876,
         category: "Professional Skills",
         tags: ["Remote Work", "Productivity", "Communication"],
@@ -149,7 +199,7 @@ const ResourceLibrary = () => {
         id: 2,
         title: "Skill Gap Analysis Tool",
         description: "Identify skills gaps between your current abilities and target role requirements.",
-        category: "Skill Development",
+        category: "Skill Development", 
         completionTime: "10 minutes",
         users: 3456,
         tags: ["Skills", "Assessment", "Career Planning"],
@@ -168,52 +218,6 @@ const ResourceLibrary = () => {
     ]
   };
 
-  interface BaseResource {
-    id: number | string;
-    title: string;
-    description: string;
-    tags: string[];
-  }
-
-  interface ArticleResource extends BaseResource {
-    author: string;
-    readTime: string;
-    category: string;
-    downloadUrl: string;
-  }
-
-  interface TemplateResource extends BaseResource {
-    category: string;
-    format: string;
-    downloads: number;
-    downloadUrl: string;
-  }
-
-  interface VideoResource extends BaseResource {
-    duration: string;
-    speaker: string;
-    views: number;
-    category: string;
-    videoUrl: string;
-  }
-
-  interface ToolResource extends BaseResource {
-    category: string;
-    completionTime: string;
-    users: number;
-    toolUrl: string;
-  }
-  // Generic filter function will work with any resource type
-
-  function filterResources<T extends BaseResource>(resources: T[]): T[] {
-    if (!searchTerm) return resources;
-    return resources.filter(resource =>
-      resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      resource.tags.some((tag: string) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-  }
-
   const tabs = [
     { id: "articles", label: "Articles", icon: FileText },
     { id: "templates", label: "Templates", icon: Download },
@@ -225,23 +229,23 @@ const ResourceLibrary = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
       {/* Header */}
-      <header className="bg-white shadow-subtle border-b">
+      <AuthHeader />
+
+      {/* Breadcrumb */}
+      <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/mentee-dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-smooth">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
-              </Link>
-              <div className="h-6 w-px bg-gray-300" />
-              <h1 className="text-xl font-semibold">Resource Library</h1>
-            </div>
-            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
-              ATLAS
-            </Link>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => navigate(userRole === 'mentor' ? '/mentor-dashboard' : '/mentee-dashboard')}
+              className="text-emerald-600 hover:text-emerald-700 font-medium"
+            >
+              ← Back to Dashboard
+            </button>
+            <div className="h-6 w-px bg-gray-300" />
+            <h1 className="text-xl font-semibold text-gray-900">Resource Library</h1>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
@@ -250,7 +254,7 @@ const ResourceLibrary = () => {
           <p className="text-xl text-gray-600 mb-6">
             Curated tools, guides, and content to accelerate your professional growth
           </p>
-
+          
           {/* Search */}
           <div className="max-w-md mx-auto relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -259,7 +263,7 @@ const ResourceLibrary = () => {
               placeholder="Search resources..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
             />
           </div>
         </div>
@@ -307,7 +311,7 @@ const ResourceLibrary = () => {
                   <div className="p-6 pt-0">
                     <div className="space-y-4">
                       <p className="text-sm text-blue-600 font-medium">By {article.author}</p>
-
+                      
                       <div className="flex flex-wrap gap-1">
                         {article.tags.map((tag, index) => (
                           <span key={index} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold text-gray-900 border-gray-300">
@@ -348,7 +352,6 @@ const ResourceLibrary = () => {
                   <div className="p-6 pt-0">
                     <div className="space-y-4">
                       <p className="text-sm text-blue-600 font-medium">Format: {template.format}</p>
-
                       <div className="flex flex-wrap gap-1">
                         {template.tags.map((tag, index) => (
                           <span key={index} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold text-gray-900 border-gray-300">
@@ -392,7 +395,6 @@ const ResourceLibrary = () => {
                         <span className="text-blue-600 font-medium">{video.speaker}</span>
                         <span className="text-gray-500">{video.duration}</span>
                       </div>
-
                       <div className="flex flex-wrap gap-1">
                         {video.tags.map((tag, index) => (
                           <span key={index} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold text-gray-900 border-gray-300">
@@ -435,7 +437,6 @@ const ResourceLibrary = () => {
                       <p className="text-sm text-blue-600 font-medium">
                         Time: {tool.completionTime}
                       </p>
-
                       <div className="flex flex-wrap gap-1">
                         {tool.tags.map((tag, index) => (
                           <span key={index} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold text-gray-900 border-gray-300">

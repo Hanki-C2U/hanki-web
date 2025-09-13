@@ -1,44 +1,122 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router";
-import {
-  ArrowLeft,
-  Calendar,
-  Video,
+import { 
+  ArrowLeft, 
+  Calendar, 
+  Video, 
   MessageCircle,
-  CheckCircle
+  User,
+  CheckCircle,
+  Loader2
 } from "lucide-react";
+import { supabasase } from '../supabase_creds/supabase';
+import { useAuthStore } from '../store/authStore';
+
+interface Mentor {
+  id: number;
+  supabaseId: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  expertise: string[];
+  bio: string;
+  experience: number;
+  profile_picture: string;
+  location: string;
+  phone_number: string;
+  ratings: number;
+}
 
 const BookSession = () => {
-
   const { mentorId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
-  const [sessionType, setSessionType] = useState("");
+  const { user } = useAuthStore();
+  
+  // Form fields matching sessions table
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedTime, setSelectedTime] = useState(""); // For display purposes
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [goals, setGoals] = useState("");
   const [experience, setExperience] = useState("");
+  const [additionalParticipants] = useState<string[]>([]);
+  
+  // Component state
+  const [mentor, setMentor] = useState<Mentor | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock mentor data - would fetch based on mentorId in a real application
-  const mentor = {
-    id: 1,
-    name: "Emmanuel Ntagungira",
-    expertise: "Software Engineering",
-    company: "Microsoft",
-    avatar: "EN"
-  };
+  // Fetch mentor data
+  useEffect(() => {
+    const fetchMentor = async () => {
+      if (!mentorId) {
+        setError("No mentor ID provided");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data: mentorData, error: mentorError } = await supabasase
+          .from('mentor')
+          .select('*')
+          .eq('supabaseId', mentorId)
+          .single();
+
+        if (mentorError) {
+          console.error('Error fetching mentor:', mentorError);
+          setError("Mentor not found");
+          setLoading(false);
+          return;
+        }
+
+        setMentor(mentorData);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error:', err);
+        setError("Failed to load mentor data");
+        setLoading(false);
+      }
+    };
+
+    fetchMentor();
+  }, [mentorId]);
 
   // Use useMemo to prevent arrays from being recreated on each render
   const availableDates = useMemo(() => [
-    { date: "2024-01-15", label: "Mon, Jan 15" },
-    { date: "2024-01-17", label: "Wed, Jan 17" },
-    { date: "2024-01-19", label: "Fri, Jan 19" },
-    { date: "2024-01-22", label: "Mon, Jan 22" }
+    { date: "2025-09-08", label: "Mon, Sep 8" },
+    { date: "2025-09-10", label: "Wed, Sep 10" }, 
+    { date: "2025-09-12", label: "Fri, Sep 12" },
+    { date: "2025-09-15", label: "Mon, Sep 15" }
   ], []);
 
   const timeSlots = useMemo(() => [
-    "9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"
+    { start: "09:00", end: "10:00", label: "9:00 AM - 10:00 AM" },
+    { start: "10:00", end: "11:00", label: "10:00 AM - 11:00 AM" },
+    { start: "11:00", end: "12:00", label: "11:00 AM - 12:00 PM" },
+    { start: "13:00", end: "14:00", label: "1:00 PM - 2:00 PM" },
+    { start: "14:00", end: "15:00", label: "2:00 PM - 3:00 PM" },
+    { start: "15:00", end: "16:00", label: "3:00 PM - 4:00 PM" },
+    { start: "16:00", end: "17:00", label: "4:00 PM - 5:00 PM" },
+    { start: "17:00", end: "18:00", label: "5:00 PM - 6:00 PM" }
   ], []);
+
+  // Helper function to check if a time slot is available 
+  // For testing: All time slots are always available
+  const isTimeSlotAvailable = (): boolean => {
+    return true; // Always return true for testing purposes
+  };
+
+  const sessionTypes = [
+    { value: "career-guidance", label: "Career Guidance" },
+    { value: "technical-review", label: "Technical Review" },
+    { value: "interview-prep", label: "Interview Preparation" },
+    { value: "project-discussion", label: "Project Discussion" },
+    { value: "general-mentoring", label: "General Mentoring" }
+  ];
 
   // Parse the selected slot from URL query parameters
   useEffect(() => {
@@ -52,34 +130,97 @@ const BookSession = () => {
       // Find the matching date for the day
       const dateOption = availableDates.find(date => date.label.includes(day.substring(0, 3)));
       if (dateOption) {
-        setSelectedDate(dateOption.date);
+        setSelectedDate(new Date(dateOption.date));
       }
 
-      // Set the time if it exists in our time slots
-      if (timeSlots.includes(time)) {
-        setSelectedTime(time);
+      // Find the matching time slot
+      const timeSlot = timeSlots.find(slot => slot.label.includes(time));
+      if (timeSlot) {
+        setSelectedTime(timeSlot.label);
+        setStartTime(timeSlot.start);
+        setEndTime(timeSlot.end);
       }
 
       // Also set a default session type for better UX
-      if (!sessionType) {
-        setSessionType("general-mentoring");
+      if (!title) {
+        setTitle("General Mentoring Session");
       }
     }
-  }, [location.search, availableDates, timeSlots, sessionType]);
+  }, [location.search, availableDates, timeSlots, title]);
 
-  const sessionTypes = [
-    { value: "career-guidance", label: "Career Guidance" },
-    { value: "technical-review", label: "Technical Review" },
-    { value: "interview-prep", label: "Interview Preparation" },
-    { value: "project-discussion", label: "Project Discussion" },
-    { value: "general-mentoring", label: "General Mentoring" }
-  ];
+  const handleBookSession = async () => {
+    if (!mentor || !selectedDate || !startTime || !endTime || !title) {
+      alert("Please fill in all required fields");
+      return;
+    }
 
-  const handleBookSession = () => {
-    // Simulate booking success
-    navigate("/mentee-dashboard", {
-      state: { message: "Session booked successfully!" }
-    });
+    if (!user?.id) {
+      alert("You must be logged in to book a session");
+      return;
+    }
+
+    // For testing: Skip all time validations - allow any date/time
+    setBookingLoading(true);
+    
+    try {
+      console.log('🔄 Booking session for user:', user.id, 'with mentor:', mentor.supabaseId);
+
+      // Generate unique room ID and meeting URL
+      const jitsiRoomId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const meetingUrl = `https://meet.jit.si/${jitsiRoomId}`;
+      
+      // Combine description, goals, and experience into a comprehensive description
+      const fullDescription = [
+        description && `Session Description: ${description}`,
+        goals && `Goals: ${goals}`,
+        experience && `Background: ${experience}`
+      ].filter(Boolean).join(' | ');
+      
+      // Create session in database
+      const sessionData = {
+        menteeId: user.id,
+        mentorId: mentor.supabaseId,
+        title,
+        description: fullDescription || null,
+        startTime,
+        endTime,
+        sessionDate: selectedDate.toISOString().split('T')[0], // Use date only (YYYY-MM-DD)
+        jitsiRoomId,
+        meetingUrl,
+        status: 'PENDING',
+        additionalParticipants: additionalParticipants
+      };
+
+      console.log('📅 Session data to be inserted:', sessionData);
+
+      const { data, error } = await supabasase
+        .from('sessions')
+        .insert([sessionData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Error booking session:', error);
+        console.error('❌ Session data that failed:', sessionData);
+        if (error.code === '23505') {
+          throw new Error("This time slot is already booked. Please choose a different time.");
+        }
+        throw new Error(`Failed to book session: ${error.message}`);
+      }
+
+      console.log('✅ Session booked successfully:', data);
+      
+      // Navigate back with success message
+      navigate("/mentee-dashboard", { 
+        state: { message: "Session booked successfully! The mentor will be notified." }
+      });
+      
+    } catch (err) {
+      console.error('Booking error:', err);
+      alert(err instanceof Error ? err.message : "Failed to book session. Please try again.");
+    } finally {
+      setBookingLoading(false);
+    }
   };
 
   return (
@@ -103,7 +244,36 @@ const BookSession = () => {
         </div>
       </header>
 
+      {/* Testing Mode Banner */}
+      <div className="bg-green-100 border-b border-green-200 px-4 sm:px-6 lg:px-8 py-2">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-center text-sm text-green-800">
+            🧪 <strong>Testing Mode:</strong> All time slots are available - No time restrictions for testing purposes
+          </p>
+        </div>
+      </div>
+
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {loading ? (
+          <div className="text-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading mentor details...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="max-w-md mx-auto">
+              <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Mentor Not Found</h3>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <Link 
+                to="/mentee-dashboard"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700"
+              >
+                Back to Dashboard
+              </Link>
+            </div>
+          </div>
+        ) : mentor ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Booking Form */}
           <div className="lg:col-span-2">
@@ -114,7 +284,7 @@ const BookSession = () => {
                   Schedule Your Session
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Book a mentoring session with {mentor.name}
+                  Book a mentoring session with {mentor.first_name} {mentor.last_name}
                 </p>
               </div>
               <div className="p-6 pt-0 space-y-6">
@@ -122,13 +292,13 @@ const BookSession = () => {
                 <div className="space-y-2">
                   <label htmlFor="session-type" className="block text-sm font-medium text-gray-700">Session Type</label>
                   <select
-                    value={sessionType}
-                    onChange={(e) => setSessionType(e.target.value)}
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                   >
                     <option value="">What would you like to discuss?</option>
                     {sessionTypes.map((type) => (
-                      <option key={type.value} value={type.value}>
+                      <option key={type.value} value={type.label}>
                         {type.label}
                       </option>
                     ))}
@@ -142,11 +312,12 @@ const BookSession = () => {
                     {availableDates.map((dateOption) => (
                       <button
                         key={dateOption.date}
-                        className={`inline-flex items-center justify-start gap-2 h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${selectedDate === dateOption.date
-                          ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                          : 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-900'
-                          }`}
-                        onClick={() => setSelectedDate(dateOption.date)}
+                        className={`inline-flex items-center justify-start gap-2 h-10 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${
+                          selectedDate && selectedDate.toISOString().split('T')[0] === dateOption.date
+                            ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                            : 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-900'
+                        }`}
+                        onClick={() => setSelectedDate(new Date(dateOption.date))}
                       >
                         <Calendar className="h-4 w-4 mr-2" />
                         {dateOption.label}
@@ -157,20 +328,36 @@ const BookSession = () => {
 
                 {/* Time Selection */}
                 <div className="space-y-3">
-                  <label className="block text-sm font-medium text-gray-700">Select Time</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {timeSlots.map((time) => (
-                      <button
-                        key={time}
-                        className={`inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${selectedTime === time
-                          ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                          : 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-900'
+                  <label className="block text-sm font-medium text-gray-700">Select Time Slot</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {timeSlots.map((timeSlot) => {
+                      const isAvailable = isTimeSlotAvailable(); // Always true for testing
+                      const isSelected = startTime === timeSlot.start && endTime === timeSlot.end;
+                      
+                      return (
+                        <button
+                          key={`${timeSlot.start}-${timeSlot.end}`}
+                          className={`inline-flex items-center justify-center gap-2 h-12 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${
+                            !isAvailable 
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                              : isSelected
+                                ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                : 'border border-gray-300 bg-white hover:bg-gray-50 text-gray-900'
                           }`}
-                        onClick={() => setSelectedTime(time)}
-                      >
-                        {time}
-                      </button>
-                    ))}
+                          onClick={() => {
+                            if (isAvailable) {
+                              setSelectedTime(timeSlot.label);
+                              setStartTime(timeSlot.start);
+                              setEndTime(timeSlot.end);
+                            }
+                          }}
+                          disabled={!isAvailable}
+                        >
+                          <Video className="h-4 w-4" />
+                          {timeSlot.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -195,6 +382,19 @@ const BookSession = () => {
                     placeholder="Briefly describe your current experience level, background, and any relevant context for this session."
                     value={experience}
                     onChange={(e) => setExperience(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-vertical"
+                  />
+                </div>
+
+                {/* Session Description */}
+                <div className="space-y-2">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">Additional Notes (Optional)</label>
+                  <textarea
+                    id="description"
+                    placeholder="Any additional information or specific topics you'd like to cover?"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-vertical"
                   />
@@ -239,22 +439,22 @@ const BookSession = () => {
                 {/* Mentor Info */}
                 <div className="flex items-center gap-3 p-3 border rounded-lg">
                   <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-                    {mentor.avatar}
+                    {mentor.first_name ? mentor.first_name.charAt(0).toUpperCase() : 'M'}
                   </div>
                   <div>
-                    <h4 className="font-medium">{mentor.name}</h4>
-                    <p className="text-sm text-emerald-600">{mentor.expertise}</p>
-                    <p className="text-xs text-gray-600">{mentor.company}</p>
+                    <h4 className="font-medium">{mentor.first_name} {mentor.last_name}</h4>
+                    <p className="text-sm text-emerald-600">{mentor.expertise?.join(', ') || 'Mentor'}</p>
+                    <p className="text-xs text-gray-600">{mentor.location || 'Professional Mentor'}</p>
                   </div>
                 </div>
 
                 {/* Session Details */}
                 <div className="space-y-3">
-                  {sessionType && (
+                  {title && (
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Type:</span>
                       <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-emerald-50 text-emerald-700">
-                        {sessionTypes.find(t => t.value === sessionType)?.label}
+                        {title}
                       </span>
                     </div>
                   )}
@@ -263,7 +463,7 @@ const BookSession = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Date:</span>
                       <span className="text-sm font-medium">
-                        {availableDates.find(d => d.date === selectedDate)?.label}
+                        {availableDates.find(d => d.date === selectedDate.toISOString().split('T')[0])?.label}
                       </span>
                     </div>
                   )}
@@ -288,18 +488,28 @@ const BookSession = () => {
 
                 {/* Action Buttons */}
                 <div className="space-y-3 pt-4 border-t">
-                  <button
-                    className={`w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${!selectedDate || !selectedTime || !sessionType
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-emerald-500 text-white hover:bg-emerald-600'
-                      }`}
+                  <button 
+                    className={`w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${
+                      !selectedDate || !startTime || !endTime || !title || bookingLoading
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-emerald-500 text-white hover:bg-emerald-600'
+                    }`}
                     onClick={handleBookSession}
-                    disabled={!selectedDate || !selectedTime || !sessionType}
+                    disabled={!selectedDate || !startTime || !endTime || !title || bookingLoading}
                   >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Confirm Booking
+                    {bookingLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Booking...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        Confirm Booking
+                      </>
+                    )}
                   </button>
-
+                  
                   <button className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Message Mentor
@@ -308,12 +518,13 @@ const BookSession = () => {
 
                 <div className="text-xs text-gray-600 pt-4 border-t">
                   <p>By booking this session, you agree to our terms of service and cancellation policy.</p>
-                  <p className="mt-2 text-emerald-600">This mentor offers complimentary sessions to support Rwandan youth.</p>
+                  <p className="mt-2 text-emerald-600">This mentor offers complimentary sessions to support professional growth.</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        ) : null}
       </main>
     </div>
   );

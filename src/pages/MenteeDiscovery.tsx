@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import {
   Search,
@@ -8,113 +8,56 @@ import {
   Briefcase,
   ArrowLeft,
   GraduationCap,
-  Target
+  Target,
+  User,
+  MessageCircle,
+  Github,
+  Instagram,
+  Linkedin,
+  Globe,
+  Loader2
 } from "lucide-react";
+import { supabasase } from '../supabase_creds/supabase';
+import { useAuthStore } from "../store/authStore";
+
+interface Mentee {
+  id: number;
+  supabaseId: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  bio: string;
+  goals: string[];
+  Interests?: string[];
+  location: string;
+  profile_picture: string;
+  age: number;
+  joined: string;
+  Github?: string;
+  Instagram?: string;
+  LinkedIn?: string;
+  Website?: string;
+}
 
 const MenteeDiscovery = () => {
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+  
+  const [mentees, setMentees] = useState<Mentee[]>([]);
+  const [filteredMentees, setFilteredMentees] = useState<Mentee[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Filter states
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedField, setSelectedField] = useState("");
   const [selectedSkills, setSelectedSkills] = useState("");
 
-  const navigate = useNavigate()
-
-  const mentees = [
-    {
-      id: 1,
-      name: "Bienvenu Cyuzuzo",
-      role: "Student",
-      organization: "African Leadership University",
-      field: "Software Engineering",
-      skills: ["React", "JavaScript", "Node.js", "SQL", "HTML/CSS"],
-      goals: ["Transition to Software Engineering", "Build Professional Network", "Develop Leadership Skills", "Prepare for technical interviews"],
-      location: "Kigali, Rwanda",
-      rating: 4.8,
-      sessions: 6,
-      avatar: null,
-      profilePicture: "/shema-portrait.png",
-      bio: "I'm a software engineering student passionate about building web applications. I'm currently focused on full-stack development using JavaScript, React, and SQL. I'm seeking mentorship to strengthen my system design, problem-solving, and career navigation skills."
-    },
-    {
-      id: 2,
-      name: "Alice Mutoni",
-      role: "Frontend Developer",
-      organization: "TechRwanda",
-      field: "Web Development",
-      skills: ["React", "Angular", "UI/UX", "CSS", "JavaScript"],
-      goals: ["Become a senior developer", "Master advanced React patterns", "Improve UI/UX skills"],
-      location: "Kigali, Rwanda",
-      rating: 4.7,
-      sessions: 8,
-      avatar: null,
-      profilePicture: "/claudine-portrait.png",
-      bio: "Frontend developer with 2 years of experience. Passionate about creating beautiful and accessible user interfaces. Looking to advance my career and take on more challenging projects."
-    },
-    {
-      id: 3,
-      name: "David Nshuti",
-      role: "Data Scientist",
-      organization: "DataInsights Africa",
-      field: "Data Science",
-      skills: ["Python", "Machine Learning", "Data Visualization", "SQL", "Statistics"],
-      goals: ["Develop expertise in NLP", "Build a portfolio of data science projects", "Transition into AI research"],
-      location: "Nairobi, Kenya",
-      rating: 4.9,
-      sessions: 12,
-      avatar: null,
-      profilePicture: "/alex-portrait.webp",
-      bio: "Data scientist with a passion for extracting insights from complex datasets. Currently working on machine learning projects with social impact in East Africa."
-    },
-    {
-      id: 4,
-      name: "Marie Uwase",
-      role: "Product Manager",
-      organization: "FinTech Rwanda",
-      field: "Product Management",
-      skills: ["User Research", "Agile", "Product Strategy", "Wireframing", "Market Analysis"],
-      goals: ["Lead a product team", "Develop expertise in financial technology", "Create products with social impact"],
-      location: "Kigali, Rwanda",
-      rating: 4.6,
-      sessions: 5,
-      avatar: null,
-      profilePicture: "/alice-portrait.webp",
-      bio: "Product manager specializing in financial technology solutions. Passionate about creating products that improve financial inclusion in Africa."
-    },
-    {
-      id: 5,
-      name: "Eric Mugabo",
-      role: "Agricultural Entrepreneur",
-      organization: "AgriTech Rwanda",
-      field: "Agriculture",
-      skills: ["Business Development", "Agricultural Technology", "Sustainable Farming", "Project Management"],
-      goals: ["Implement data-driven farming methods", "Expand export operations", "Build a network of agricultural technologists"],
-      location: "Musanze, Rwanda",
-      rating: 4.8,
-      sessions: 9,
-      avatar: null,
-      profilePicture: "/james-portrait.webp",
-      bio: "Agricultural entrepreneur using technology to improve farming outcomes. Focused on sustainable practices and increasing crop yields for small-scale farmers."
-    },
-    {
-      id: 6,
-      name: "Cynthia Mutoni",
-      role: "Software Developer",
-      organization: "Remote Tech",
-      field: "Software Engineering",
-      skills: ["Full-stack Development", "React", "Node.js", "MongoDB", "DevOps"],
-      goals: ["Land a remote position with an international company", "Improve system design skills", "Contribute to open source"],
-      location: "Kigali, Rwanda",
-      rating: 4.7,
-      sessions: 7,
-      avatar: null,
-      profilePicture: "/mary-portrait.webp",
-      bio: "Self-taught developer with a passion for creating impactful applications. Currently focused on enhancing my skills to compete in the global tech market."
-    }
-  ];
-
+  // Mock data for enhanced UI display
   const fields = [
     "All Fields",
     "Software Engineering",
-    "Web Development",
+    "Web Development", 
     "Data Science",
     "Product Management",
     "Agriculture",
@@ -137,23 +80,185 @@ const MenteeDiscovery = () => {
     "Business Development"
   ];
 
-  const filteredMentees = mentees.filter(mentee => {
-    const matchesSearch = mentee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mentee.field.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mentee.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Fetch mentees from database (original functionality)
+  useEffect(() => {
+    const fetchMentees = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabasase
+          .from('mentee')
+          .select('*')
+          .order('joined', { ascending: false });
 
-    const matchesField = !selectedField || selectedField === "All Fields" ||
-      mentee.field === selectedField;
+        if (error) {
+          console.error('Error fetching mentees:', error);
+          setError('Failed to load mentees');
+          return;
+        }
 
-    const matchesSkills = !selectedSkills || selectedSkills === "All Skills" ||
-      mentee.skills.includes(selectedSkills);
+        // Normalize DB shape: some rows store Interests (DB column) which maps to our `goals` concept.
+        const raw = data || [];
+        const normalized = raw.map((m: any) => ({
+          ...m,
+          goals: m.goals ?? m.Interests ?? m.Goals ?? [],
+        }));
 
-    return matchesSearch && matchesField && matchesSkills;
-  });
+        // Filter out current user
+        const filteredData = normalized.filter((mentee: any) => mentee.supabaseId !== user?.id) || [];
+        setMentees(filteredData);
+        setFilteredMentees(filteredData);
+      } catch (err) {
+        console.error('Error:', err);
+        setError('Failed to load mentees');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMentees();
+  }, [user?.id]);
+
+  // Enhanced filter logic combining original and new UI filters
+  useEffect(() => {
+    let filtered = mentees;
+
+    // Search by name, bio, or goals (original functionality)
+    if (searchTerm) {
+      filtered = filtered.filter(mentee =>
+        mentee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        mentee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        mentee.bio.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        mentee.goals?.some(goal => goal.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Enhanced field filtering (UI improvement with fallback)
+    if (selectedField && selectedField !== "All Fields") {
+      // Since we don't have field in database, filter by goals containing field keywords
+      filtered = filtered.filter(mentee => 
+        mentee.goals?.some(goal => 
+          goal.toLowerCase().includes(selectedField.toLowerCase()) ||
+          selectedField.toLowerCase().includes(goal.toLowerCase())
+        )
+      );
+    }
+
+    // Enhanced skills filtering (UI improvement with fallback)
+    if (selectedSkills && selectedSkills !== "All Skills") {
+      // Filter by goals containing skill keywords
+      filtered = filtered.filter(mentee =>
+        mentee.goals?.some(goal => 
+          goal.toLowerCase().includes(selectedSkills.toLowerCase()) ||
+          selectedSkills.toLowerCase().includes(goal.toLowerCase())
+        )
+      );
+    }
+
+    setFilteredMentees(filtered);
+  }, [searchTerm, selectedField, selectedSkills, mentees]);
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedField("");
+    setSelectedSkills("");
+  };
+
+  const handleStartChat = (menteeId: string) => {
+    // Navigate to simple chat with the target mentee's ID (original functionality)
+    console.log('🎯 Starting chat with mentee:', menteeId)
+    console.log('👤 Current user:', user?.id)
+    console.log('🔄 Navigating to:', `/simple-chat/${menteeId}`)
+    navigate(`/simple-chat/${menteeId}`);
+  };
+
+  // Enhanced mentee display data (combines database with mock data for UI)
+  const getEnhancedMenteeData = (mentee: Mentee) => {
+    return {
+      ...mentee,
+      name: `${mentee.first_name} ${mentee.last_name}`,
+      role: "Student", // Mock - not in database
+      organization: "University", // Mock - not in database
+      field: mentee.goals?.[0] || "General", // Use first goal as field
+      skills: mentee.goals?.slice(0, 5) || ["Learning"], // Use goals as skills
+      rating: 4.8, // Mock - not in database
+      sessions: Math.floor(Math.random() * 10) + 1, // Mock - not in database
+      profilePicture: mentee.profile_picture
+    };
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
+        <header className="bg-white shadow-subtle border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+              <Link to="/mentor-dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-smooth">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Link>
+              <div className="h-6 w-px bg-gray-300" />
+              <h1 className="text-xl font-semibold">Discover Mentees</h1>
+              <div className="h-6 w-px bg-gray-300" />
+              <Link to="/discover-mentors" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                Find Mentors
+              </Link>
+            </div>
+              <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+                ATLAS
+              </Link>
+            </div>
+          </div>
+        </header>
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-emerald-600" />
+            <p className="text-gray-600">Loading fellow mentees...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
+        <header className="bg-white shadow-subtle border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Link to="/mentor-dashboard" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-smooth">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Dashboard
+                </Link>
+                <div className="h-6 w-px bg-gray-300" />
+                <h1 className="text-xl font-semibold">Discover Mentees</h1>
+              </div>
+              <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+                ATLAS
+              </Link>
+            </div>
+          </div>
+        </header>
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+          <div className="text-center">
+            <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
-      {/* Header */}
+      {/* Header - New UI Style */}
       <header className="bg-white shadow-subtle border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -173,7 +278,7 @@ const MenteeDiscovery = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search and Filter Section */}
+        {/* Search and Filter Section - New UI Style */}
         <div className="bg-white rounded-xl shadow-card p-6 mb-8">
           <h2 className="text-2xl font-bold mb-6">Find Mentees to Connect With</h2>
 
@@ -182,7 +287,7 @@ const MenteeDiscovery = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
                 type="text"
-                placeholder="Search by name, field, or skills..."
+                placeholder="Search by name, interests, or bio..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -194,7 +299,7 @@ const MenteeDiscovery = () => {
               onChange={(e) => setSelectedField(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
             >
-              <option value="">Field of Study/Work</option>
+              <option value="">Field of Interest</option>
               {fields.map((field) => (
                 <option key={field} value={field}>{field}</option>
               ))}
@@ -216,122 +321,171 @@ const MenteeDiscovery = () => {
             <p className="text-gray-600">
               Showing {filteredMentees.length} mentee{filteredMentees.length !== 1 ? 's' : ''}
             </p>
-            <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-              <Filter className="h-4 w-4 mr-2" />
-              More Filters
-            </button>
+            {(searchTerm || selectedField || selectedSkills) && (
+              <button 
+                onClick={clearFilters}
+                className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Clear Filters
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Mentees Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMentees.map((mentee) => (
-            <div key={mentee.id} className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden hover:shadow-elevated transition-smooth">
-              <div className="p-6">
-                {/* Mentee Header */}
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-full overflow-hidden">
-                    {mentee.profilePicture ? (
-                      <img
-                        src={mentee.profilePicture}
-                        alt={mentee.name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-semibold text-lg">
-                        {mentee.name.split(' ').map(n => n[0]).join('')}
+        {/* Mentees Grid - New UI Style with Original Data */}
+        {filteredMentees.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredMentees.map((mentee) => {
+              const enhancedData = getEnhancedMenteeData(mentee);
+              return (
+                <div key={mentee.id} className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden hover:shadow-elevated transition-smooth">
+                  <div className="p-6">
+                    {/* Mentee Header */}
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-16 h-16 rounded-full overflow-hidden">
+                        {enhancedData.profilePicture ? (
+                          <img
+                            src={enhancedData.profilePicture}
+                            alt={enhancedData.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-semibold text-lg">
+                            {mentee.first_name.charAt(0)}{mentee.last_name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg mb-1">{enhancedData.name}</h3>
+                        <p className="text-emerald-600 font-medium">{enhancedData.role}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <MapPin className="h-3 w-3 text-gray-400" />
+                          <span className="text-sm text-gray-600">{mentee.location}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Organization */}
+                    <div className="mb-3 flex items-center gap-2 text-sm text-gray-600">
+                      <Briefcase className="h-4 w-4 text-gray-400" />
+                      <span>{enhancedData.organization}</span>
+                    </div>
+
+                    {/* Interests (from DB 'goals' / aliased 'Interests') */}
+                    <div className="mb-4">
+                      <p className="text-sm font-medium mb-1">Interests</p>
+                      <div className="flex flex-wrap gap-1">
+                        {(mentee.goals || []).slice(0, 4).map((interest, index) => (
+                          <span key={index} className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800">
+                            {interest}
+                          </span>
+                        ))}
+                        {(mentee.goals || []).length > 4 && (
+                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-gray-100 text-gray-700">
+                            +{(mentee.goals || []).length - 4} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Goals */}
+                    <div className="mb-4">
+                      <p className="text-sm font-medium mb-1 flex items-center gap-1">
+                        <Target className="h-3.5 w-3.5 text-emerald-600" />
+                        Learning Goals
+                      </p>
+                      <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
+                        {mentee.goals?.slice(0, 2).map((goal, index) => (
+                          <li key={index} className="line-clamp-1">{goal}</li>
+                        ))}
+                        {(mentee.goals?.length || 0) > 2 && (
+                          <li className="text-emerald-600 hover:underline cursor-pointer">
+                            +{(mentee.goals?.length || 0) - 2} more goals
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between mb-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-medium">{enhancedData.rating}</span>
+                        <span className="text-gray-600">({enhancedData.sessions} sessions)</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-emerald-600 font-medium">
+                        <GraduationCap className="h-4 w-4" />
+                        {enhancedData.field}
+                      </div>
+                    </div>
+
+                    {/* Social Links (Original functionality) */}
+                    {(mentee.Github || mentee.LinkedIn || mentee.Instagram || mentee.Website) && (
+                      <div className="mb-4">
+                        <div className="flex gap-2">
+                          {mentee.Github && (
+                            <a href={mentee.Github} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900">
+                              <Github className="h-4 w-4" />
+                            </a>
+                          )}
+                          {mentee.LinkedIn && (
+                            <a href={mentee.LinkedIn} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-blue-600">
+                              <Linkedin className="h-4 w-4" />
+                            </a>
+                          )}
+                          {mentee.Instagram && (
+                            <a href={mentee.Instagram} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-pink-600">
+                              <Instagram className="h-4 w-4" />
+                            </a>
+                          )}
+                          {mentee.Website && (
+                            <a href={mentee.Website} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900">
+                              <Globe className="h-4 w-4" />
+                            </a>
+                          )}
+                        </div>
                       </div>
                     )}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-1">{mentee.name}</h3>
-                    <p className="text-emerald-600 font-medium">{mentee.role}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <MapPin className="h-3 w-3 text-gray-400" />
-                      <span className="text-sm text-gray-600">{mentee.location}</span>
+
+                    {/* Actions - Original functionality with New UI */}
+                    <div className="flex gap-2">
+                      <Link
+                        to={`/mentee/${mentee.supabaseId}`}
+                        className="flex-1 inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                      >
+                        View Profile
+                      </Link>
+                      <button
+                        className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                        onClick={() => handleStartChat(mentee.supabaseId)}
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        Chat
+                      </button>
                     </div>
                   </div>
                 </div>
-
-                {/* Organization */}
-                <div className="mb-3 flex items-center gap-2 text-sm text-gray-600">
-                  <Briefcase className="h-4 w-4 text-gray-400" />
-                  <span>{mentee.organization}</span>
-                </div>
-
-                {/* Skills */}
-                <div className="mb-4">
-                  <p className="text-sm font-medium mb-1">Skills</p>
-                  <div className="flex flex-wrap gap-1">
-                    {mentee.skills.slice(0, 3).map((skill, index) => (
-                      <span key={index} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-emerald-100 text-emerald-800">
-                        {skill}
-                      </span>
-                    ))}
-                    {mentee.skills.length > 3 && (
-                      <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-gray-100 text-gray-700">
-                        +{mentee.skills.length - 3} more
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Goals */}
-                <div className="mb-4">
-                  <p className="text-sm font-medium mb-1 flex items-center gap-1">
-                    <Target className="h-3.5 w-3.5 text-emerald-600" />
-                    Learning Goals
-                  </p>
-                  <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
-                    {mentee.goals.slice(0, 2).map((goal, index) => (
-                      <li key={index} className="line-clamp-1">{goal}</li>
-                    ))}
-                    {mentee.goals.length > 2 && (
-                      <li className="text-emerald-600 hover:underline cursor-pointer">
-                        +{mentee.goals.length - 2} more goals
-                      </li>
-                    )}
-                  </ul>
-                </div>
-
-                {/* Stats */}
-                <div className="flex items-center justify-between mb-4 text-sm">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{mentee.rating}</span>
-                    <span className="text-gray-600">({mentee.sessions} sessions)</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-emerald-600 font-medium">
-                    <GraduationCap className="h-4 w-4" />
-                    {mentee.field}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2">
-                  <button
-                    className="flex-1 inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-                    onClick={() => navigate(`/mentee/${mentee.id}`)}
-                  >
-                    View Profile
-                  </button>
-                  <button
-                    className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-                    onClick={() => navigate(`/messages/mentee/${mentee.id}`)}
-                  >
-                    Message
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredMentees.length === 0 && (
+              );
+            })}
+          </div>
+        ) : (
           <div className="text-center py-12">
             <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No mentees found</h3>
-            <p className="text-gray-600">Try adjusting your search criteria or browse all mentees.</p>
+            <p className="text-gray-600 mb-4">
+              {searchTerm || selectedField || selectedSkills
+                ? "Try adjusting your search criteria or browse all mentees."
+                : "Be the first to join this amazing community!"}
+            </p>
+            {(searchTerm || selectedField || selectedSkills) && (
+              <button
+                onClick={clearFilters}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700"
+              >
+                Clear Filters
+              </button>
+            )}
           </div>
         )}
       </main>

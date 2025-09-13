@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-// Import only what we need to avoid unused warnings
-import { mockMentors, mockMentees } from '../data/mockData';
+import { supabasase } from '../supabase_creds/supabase';
 
 type UserType = 'mentor' | 'mentee';
 
@@ -35,20 +34,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsLoggedIn(true);
           setUserId(user.id);
 
-          // Check if user is a mentor or mentee
+          // Check if user is a mentor or mentee by querying Supabase
           if (user.userType === 'mentor') {
-            const mentor = mockMentors.find(m => m.supabaseId === user.id);
-            if (mentor) {
-              setUserType('mentor');
-              setUserName(`${mentor.firstName} ${mentor.lastName}`);
-              setUserImage(mentor.profilePicture);
+            try {
+              const { data: mentor, error } = await supabasase
+                .from('mentor')
+                .select('first_name, last_name, profile_picture')
+                .eq('supabaseId', user.id)
+                .single();
+
+              if (mentor && !error) {
+                setUserType('mentor');
+                setUserName(`${mentor.first_name} ${mentor.last_name}`);
+                setUserImage(mentor.profile_picture);
+              }
+            } catch (error) {
+              console.error('Error fetching mentor data:', error);
             }
           } else {
-            const mentee = mockMentees.find(m => m.supabaseId === user.id);
-            if (mentee) {
-              setUserType('mentee');
-              setUserName(`${mentee.firstName} ${mentee.lastName}`);
-              setUserImage(mentee.profilePicture);
+            try {
+              const { data: mentee, error } = await supabasase
+                .from('mentee')
+                .select('first_name, last_name, profile_picture')
+                .eq('supabaseId', user.id)
+                .single();
+
+              if (mentee && !error) {
+                setUserType('mentee');
+                setUserName(`${mentee.first_name} ${mentee.last_name}`);
+                setUserImage(mentee.profile_picture);
+              }
+            } catch (error) {
+              console.error('Error fetching mentee data:', error);
             }
           }
         } catch (error) {
@@ -68,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
 
     // Listen for storage events to handle auth state changes across tabs
-    const handleStorageChange = (event: StorageEvent) => {
+    const handleStorageChange = async (event: StorageEvent) => {
       if (event.key === 'mockUser') {
         if (event.newValue) {
           try {
@@ -78,16 +95,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUserType(user.userType);
 
             if (user.userType === 'mentor') {
-              const mentor = mockMentors.find(m => m.supabaseId === user.id);
-              if (mentor) {
-                setUserName(`${mentor.firstName} ${mentor.lastName}`);
-                setUserImage(mentor.profilePicture);
+              try {
+                const { data: mentor, error } = await supabasase
+                  .from('mentor')
+                  .select('first_name, last_name, profile_picture')
+                  .eq('supabaseId', user.id)
+                  .single();
+
+                if (mentor && !error) {
+                  setUserName(`${mentor.first_name} ${mentor.last_name}`);
+                  setUserImage(mentor.profile_picture);
+                }
+              } catch (error) {
+                console.error('Error fetching mentor data in storage event:', error);
               }
             } else {
-              const mentee = mockMentees.find(m => m.supabaseId === user.id);
-              if (mentee) {
-                setUserName(`${mentee.firstName} ${mentee.lastName}`);
-                setUserImage(mentee.profilePicture);
+              try {
+                const { data: mentee, error } = await supabasase
+                  .from('mentee')
+                  .select('first_name, last_name, profile_picture')
+                  .eq('supabaseId', user.id)
+                  .single();
+
+                if (mentee && !error) {
+                  setUserName(`${mentee.first_name} ${mentee.last_name}`);
+                  setUserImage(mentee.profile_picture);
+                }
+              } catch (error) {
+                console.error('Error fetching mentee data in storage event:', error);
               }
             }
           } catch (error) {

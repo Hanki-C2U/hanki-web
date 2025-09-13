@@ -1,12 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import { User, LogOut, Home } from "lucide-react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuthStore } from "../store/authStore";
+import { supabasase } from "../supabase_creds/supabase";
+import { getProfilePictureUrl } from "../utils/profilePicture";
 
 export default function AuthHeader() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>('User');
   const navigate = useNavigate();
-  const { userType, userName, userImage, signOut } = useAuth();
+  const { userRole, user, signOut } = useAuthStore();
+
+  // Fetch user profile data from database
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user?.id || !userRole) return;
+
+      try {
+        if (userRole === 'mentee') {
+          const { data: menteeData, error } = await supabasase
+            .from('mentee')
+            .select('first_name, last_name')
+            .eq('supabaseId', user.id)
+            .single();
+
+          if (menteeData && !error) {
+            setUserName(`${menteeData.first_name} ${menteeData.last_name}`);
+          }
+        } else if (userRole === 'mentor') {
+          const { data: mentorData, error } = await supabasase
+            .from('mentor')
+            .select('first_name, last_name')
+            .eq('supabaseId', user.id)
+            .single();
+
+          if (mentorData && !error) {
+            setUserName(`${mentorData.first_name} ${mentorData.last_name}`);
+          }
+        }
+
+        // Fetch profile picture from Supabase Storage
+        const profilePicUrl = await getProfilePictureUrl(user.id, userRole);
+        setProfilePicture(profilePicUrl);
+
+      } catch (error) {
+        console.error('Error fetching user profile for header:', error);
+        // Fallback to auth data
+        setUserName(user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User');
+        setProfilePicture(user?.user_metadata?.picture || null);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.id, userRole]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -14,7 +61,7 @@ export default function AuthHeader() {
   };
 
   const navigateToDashboard = () => {
-    navigate(userType === 'mentor' ? '/mentor-dashboard' : '/mentee-dashboard');
+    navigate(userRole === 'mentor' ? '/mentor-dashboard' : '/mentee-dashboard');
   };
 
   return (
@@ -53,9 +100,9 @@ export default function AuthHeader() {
                 {userName}
               </span>
               <div className="h-8 w-8 rounded-full overflow-hidden bg-emerald-100 flex items-center justify-center">
-                {userImage ? (
+                {profilePicture ? (
                   <img
-                    src={userImage}
+                    src={profilePicture}
                     alt={`${userName}'s profile`}
                     className="h-full w-full object-cover"
                   />

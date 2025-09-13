@@ -1,123 +1,60 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import {
   Search,
   MapPin,
   Star,
-  ArrowLeft,
-  Calendar
+  Clock,
+  Calendar,
+  Loader2,
+  MessageCircle
 } from "lucide-react";
+import { supabasase } from "../supabase_creds/supabase";
+import { useAuthStore } from "../store/authStore";
+import AuthHeader from "../components/AuthHeader";
 
 const MentorDiscovery = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedExpertise, setSelectedExpertise] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [mentors, setMentors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { userRole } = useAuthStore();
 
-  const mentors = [
-    {
-      id: 1,
-      name: "Emmanuel Ntagungira",
-      expertise: "Software Engineering",
-      specializations: ["AI/ML", "Cloud Computing", "System Design"],
-      location: "Berlin, Germany",
-      rating: 4.9,
-      sessions: 120,
-      bio: "15+ years in tech industry, currently Principal Engineer at Microsoft. Passionate about helping African youth break into tech.",
-      avatar: "/emmanuel-portrait.png",
-      availability: "Available this week",
-      languages: ["English", "French", "Kinyarwanda"],
-      yearsOfExperience: 15,
-      highlightedCredential: "Microsoft Principal Engineer"
-    },
-    {
-      id: 2,
-      name: "Marie Claire Ingabire",
-      expertise: "Digital Marketing",
-      specializations: ["Social Media", "Content Strategy", "Analytics"],
-      location: "London, UK",
-      rating: 4.8,
-      sessions: 85,
-      bio: "Marketing Director with expertise in building global brands. Former Google and Facebook marketing executive.",
-      avatar: "/claudine-portrait.png",
-      availability: "Available next week",
-      languages: ["English", "French", "Kinyarwanda"],
-      yearsOfExperience: 10,
-      highlightedCredential: "Former Google Marketing Executive"
-    },
-    {
-      id: 3,
-      name: "James Gasana",
-      expertise: "Data Science",
-      specializations: ["Machine Learning", "Statistics", "Business Intelligence"],
-      location: "Boston, USA",
-      rating: 4.9,
-      sessions: 95,
-      bio: "Data Science Lead at Harvard Medical School. PhD in Statistics with focus on healthcare analytics.",
-      avatar: "/shema-portrait.png",
-      availability: "Available this week",
-      languages: ["English", "French", "Swahili"],
-      yearsOfExperience: 8,
-      highlightedCredential: "Harvard Data Science Lead"
-    },
-    {
-      id: 4,
-      name: "Sarah Mukamana",
-      expertise: "Product Management",
-      specializations: ["Product Strategy", "User Research", "Agile"],
-      location: "San Francisco, USA",
-      rating: 4.7,
-      sessions: 75,
-      bio: "Senior Product Manager at Airbnb. Expert in building user-centric products and leading cross-functional teams.",
-      avatar: "alice-portrait.webp",
-      availability: "Available in 2 days",
-      languages: ["English", "Kinyarwanda", "Spanish"],
-      yearsOfExperience: 6,
-      highlightedCredential: "Airbnb Senior PM"
-    },
-    {
-      id: 5,
-      name: "David Nkurunziza",
-      expertise: "Entrepreneurship",
-      specializations: ["Startup Strategy", "Fundraising", "Business Development"],
-      location: "Dubai, UAE",
-      rating: 4.8,
-      sessions: 65,
-      bio: "Serial entrepreneur with 3 successful exits. Currently Partner at venture capital firm focused on African startups.",
-      avatar: "/james-portrait.webp",
-      availability: "Available this week",
-      languages: ["English", "Arabic", "Kinyarwanda"],
-      yearsOfExperience: 12,
-      highlightedCredential: "VC Partner"
-    },
-    {
-      id: 6,
-      name: "Grace Uwamahoro",
-      expertise: "Finance",
-      specializations: ["Investment Banking", "Financial Modeling", "Corporate Finance"],
-      location: "New York, USA",
-      rating: 4.9,
-      sessions: 110,
-      bio: "VP at Goldman Sachs with 12 years in investment banking. Specialized in emerging markets and infrastructure finance.",
-      avatar: "mary-portrait.webp",
-      availability: "Available next week",
-      languages: ["English", "French", "Kinyarwanda"],
-      yearsOfExperience: 12,
-      highlightedCredential: "Goldman Sachs VP"
-    }
-  ];
+  // Fetch mentors from database
+  useEffect(() => {
+    const fetchMentors = async () => {
+      try {
+        setLoading(true);
+        const { data: mentorsData, error: mentorsError } = await supabasase
+          .from('mentor')
+          .select('*')
+          .order('ratings', { ascending: false });
 
+        if (mentorsError) {
+          console.error('Error fetching mentors:', mentorsError);
+          setError("Failed to load mentors. Please try again.");
+        } else {
+          setMentors(mentorsData || []);
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        setError("An error occurred while loading mentors.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMentors();
+  }, []);
+
+  // Dynamic expertise areas from mentors data
   const expertiseAreas = [
     "All Expertise Areas",
-    "Software Engineering",
-    "Digital Marketing",
-    "Data Science",
-    "Product Management",
-    "Entrepreneurship",
-    "Finance",
-    "Healthcare",
-    "Legal"
+    ...Array.from(new Set(mentors.flatMap(mentor => mentor.expertise || []))).sort()
   ];
 
   const locations = [
@@ -130,39 +67,49 @@ const MentorDiscovery = () => {
   ];
 
   const filteredMentors = mentors.filter(mentor => {
-    const matchesSearch = mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mentor.expertise.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mentor.specializations.some(spec => spec.toLowerCase().includes(searchTerm.toLowerCase()));
+    const fullName = `${mentor.first_name} ${mentor.last_name}`.toLowerCase();
+    const expertiseArray = Array.isArray(mentor.expertise) ? mentor.expertise : [mentor.expertise];
+    
+    const matchesSearch = fullName.includes(searchTerm.toLowerCase()) ||
+      expertiseArray.some((exp: string) => exp?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      mentor.bio?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesExpertise = !selectedExpertise || selectedExpertise === "All Expertise Areas" ||
-      mentor.expertise === selectedExpertise;
+      expertiseArray.some((exp: string) => exp === selectedExpertise);
 
     const matchesLocation = !selectedLocation || selectedLocation === "All Locations" ||
-      mentor.location.toLowerCase().includes(selectedLocation.toLowerCase());
+      mentor.location?.toLowerCase().includes(selectedLocation.toLowerCase());
 
     return matchesSearch && matchesExpertise && matchesLocation;
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
       {/* Header */}
-      <header className="bg-white shadow-subtle border-b">
+      <AuthHeader />
+
+      {/* Breadcrumb */}
+      <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/mentee-dashboard" className="flex items-center gap-2 text-gray-600 hover:text-emerald-700 transition-smooth">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
-              </Link>
-              <div className="h-6 w-px bg-gray-300" />
-              <h1 className="text-xl font-semibold">Discover Mentors</h1>
-            </div>
-            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
-              ATLAS
-            </Link>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => navigate(userRole === 'mentor' ? '/mentor-dashboard' : '/mentee-dashboard')}
+              className="text-emerald-600 hover:text-emerald-700 font-medium"
+            >
+              ← Back to Dashboard
+            </button>
+            <div className="h-6 w-px bg-gray-300" />
+            <h1 className="text-xl font-semibold text-gray-900">Discover Mentors</h1>
+            <div className="h-6 w-px bg-gray-300" />
+            <button
+              onClick={() => navigate('/discover-mentees')}
+              className="text-indigo-600 hover:text-indigo-700 font-medium"
+            >
+              Find Mentees
+            </button>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filter Section */}
@@ -212,127 +159,180 @@ const MentorDiscovery = () => {
         </div>
 
         {/* Mentors Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMentors.map((mentor) => (
-            <div key={mentor.id} className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden hover:shadow-elevated transition-smooth">
-              <div className="p-6">
-                {/* Mentor Header */}
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                      <img
-                        src={mentor.avatar}
-                        alt={mentor.name}
-                        className="h-full w-full object-cover rounded-full"
-                      />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg text-gray-800 mb-1">{mentor.name}</h3>
-                    <p className="text-emerald-600 font-medium">{mentor.expertise}</p>
-                    {mentor.highlightedCredential && (
-                      <div className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-md mb-1">
-                        {mentor.highlightedCredential}
+        {loading ? (
+          <div className="text-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-orange-600" />
+            <p className="text-gray-600">Loading mentors...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="max-w-md mx-auto">
+              <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Mentors</h3>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredMentors.map((mentor) => {
+              // Generate avatar initials from name
+              const getInitials = (firstName: string = '', lastName: string = '') => {
+                return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+              };
+
+              // Handle expertise display (could be string or array)
+              const expertiseDisplay = Array.isArray(mentor.expertise) 
+                ? mentor.expertise.join(', ') 
+                : mentor.expertise || 'Mentor';
+
+              // Handle specializations (use expertise if specializations not available)
+              const specializations = mentor.specializations || 
+                (Array.isArray(mentor.expertise) ? mentor.expertise : [mentor.expertise]).filter(Boolean);
+
+              return (
+                <div key={mentor.id} className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden hover:shadow-elevated transition-smooth">
+                  <div className="p-6">
+                    {/* Mentor Header */}
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-16 h-16 bg-gradient-to-br from-primary to-professional-blue rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                        {mentor.profile_picture ? (
+                          <img 
+                            src={mentor.profile_picture} 
+                            alt={`${mentor.first_name} ${mentor.last_name}`}
+                            className="w-full h-full rounded-full object-cover"
+                          />
+                        ) : (
+                          getInitials(mentor.first_name, mentor.last_name)
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg mb-1">
+                          {mentor.first_name} {mentor.last_name}
+                        </h3>
+                        <p className="text-professional-blue font-medium">{expertiseDisplay}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <MapPin className="h-3 w-3 text-gray-400" />
+                          <span className="text-sm text-gray-600">{mentor.location || 'Location not specified'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Specializations */}
+                    {specializations.length > 0 && (
+                      <div className="mb-4">
+                        <div className="flex flex-wrap gap-1">
+                          {specializations.slice(0, 3).map((spec: string, index: number) => (
+                            <span key={index} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-gray-100 text-gray-900">
+                              {spec}
+                            </span>
+                          ))}
+                          {specializations.length > 3 && (
+                            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-gray-100 text-gray-900">
+                              +{specializations.length - 3} more
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
-                    <div className="flex items-center gap-2 mt-1">
-                      <MapPin className="h-3 w-3 text-gray-400" />
-                      <span className="text-sm text-gray-600">{mentor.location}</span>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Languages */}
-                {mentor.languages && (
-                  <div className="mb-3">
-                    <p className="text-xs text-gray-500 mb-1">Languages</p>
-                    <div className="flex flex-wrap gap-1">
-                      {mentor.languages.map((language, index) => (
-                        <span key={index} className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full">
-                          {language}
+                    {/* Bio */}
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                      {mentor.bio || 'Experienced mentor ready to help you achieve your goals.'}
+                    </p>
+
+                    {/* Interests / Expertise Tags */}
+                    {specializations && specializations.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-sm font-medium mb-2">Interests</p>
+                        <div className="flex flex-wrap gap-2">
+                          {specializations.slice(0, 4).map((int: string, idx: number) => (
+                            <span key={idx} className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800">
+                              {int}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between mb-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-medium">{mentor.ratings || 'New'}</span>
+                        <span className="text-gray-600">
+                          ({(() => {
+                            // Calculate years of experience from experience array
+                            try {
+                              let experiences = mentor.experience;
+                              if (typeof experiences === 'string') {
+                                experiences = JSON.parse(experiences);
+                              }
+                              if (Array.isArray(experiences) && experiences.length > 0) {
+                                return `${experiences.length} position${experiences.length !== 1 ? 's' : ''}`;
+                              }
+                              return '0 positions';
+                            } catch {
+                              return '0 positions';
+                            }
+                          })()})
                         </span>
-                      ))}
+                      </div>
+                      <div className="flex items-center gap-1 text-success font-medium">
+                        <Clock className="h-4 w-4" />
+                        Free
+                      </div>
+                    </div>
+
+                    {/* Availability */}
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-accent" />
+                        <span className="text-sm text-accent font-medium">Available for sessions</span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <button
+                        className="flex-1 inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                        onClick={() => navigate(`/mentor/${mentor.supabaseId}`)}
+                      >
+                        View Profile
+                      </button>
+                      <button
+                        className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                        onClick={() => navigate(`/book-session/${mentor.supabaseId}`)}
+                      >
+                        Book Session
+                      </button>
+                    </div>
+                    <div className="mt-2">
+                      <button
+                        className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                        onClick={() => navigate(`/simple-chat/${mentor.supabaseId}`)}
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        Chat with Mentor
+                      </button>
                     </div>
                   </div>
-                )}
-
-                {/* Specializations */}
-                <div className="mb-3">
-                  <p className="text-xs text-gray-500 mb-1">Specializations</p>
-                  <div className="flex flex-wrap gap-1">
-                    {mentor.specializations.map((spec, index) => (
-                      <span key={index} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-emerald-50 text-emerald-700">
-                        {spec}
-                      </span>
-                    ))}
-                  </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
 
-                {/* Experience */}
-                {mentor.yearsOfExperience && (
-                  <div className="mb-3">
-                    <p className="text-xs text-gray-500 mb-1">Experience</p>
-                    <p className="text-sm font-medium text-gray-700">{mentor.yearsOfExperience}+ years in {mentor.expertise}</p>
-                  </div>
-                )}
-
-                {/* Bio */}
-                <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                  {mentor.bio}
-                </p>
-
-                {/* Stats */}
-                <div className="flex items-center justify-between mb-4 text-sm">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{mentor.rating}</span>
-                    <span className="text-gray-600">({mentor.sessions} sessions)</span>
-                  </div>
-                </div>
-
-                {/* Availability */}
-                <div className="mb-2">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-emerald-600" />
-                    <span className="text-sm text-emerald-600 font-medium">{mentor.availability}</span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2">
-                  <button
-                    className="flex-1 inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-                    onClick={() => navigate(`/mentor/${mentor.id}`)
-                    }
-                  >
-                    View Profile
-                  </button>
-                  <button
-                    className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-                    onClick={() => navigate(`/book-session/${mentor.id}`)
-                    }
-                  >
-                    Book Session
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredMentors.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-100 p-8">
-            <Search className="h-12 w-12 text-emerald-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">No mentors found</h3>
+        {!loading && !error && filteredMentors.length === 0 && (
+          <div className="text-center py-12">
+            <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No mentors found</h3>
             <p className="text-gray-600">Try adjusting your search criteria or browse all mentors.</p>
-            <button
-              className="mt-4 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-md hover:bg-emerald-100 transition-colors"
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedExpertise("");
-                setSelectedLocation("");
-              }}
-            >
-              Reset Filters
-            </button>
           </div>
         )}
       </main>

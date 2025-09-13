@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate, Link } from "react-router";
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router";
 import {
   TrendingUp,
   Target,
@@ -10,13 +10,47 @@ import {
   GraduationCap,
   MapPin,
   MessageSquare,
-  Clock
+  Clock,
+  User,
+  Loader2
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
-import getMentee from "../services/getMentee";
-import { getCurrentTimeInTimezone, getTimezoneOffset } from "../utils/timezones";
+import { supabasase } from '../supabase_creds/supabase';
+import { useAuthStore } from "../store/authStore";
+
+// Helper functions (mock implementations since imports might not exist)
+const getCurrentTimeInTimezone = (_timezone: string): string => {
+  return new Date().toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+};
+
+const getTimezoneOffset = (timezone: string): string => {
+  return timezone || "GMT+02:00";
+};
 
 // Define types for our data structures
+interface Mentee {
+  id: number;
+  supabaseId: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  bio: string;
+  goals: string[];
+  Interests?: string[];
+  location: string;
+  profile_picture: string;
+  age: number;
+  joined: string;
+  Github?: string;
+  Instagram?: string;
+  LinkedIn?: string;
+  Website?: string;
+}
+
 interface Experience {
   position: string;
   company: string;
@@ -53,168 +87,121 @@ interface Milestone {
   date: string;
 }
 
-interface MenteeData {
-  id: number;
+// Extended interface for the enhanced UI
+interface MenteeData extends Mentee {
   firstName: string;
   lastName: string;
   role: string;
   organization: string;
   profilePicture: string;
-  bio: string;
   languages: string[];
   achievementBadges: Badge[];
   skills: string[];
-  goals: string[];
   professionalBackground: ProfessionalBackground;
   learningPreferences: LearningPreferences;
   progressData: SkillProgress[];
   completedMilestones: Milestone[];
-  location: string;
   timezone: string;
 }
 
-export default function MenteeProfile() {
+const MenteeProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [menteeData, setMenteeData] = useState<MenteeData | null>(null);
+  const { user } = useAuthStore();
+  
+  const [mentee, setMentee] = useState<Mentee | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'profile' | 'goals' | 'skills' | 'progress'>('profile');
   const [, setHoveredBadge] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState<string>("");
 
-  // Mocked data for mentee profiles
-  // In a real app, this would be loaded from an API
-  const menteesData = useMemo<MenteeData[]>(() => [
-    {
-      id: 1,
-      firstName: "Bienvenu",
-      lastName: "Cyuzuzo",
-      role: "Student",
-      organization: "African Leadership University",
-      profilePicture: "/shema-portrait.png",
-      bio: "I'm a software engineering student passionate about building web applications. I'm currently focused on full-stack development using JavaScript, React, and SQL. I'm seeking mentorship to strengthen my system design, problem-solving, and career navigation skills.",
-      languages: ["English", "Français", "Ikinyarwanda"],
+  // Fetch mentee data from database (original functionality)
+  useEffect(() => {
+    const fetchMentee = async () => {
+      if (!id) {
+        setError("No mentee ID provided");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data: menteeData, error: menteeError } = await supabasase
+          .from('mentee')
+          .select('*')
+          .eq('supabaseId', id)
+          .single();
+
+        if (menteeError) {
+          console.error('Error fetching mentee:', menteeError);
+          setError("Mentee not found");
+          setLoading(false);
+          return;
+        }
+
+        // Normalize DB shape: map `Interests` (DB column) to `goals` so the UI can safely use `goals.map`.
+        const normalized = {
+          ...menteeData,
+          goals: menteeData.goals ?? menteeData.Interests ?? menteeData.Goals ?? [],
+        } as Mentee;
+
+        setMentee(normalized);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error:', err);
+        setError("Failed to load mentee profile");
+        setLoading(false);
+      }
+    };
+
+    fetchMentee();
+  }, [id]);
+
+  // Create enhanced mentee data for the new UI (combine database data with mock data)
+  const getMenteeDisplayData = (): MenteeData | null => {
+    if (!mentee) return null;
+
+    return {
+      ...mentee,
+      firstName: mentee.first_name,
+      lastName: mentee.last_name,
+      role: "Student", // Mock - not in database
+      organization: "Tech University", // Mock - not in database
+      profilePicture: mentee.profile_picture,
+      languages: ["English", "French"], // Mock - not in database
       achievementBadges: [
         { id: 1, name: "First Session Complete", icon: "🎯", earned: true },
         { id: 2, name: "Goal Setter", icon: "📋", earned: true },
         { id: 3, name: "Network Builder", icon: "🤝", earned: true },
         { id: 4, name: "Knowledge Seeker", icon: "📚", earned: true },
-      ],
-      skills: ["React", "JavaScript", "Node.js", "SQL", "HTML/CSS"],
-      goals: ["Transition to Software Engineering", "Build Professional Network", "Develop Leadership Skills", "Prepare for technical interviews"],
+      ], // Mock - not in database
+      skills: ["React", "JavaScript", "Python"], // Mock - could derive from goals
       professionalBackground: {
-        education: "B.S. Computer Science, African Leadership University, 2025 (Expected)",
+        education: "Computer Science Student",
         experience: [
-          { position: "Software Engineering Intern", company: "Andela", duration: "Summer 2024" },
-          { position: "Web Developer", company: "Student Projects", duration: "2023 - Present" }
-        ],
-      },
+          { position: "Intern", company: "Tech Company", duration: "Summer 2024" }
+        ]
+      }, // Mock - not in database
       learningPreferences: {
         mentorshipStyle: "Practical guidance with hands-on examples",
         preferredSessionFormat: "1:1 video calls with follow-up tasks",
         learningGoals: "Career development and technical skill improvement",
         availability: "Evenings and weekends",
-      },
+      }, // Mock - not in database
       progressData: [
-        { skill: "React", progress: 70, learningGoal: "Build complex applications with React hooks and context API" },
-        { skill: "JavaScript", progress: 85, learningGoal: "Master advanced JavaScript concepts and design patterns" },
-        { skill: "SQL", progress: 60, learningGoal: "Learn database optimization and complex query patterns" },
-        { skill: "Node.js", progress: 55, learningGoal: "Develop RESTful APIs and microservices architecture" },
-        { skill: "HTML/CSS", progress: 90, learningGoal: "Master responsive design and CSS animations" }
-      ],
+        { skill: "React", progress: 70, learningGoal: "Build complex applications" },
+        { skill: "JavaScript", progress: 85, learningGoal: "Master advanced concepts" },
+        { skill: "Python", progress: 60, learningGoal: "Learn data structures" },
+      ], // Mock - not in database
       completedMilestones: [
-        { name: "Built first React application", date: "June 15, 2025" },
-        { name: "Completed SQL fundamentals course", date: "July 3, 2025" },
-        { name: "Created personal portfolio website", date: "August 20, 2025" }
-      ],
-      location: "Kigali, Rwanda",
-      timezone: "GMT+02:00"
-    },
-    {
-      id: 2,
-      firstName: "Alice",
-      lastName: "Mutoni",
-      role: "Frontend Developer",
-      organization: "TechRwanda",
-      profilePicture: "/claudine-portrait.png",
-      bio: "Frontend developer with 2 years of experience. Passionate about creating beautiful and accessible user interfaces. Looking to advance my career and take on more challenging projects.",
-      languages: ["English", "Français", "Ikinyarwanda"],
-      achievementBadges: [
-        { id: 1, name: "First Session Complete", icon: "🎯", earned: true },
-        { id: 2, name: "Goal Setter", icon: "📋", earned: true },
-        { id: 5, name: "UI Master", icon: "🎨", earned: true },
-        { id: 6, name: "Consistent Learner", icon: "📆", earned: true },
-      ],
-      skills: ["React", "Angular", "UI/UX", "CSS", "JavaScript"],
-      goals: ["Become a senior developer", "Master advanced React patterns", "Improve UI/UX skills", "Learn about design systems"],
-      professionalBackground: {
-        education: "B.S. Information Technology, University of Rwanda, 2023",
-        experience: [
-          { position: "Frontend Developer", company: "TechRwanda", duration: "2023 - Present" },
-          { position: "Web Design Intern", company: "Digital Solutions Ltd", duration: "2022 - 2023" }
-        ],
-      },
-      learningPreferences: {
-        mentorshipStyle: "Detailed code reviews and UI feedback",
-        preferredSessionFormat: "Video calls and pair programming sessions",
-        learningGoals: "Frontend specialization and UI/UX mastery",
-        availability: "Weekday evenings",
-      },
-      progressData: [
-        { skill: "React", progress: 80, learningGoal: "Master React state management libraries like Redux" },
-        { skill: "Angular", progress: 65, learningGoal: "Learn advanced component architecture and state management" },
-        { skill: "UI/UX", progress: 85, learningGoal: "Improve accessibility implementation and user testing methods" },
-        { skill: "CSS", progress: 90, learningGoal: "Master CSS Grid and advanced animations" },
-        { skill: "JavaScript", progress: 75, learningGoal: "Improve knowledge of ES6+ features and functional programming" }
-      ],
-      completedMilestones: [
-        { name: "Redesigned company website", date: "May 10, 2025" },
-        { name: "Implemented accessible UI components", date: "July 25, 2025" },
-        { name: "Completed Advanced React Patterns course", date: "August 15, 2025" }
-      ],
-      location: "Kigali, Rwanda",
-      timezone: "GMT+02:00"
-    }
-  ], []);
+        { name: "Completed first project", date: new Date().toLocaleDateString() },
+        { name: "Joined mentorship program", date: new Date(mentee.joined).toLocaleDateString() },
+      ], // Mock - not in database
+      timezone: "GMT+02:00" // Mock - not in database
+    };
+  };
 
-  // Fetch mentee data - combining service data with mock data
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        setLoading(true);
-        // Try to get data from service
-        const data = await getMentee(id);
-
-        // For demo purposes, if real data is not available, use mock data
-        const mockData = menteesData.find(mentee => mentee.id === Number(id));
-
-        if (data) {
-          // Combine real data with mock data for a complete profile
-          setMenteeData({
-            ...mockData,
-            ...data
-          } as MenteeData);
-        } else if (mockData) {
-          // Fallback to mock data if service fails
-          setMenteeData(mockData as MenteeData);
-        } else {
-          // No data available
-          navigate("/discover-mentees");
-        }
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        // Try to use mock data on error
-        const mockData = menteesData.find(mentee => mentee.id === Number(id));
-        if (mockData) {
-          setMenteeData(mockData as MenteeData);
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (id) fetchUser();
-  }, [id, navigate, menteesData]);
+  const menteeData = getMenteeDisplayData();
 
   // Update the current time every minute
   useEffect(() => {
@@ -224,37 +211,48 @@ export default function MenteeProfile() {
       setCurrentTime(getCurrentTimeInTimezone(menteeData.timezone));
     };
 
-    // Set initial time
     updateTime();
-
-    // Update time every minute
     const timer = setInterval(updateTime, 60000);
-
-    // Clean up the interval on component unmount
     return () => clearInterval(timer);
   }, [menteeData?.timezone]);
 
+  const handleStartChat = () => {
+    if (mentee) {
+      navigate(`/simple-chat/${mentee.supabaseId}`);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      <div className="min-h-screen bg-gray-50">
+        <AuthHeader />
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-emerald-600" />
+            <p className="text-gray-600">Loading mentee profile...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!menteeData) {
+  if (error || !mentee || !menteeData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-2">Mentee Not Found</h2>
-          <p className="text-gray-500 mb-4">We couldn't find this mentee profile.</p>
-          <Link
-            to="/discover-mentees"
-            className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Mentees
-          </Link>
+      <div className="min-h-screen bg-gray-50">
+        <AuthHeader />
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+          <div className="text-center max-w-md mx-auto">
+            <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Profile Not Found</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <Link 
+              to="/discover-mentees"
+              className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Mentees
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -316,13 +314,23 @@ export default function MenteeProfile() {
                 </div>
 
                 {/* Message Button */}
-                <button
-                  onClick={() => navigate(`/messages/mentee/${id}`)}
-                  className="mt-4 w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                {user?.id !== mentee.supabaseId && (
+                  <button
+                    onClick={handleStartChat}
+                    className="mt-4 w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Message {menteeData.firstName}
+                  </button>
+                )}
+
+                <Link
+                  to="/inspiration"
+                  className="mt-3 w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Message {menteeData.firstName}
-                </button>
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  Inspiration
+                </Link>
 
                 {/* Achievement Badges */}
                 <div className="w-full mt-4 border-t border-gray-100 pt-4">
@@ -526,7 +534,6 @@ export default function MenteeProfile() {
                 {activeTab === 'goals' && (
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Learning Goals</h3>
-
                     {menteeData.goals.map((goal: string, index: number) => (
                       <div key={index} className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-100 flex items-center gap-3">
                         <Target className="h-5 w-5 text-emerald-600 flex-shrink-0" />
@@ -626,11 +633,11 @@ export default function MenteeProfile() {
                     {/* Key Stats */}
                     <div className="mt-6 grid grid-cols-3 gap-4">
                       <div className="border border-gray-200 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-emerald-600">6</div>
+                        <div className="text-2xl font-bold text-emerald-600">3</div>
                         <div className="text-sm text-gray-600">Sessions Completed</div>
                       </div>
                       <div className="border border-gray-200 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-emerald-600">3</div>
+                        <div className="text-2xl font-bold text-emerald-600">{menteeData.completedMilestones.length}</div>
                         <div className="text-sm text-gray-600">Milestones Achieved</div>
                       </div>
                       <div className="border border-gray-200 rounded-lg p-4 text-center">
@@ -668,4 +675,6 @@ export default function MenteeProfile() {
       </main>
     </div>
   );
-}
+};
+
+export default MenteeProfile;

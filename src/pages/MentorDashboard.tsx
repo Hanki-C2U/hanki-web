@@ -24,6 +24,10 @@ import { DayPicker } from "react-day-picker";
 import { format, isToday, isSameDay, parseISO } from "date-fns";
 import "react-day-picker/dist/style.css";
 import { getCurrentTimeInTimezone, getTimezoneOffset } from "../utils/timezones";
+import { useAuthStore } from "../store/authStore";
+import { getMentorSessions, getMentorProfile, type SessionData } from "../services/mentorService";
+import { useLocation } from 'react-router';
+import { supabasase } from "../supabase_creds/supabase";
 
 // Define types for mentor profile data - matching EditMentorProfile
 interface Experience {
@@ -95,6 +99,7 @@ interface Request {
   mentee: string;
   topic: string;
   message: string;
+  menteeId?: string;
 }
 
 const MentorDashboard = () => {
@@ -231,6 +236,19 @@ const MentorDashboard = () => {
     ]
   };
 
+  // Prisma-compatible aliases (simple, non-invasive) so hardcoded profile contains fields matching prisma schema
+  // These are duplicates of the existing camelCase fields above and kept for compatibility with backend-shaped objects
+  (defaultMentorData as any).first_name = defaultMentorData.firstName;
+  (defaultMentorData as any).last_name = defaultMentorData.lastName;
+  (defaultMentorData as any).profile_picture = defaultMentorData.profilePicture;
+  (defaultMentorData as any).expertise = defaultMentorData.expertiseAreas.map(e => e.name);
+  (defaultMentorData as any).bio = defaultMentorData.bio;
+  (defaultMentorData as any).experience = defaultMentorData.professionalBackground.experience;
+  (defaultMentorData as any).resumeId = "";
+  (defaultMentorData as any).LinkedIn = defaultMentorData.linkedIn || "";
+  (defaultMentorData as any).Website = defaultMentorData.website || "";
+  (defaultMentorData as any).supabaseId = "";
+
   // State to hold mentor data, initially populated with default
   const [mentorData, setMentorData] = useState<MentorProfile>(defaultMentorData);
 
@@ -246,6 +264,8 @@ const MentorDashboard = () => {
       }
     }
   }, []);
+
+
 
   // Update the current time every minute
   useEffect(() => {
@@ -280,56 +300,140 @@ const MentorDashboard = () => {
     }
   ];
 
-  const upcomingSessions: Session[] = [
-    {
-      id: 1,
-      menteeId: 101,
-      mentee: "Alice Mutoni",
-      topic: "Career Transition to Tech",
-      date: "2025-09-16", // Today
-      startTime: "14:00",
-      endTime: "15:00",
-      duration: "1 hour",
-      status: 'scheduled'
-    },
-    {
-      id: 2,
-      menteeId: 102,
-      mentee: "David Nshuti",
-      topic: "Startup Strategy Review",
-      date: "2025-09-29", // Tomorrow
-      startTime: "10:00",
-      endTime: "10:45",
-      duration: "45 minutes",
-      status: 'scheduled'
-    },
-    {
-      id: 3,
-      menteeId: 103,
-      mentee: "Maria Uwase",
-      topic: "Technical Interview Prep",
-      date: "2025-09-12", // Next Friday
-      startTime: "15:00",
-      endTime: "16:00",
-      duration: "1 hour",
-      status: 'scheduled'
-    }
-  ];
+  // Sessions fetched from backend (converted from SessionData)
+  const { user } = useAuthStore();
+  const [dbSessions, setDbSessions] = useState<SessionData[]>([]);
+  const [_sessionsLoading, setSessionsLoading] = useState<boolean>(false);
+  const location = useLocation();
 
-  const pendingRequests: Request[] = [
-    {
-      id: 1,
-      mentee: "Sarah Uwimana",
-      topic: "Marketing Career Guidance",
-      message: "I'm looking for guidance on transitioning from traditional marketing to digital marketing..."
-    },
-    {
-      id: 2,
-      mentee: "Jean Baptiste",
-      topic: "Engineering Leadership",
-      message: "I'd like to discuss leadership skills and career advancement in tech..."
+  // Map DB mentor row to the frontend MentorProfile shape
+  const mapDbMentorToProfile = (mentorRow: any): MentorProfile => {
+    const experienceArray = (() => {
+      try {
+        if (!mentorRow) return [];
+        if (mentorRow.experience && typeof mentorRow.experience === 'string') return JSON.parse(mentorRow.experience);
+        if (Array.isArray(mentorRow.experience)) return mentorRow.experience;
+        return [];
+      } catch (e) {
+        return [];
+      }
+    })();
+
+    return {
+      firstName: mentorRow?.first_name ?? '',
+      lastName: mentorRow?.last_name ?? '',
+      role: defaultMentorData.role,
+      organization: defaultMentorData.organization,
+      profilePicture: mentorRow?.profile_picture || defaultMentorData.profilePicture,
+      bio: mentorRow?.bio ?? '',
+      languages: [],
+      expertiseAreas: (mentorRow?.expertise || []).map((e: string) => ({ name: e })),
+      professionalBackground: {
+        education: [],
+        experience: experienceArray
+      },
+      location: mentorRow?.location ?? '',
+      timezone: defaultMentorData.timezone,
+      linkedIn: mentorRow?.LinkedIn ?? '',
+      website: mentorRow?.Website ?? '',
+      availability: []
+    };
+  };
+
+  // Fetch mentor profile from backend and update state + localStorage
+  const fetchMentorProfile = async () => {
+    if (!user?.id) return;
+    try {
+      const profile = await getMentorProfile(user.id);
+      if (profile) {
+        const mapped = mapDbMentorToProfile(profile);
+        setMentorData(mapped);
+        try { localStorage.setItem('mentorProfile', JSON.stringify(mapped)); } catch (e) { /* ignore */ }
+      }
+    } catch (err) {
+      console.error('Failed to fetch mentor profile', err);
     }
-  ];
+  };
+
+  // Fetch profile on user change and when navigating back (location changes)
+  useEffect(() => {
+    fetchMentorProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, location.pathname, (location as any).state?.message]);
+
+  const convertSession = (s: SessionData): Session => ({
+    id: s.id,
+    menteeId: parseInt(s.menteeId || '0'),
+    mentee: s.mentee ? `${s.mentee.first_name} ${s.mentee.last_name}` : 'Unknown Mentee',
+    topic: s.title,
+    date: typeof s.sessionDate === 'string' ? s.sessionDate : s.sessionDate as unknown as string,
+    startTime: s.startTime,
+    endTime: s.endTime,
+    duration: `${(() => {
+      try {
+        const [sh, sm] = s.startTime.split(':').map(Number);
+        const [eh, em] = s.endTime.split(':').map(Number);
+        return `${(eh * 60 + em) - (sh * 60 + sm)} minutes`;
+      } catch { return '' }
+    })()}`,
+    status: s.status.toLowerCase() as any
+  });
+
+  const fetchSessions = async () => {
+    if (!user?.id) return;
+    setSessionsLoading(true);
+    try {
+      const sessions = await getMentorSessions(user.id);
+      setDbSessions(sessions || []);
+    } catch (err) {
+      console.error('Error loading sessions', err);
+      setDbSessions([]);
+    } finally {
+      setSessionsLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchSessions(); }, [user?.id]);
+
+  const allSessions: Session[] = dbSessions.map(convertSession);
+  const today = new Date(); today.setHours(0,0,0,0);
+  // Only include sessions that have been ACCEPTED in the DB (exclude PENDING requests)
+  const acceptedSessionIds = new Set(dbSessions.filter(s => s.status === 'ACCEPTED').map(s => s.id));
+  const upcomingSessions = allSessions.filter(s => {
+    const d = new Date(s.date);
+    d.setHours(0,0,0,0);
+    return d >= today && acceptedSessionIds.has(s.id);
+  });
+
+  const pendingRequests: Request[] = dbSessions
+    .filter(s => s.status === 'PENDING')
+    .map(s => ({
+      id: s.id,
+      mentee: s.mentee ? `${s.mentee.first_name} ${s.mentee.last_name}` : 'Unknown',
+      topic: s.title,
+      message: s.description || '',
+      menteeId: s.menteeId
+    }));
+
+  const acceptSession = async (sessionId: number) => {
+    try {
+      const { error } = await supabasase.from('sessions').update({ status: 'ACCEPTED' }).eq('id', sessionId);
+      if (error) throw error;
+      await fetchSessions();
+    } catch (err) {
+      console.error('Failed to accept session', err);
+    }
+  };
+
+  const declineSession = async (sessionId: number) => {
+    try {
+      const { error } = await supabasase.from('sessions').update({ status: 'REJECTED' }).eq('id', sessionId);
+      if (error) throw error;
+      await fetchSessions();
+    } catch (err) {
+      console.error('Failed to decline session', err);
+    }
+  };
 
   // Rating display function - kept for future use
   // const renderStars = (rating: number) => {
@@ -479,12 +583,27 @@ const MentorDashboard = () => {
                       <p className="text-sm font-medium text-emerald-600 mb-1">{request.topic}</p>
                       <p className="text-sm text-gray-600 mb-3 line-clamp-2">{request.message}</p>
                       <div className="flex gap-2">
-                        <button className="flex-1 px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
+                        <button
+                          onClick={() => acceptSession(request.id)}
+                          className="px-3 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm"
+                        >
                           Accept
                         </button>
-                        <button className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 text-sm">
+                        <button
+                          onClick={() => declineSession(request.id)}
+                          className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 text-sm"
+                        >
                           Decline
                         </button>
+                        {request.menteeId && (
+                          <button
+                            onClick={() => navigate(`/simple-chat/${request.menteeId}`)}
+                            className="px-3 py-1.5 border border-gray-200 rounded-md hover:bg-gray-50 text-sm flex items-center gap-2"
+                          >
+                            <MessageCircle className="h-4 w-4 text-gray-600" />
+                            Message
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -528,10 +647,22 @@ const MentorDashboard = () => {
                       {upcomingSessions[0].startTime} • {upcomingSessions[0].duration}
                     </p>
                   </div>
-                  <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 hover:scale-105 cursor-pointer">
+                  <button
+                    onClick={() => navigate(`/session/${upcomingSessions[0].id}`)}
+                    className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 hover:scale-105 cursor-pointer"
+                  >
                     <Video className="h-4 w-4" />
                     <span>Join</span>
                   </button>
+                  {dbSessions.find(s => s.id === upcomingSessions[0].id)?.menteeId && (
+                    <button
+                      onClick={() => navigate(`/simple-chat/${dbSessions.find(s => s.id === upcomingSessions[0].id)!.menteeId}`)}
+                      className="ml-3 inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      Message
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-4 bg-gray-50 rounded-lg">
@@ -815,7 +946,10 @@ const MentorDashboard = () => {
                                 </div>
                                 <h4 className="font-medium mt-1">{session.mentee}</h4>
                                 <p className="text-sm text-gray-600">{session.topic}</p>
-                                <button className="mt-2 inline-flex items-center text-xs text-emerald-600 hover:text-emerald-800">
+                                <button
+                                  onClick={() => navigate(`/session/${session.id}`)}
+                                  className="mt-2 inline-flex items-center text-xs text-emerald-600 hover:text-emerald-800"
+                                >
                                   <Video className="h-3.5 w-3.5 mr-1" />
                                   Join Session
                                 </button>
@@ -869,7 +1003,10 @@ const MentorDashboard = () => {
                                       {displayDate}, {session.startTime} • {session.duration}
                                     </p>
                                   </div>
-                                  <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700">
+                                  <button
+                                    onClick={() => navigate(`/session/${session.id}`)}
+                                    className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700"
+                                  >
                                     <Video className="h-4 w-4" />
                                     <span>Join</span>
                                   </button>

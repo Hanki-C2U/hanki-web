@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
+import { useParams, Link, useNavigate } from "react-router";
+import { supabasase } from "../supabase_creds/supabase";
+// import WorkExperienceDisplay from "../components/ui/WorkExperienceDisplay";
 import {
   ArrowLeft,
   MapPin,
@@ -13,112 +15,177 @@ import {
   Clock,
   Linkedin,
   Globe
+  ,Lightbulb
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
 import { format } from "date-fns";
 
+// Types for mentor data
+interface MentorData {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  profile_picture: string;
+  location: string;
+  bio: string;
+  expertise: string[];
+  experience: any[];
+  ratings: number;
+  LinkedIn?: string;
+  Website?: string;
+  Github?: string;
+  Twitter?: string;
+  Instagram?: string;
+  joined: string;
+  supabaseId: string;
+}
+
+// interface Experience {
+//   role: string;
+//   company: string;
+//   period: string;
+//   description: string;
+// }
+
 // Helper function to get current time in mentor's timezone
-const getCurrentTimeInTimezone = (_: string): string => {
+const getCurrentTimeInTimezone = (_timezone: string): string => {
   // In a real implementation, we would use proper timezone conversion
   // For the hackathon demo, we'll just format the current time
   return format(new Date(), 'HH:mm');
 };
 
 const MentorProfile = () => {
-  // For a real implementation, we would use the id to fetch mentor data
-  // const { id } = useParams();
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
   const [activeTab, setActiveTab] = useState("experience");
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState<string>("");
+  const [mentorData, setMentorData] = useState<MentorData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const navigate = useNavigate();
+  // Fetch mentor data from Supabase
+  useEffect(() => {
+    const fetchMentorData = async () => {
+      if (!id) {
+        setError("No mentor ID provided");
+        setLoading(false);
+        return;
+      }
 
-  // Mock data - in real app, this would be fetched based on ID
-  const mentor = {
-    id: 1,
-    name: "Emmanuel Ntagungira",
-    title: "Principal Software Engineer",
-    company: "Microsoft",
-    expertise: "Software Engineering",
-    specializations: ["AI/ML", "Cloud Computing", "System Design"],
-    location: "Berlin, Germany",
-    timezone: "UTC +02:00",
-    rating: 4.9,
-    sessions: 120,
-    yearsOfExperience: 15,
-    languages: ["English", "French", "Kinyarwanda"],
-    socials: {
-      linkedin: "https://linkedin.com/in/emmanuel-ntagungira",
-      website: "https://emmanuelntagungira.com"
-    },
-    bio: "15+ years in tech industry, currently Principal Engineer at Microsoft. Passionate about helping African youth break into tech.",
-    experience: [
-      {
-        role: "Principal Software Engineer",
-        company: "Microsoft",
-        period: "2019 - Present",
-        description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat porro quaerat asperiores provident, aut a iusto itaque id libero labore.'
-      },
-      {
-        role: "Senior Software Engineer",
-        company: "Google",
-        period: "2016 - 2019",
-        description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat porro quaerat asperiores provident, aut a iusto itaque id libero labore.'
-      },
-      {
-        role: "Software Engineer",
-        company: "Amazon",
-        period: "2013 - 2016",
-        description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat porro quaerat asperiores provident, aut a iusto itaque id libero labore.'
+      try {
+        console.log('🔍 Fetching mentor data for ID:', id);
+        setLoading(true);
+
+        const { data, error } = await supabasase
+          .from('mentor')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) {
+          console.error('❌ Error fetching mentor:', error);
+          setError('Failed to load mentor profile');
+          return;
+        }
+
+        if (!data) {
+          setError('Mentor not found');
+          return;
+        }
+
+        console.log('✅ Mentor data fetched successfully:', data);
+        setMentorData(data);
+
+      } catch (err) {
+        console.error('❌ Unexpected error:', err);
+        setError('An unexpected error occurred');
+      } finally {
+        setLoading(false);
       }
-    ],
-    education: [
-      {
-        degree: "PhD Computer Science",
-        institution: "University of Toronto",
-        year: "2013"
+    };
+
+    fetchMentorData();
+  }, [id]);
+
+  // Mock data for fields not in database (fallback)
+  const getMentorDisplayData = () => {
+    if (!mentorData) return null;
+
+    // Use database data where available, fallback to mock data for missing fields
+    return {
+      id: mentorData.id,
+      name: `${mentorData.first_name} ${mentorData.last_name}`,
+      title: "Software Engineer", // Mock - not in schema
+      company: "Tech Company", // Mock - not in schema
+      expertise: mentorData.expertise.length > 0 ? mentorData.expertise[0] : "Software Engineering",
+      specializations: mentorData.expertise.length > 0 ? mentorData.expertise : ["Software Development", "Tech Mentorship"],
+      location: mentorData.location,
+      timezone: "UTC-5", // Mock - not in schema
+      rating: mentorData.ratings || 4.8,
+      sessions: 120, // Mock - could be calculated from sessions table
+      yearsOfExperience: 10, // Mock - not in schema
+      languages: ["English", "French"], // Mock - not in schema
+      socials: {
+        linkedin: mentorData.LinkedIn || "",
+        website: mentorData.Website || "",
+        github: mentorData.Github || "",
+        twitter: mentorData.Twitter || "",
+        instagram: mentorData.Instagram || ""
       },
-      {
-        degree: "MSc Computer Science",
-        institution: "University of Rwanda",
-        year: "2008"
-      }
-    ],
-    achievements: [
-      "Led teams of 50+ engineers",
-      "Contributed to major open-source projects",
-      "Mentor of the Year Award - Microsoft 2022"
-    ],
-    availability: [
-      { day: "Monday", slots: ["10:00 AM", "2:00 PM", "4:00 PM"] },
-      { day: "Wednesday", slots: ["9:00 AM", "1:00 PM", "3:00 PM"] },
-      { day: "Friday", slots: ["11:00 AM", "2:00 PM", "5:00 PM"] }
-    ],
-    reviews: [
-      {
-        id: 1,
-        mentee: "Alice Mutoni",
-        rating: 5,
-        comment: "Emmanuel provided invaluable guidance on my career transition into tech. His insights on system design and industry trends were incredibly helpful.",
-        date: "2 weeks ago"
-      },
-      {
-        id: 2,
-        mentee: "David Nshuti",
-        rating: 5,
-        comment: "Outstanding mentor! He helped me prepare for technical interviews and land my dream job at a FAANG company.",
-        date: "1 month ago"
-      }
-    ],
-    profilePicture: "/emmanuel-portrait.png"
+      bio: mentorData.bio,
+      experience: Array.isArray(mentorData.experience) && mentorData.experience.length > 0 
+        ? mentorData.experience 
+        : [
+            {
+              role: "Software Engineer",
+              company: "Tech Company",
+              period: "2020 - Present",
+              description: "Working on innovative software solutions and mentoring junior developers."
+            }
+          ],
+      education: [
+        {
+          degree: "Computer Science Degree",
+          institution: "University",
+          year: "2018"
+        }
+      ], // Mock - not in schema
+      achievements: [
+        "Mentor with proven track record",
+        "Contributed to open-source projects",
+        "Technical leadership experience"
+      ], // Mock - not in schema
+      availability: [
+        { day: "Monday", slots: ["10:00 AM", "2:00 PM", "4:00 PM"] },
+        { day: "Wednesday", slots: ["9:00 AM", "1:00 PM", "3:00 PM"] },
+        { day: "Friday", slots: ["11:00 AM", "2:00 PM", "5:00 PM"] }
+      ], // Mock - availability should come from sessions table
+      reviews: [
+        {
+          id: 1,
+          mentee: "Anonymous Mentee",
+          rating: 5,
+          comment: "Great mentor with valuable insights and practical advice.",
+          date: "2 weeks ago"
+        }
+      ], // Mock - reviews should come from sessions table
+      profilePicture: mentorData.profile_picture,
+      joinedDate: new Date(mentorData.joined).toLocaleDateString()
+    };
   };
+
+  const mentor = getMentorDisplayData();
 
   // Update the current time every minute
   useEffect(() => {
     const updateTime = () => {
-      setCurrentTime(getCurrentTimeInTimezone(mentor.timezone));
+      if (mentor) {
+        setCurrentTime(getCurrentTimeInTimezone(mentor.timezone));
+      }
     };
 
     // Set initial time
@@ -129,12 +196,30 @@ const MentorProfile = () => {
 
     // Clean up the interval on component unmount
     return () => clearInterval(timer);
-  }, [mentor.timezone]);
+  }, [mentor?.timezone]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+
+  if (error || !mentor) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Mentor Not Found</h2>
+          <p className="text-gray-600 mb-4">{error || "The mentor you're looking for doesn't exist."}</p>
+          <Link
+            to="/discover-mentors"
+            className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Mentors
+          </Link>
+        </div>
       </div>
     );
   }
@@ -244,6 +329,14 @@ const MentorProfile = () => {
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Message {mentor.name.split(' ')[0]}
                   </button>
+
+                  <Link
+                    to="/inspiration"
+                    className="w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    <Lightbulb className="h-4 w-4 mr-2" />
+                    Inspiration
+                  </Link>
 
                 </div>
 

@@ -133,12 +133,16 @@ exports.Prisma.MenteeScalarFieldEnum = {
   updateAt: 'updateAt',
   last_login: 'last_login',
   ratings: 'ratings',
-  experience: 'experience',
   profile_picture: 'profile_picture',
   supabaseId: 'supabaseId',
   bio: 'bio',
   joined: 'joined',
-  goals: 'goals'
+  goals: 'goals',
+  Github: 'Github',
+  Instagram: 'Instagram',
+  LinkedIn: 'LinkedIn',
+  Twitter: 'Twitter',
+  Website: 'Website'
 };
 
 exports.Prisma.MentorScalarFieldEnum = {
@@ -146,7 +150,6 @@ exports.Prisma.MentorScalarFieldEnum = {
   first_name: 'first_name',
   last_name: 'last_name',
   age: 'age',
-  experience: 'experience',
   email: 'email',
   phone_number: 'phone_number',
   password: 'password',
@@ -159,7 +162,60 @@ exports.Prisma.MentorScalarFieldEnum = {
   updateAt: 'updateAt',
   last_login: 'last_login',
   expertise: 'expertise',
-  bio: 'bio'
+  bio: 'bio',
+  experience: 'experience',
+  resumeId: 'resumeId',
+  Github: 'Github',
+  Instagram: 'Instagram',
+  LinkedIn: 'LinkedIn',
+  Twitter: 'Twitter',
+  Website: 'Website'
+};
+
+exports.Prisma.ConversationScalarFieldEnum = {
+  id: 'id',
+  participant1Id: 'participant1Id',
+  participant2Id: 'participant2Id',
+  type: 'type',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  lastMessage: 'lastMessage',
+  isActive: 'isActive'
+};
+
+exports.Prisma.MessageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  senderId: 'senderId',
+  conversationId: 'conversationId',
+  createdAt: 'createdAt',
+  isRead: 'isRead',
+  messageType: 'messageType'
+};
+
+exports.Prisma.SessionsScalarFieldEnum = {
+  id: 'id',
+  menteeId: 'menteeId',
+  mentorId: 'mentorId',
+  title: 'title',
+  description: 'description',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  sessionDate: 'sessionDate',
+  jitsiRoomId: 'jitsiRoomId',
+  meetingUrl: 'meetingUrl',
+  status: 'status',
+  statusUpdatedAt: 'statusUpdatedAt',
+  statusUpdatedBy: 'statusUpdatedBy',
+  additionalParticipants: 'additionalParticipants',
+  notes: 'notes',
+  feedback: 'feedback',
+  createdAt: 'createdAt',
+  cancellationReason: 'cancellationReason',
+  menteeRating: 'menteeRating',
+  menteeReview: 'menteeReview',
+  mentorRating: 'mentorRating',
+  mentorReview: 'mentorReview'
 };
 
 exports.Prisma.SortOrder = {
@@ -167,15 +223,53 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+exports.ConversationType = exports.$Enums.ConversationType = {
+  MENTOR_MENTEE: 'MENTOR_MENTEE',
+  PEER_TO_PEER: 'PEER_TO_PEER',
+  GROUP_CHAT: 'GROUP_CHAT'
+};
+
+exports.MessageType = exports.$Enums.MessageType = {
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  FILE: 'FILE',
+  SYSTEM: 'SYSTEM'
+};
+
+exports.SessionStatus = exports.$Enums.SessionStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED',
+  COMPLETED: 'COMPLETED',
+  NO_SHOW: 'NO_SHOW'
+};
 
 exports.Prisma.ModelName = {
   Mentee: 'Mentee',
-  Mentor: 'Mentor'
+  Mentor: 'Mentor',
+  Conversation: 'Conversation',
+  Message: 'Message',
+  sessions: 'sessions'
 };
 
 /**

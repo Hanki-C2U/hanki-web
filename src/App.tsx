@@ -1,90 +1,19 @@
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from "react-router";
-import LandingPage from "./pages/LandingPage";
-import MentorDashboard from "./pages/MentorDashboard";
-import MenteeDashboard from "./pages/MenteeDashboard";
-import ResourceLibrary from "./pages/ResourceLibrary";
-import MentorDiscovery from "./pages/MentorDiscovery";
-import MenteeDiscovery from "./pages/MenteeDiscovery";
-import MentorProfile from "./pages/MentorProfile";
-import BookSession from "./pages/BookSession";
-import ProgressTracking from "./pages/ProgressTracking";
-import NotFound from "./pages/NotFound";
-import Login from "./pages/Login";
-import Signup from "./pages/SignUp";
-import AuthCallback from "./pages/AuthCallback";
-import Onboarding from "./pages/Onboarding";
-import InspirationPage from "./pages/InspirationPage";
-import EditProfile from "./pages/EditProfile";
-import EditMentorProfile from "./pages/EditMentorProfile";
-import { AuthProvider } from "./contexts/AuthContext";
-// import ProtectedRoute from "./components/ProtectedRoute";
-import MenteeProfile from "./pages/MenteeProfile";
-import ScrollToTop from "./components/ScrollToTop";
+import { AuthProvider } from './components/AuthProvider';
+import { RouterProvider } from 'react-router';
+import { router } from './RouteLayout'
+import { NotificationProvider } from './contexts/NotificationContext'
 
 function App() {
-  const router = createBrowserRouter(
-    createRoutesFromElements(
-      <Route path="/" element={<ScrollToTop />}>
-        <Route index element={<LandingPage />} />
-        <Route path="signup" element={<Signup />} />
-        <Route path="login" element={<Login />} />
-        <Route path="auth/callback" element={<AuthCallback />} />
-        <Route path="onboarding" element={<Onboarding />} />
-        <Route path="home" element={<h1>Home Page</h1>} />
-        <Route path="mentee/:id" element={<MenteeProfile />} />
-        <Route path="mentor-dashboard" element={
-          // <ProtectedRoute requiredUserType="mentor">
-          <MentorDashboard />
-          // </ProtectedRoute>
-        } />
-        <Route path="mentee-dashboard" element={
-          // <ProtectedRoute requiredUserType="mentee">
-          <MenteeDashboard />
-          // </ProtectedRoute>
-        } />
-        <Route path="resources" element={
-          // <ProtectedRoute>
-          <ResourceLibrary />
-          // </ProtectedRoute>
-        } />
-        <Route path="discover-mentors" element={<MentorDiscovery />} />
-        <Route path="discover-mentees" element={<MenteeDiscovery />} />
-        <Route path="mentor/:id" element={<MentorProfile />} />
-        <Route path="book-session/:mentorId" element={
-          // <ProtectedRoute requiredUserType="mentee">
-          <BookSession />
-          // </ProtectedRoute>
-        } />
-        <Route path="progress" element={
-          // <ProtectedRoute>
-          <ProgressTracking />
-          // </ProtectedRoute>
-        } />
-        <Route path="inspiration" element={
-          // <ProtectedRoute>
-          <InspirationPage />
-          // </ProtectedRoute>
-        } />
-        <Route path="edit-profile" element={
-          // <ProtectedRoute>
-          <EditProfile />
-          // </ProtectedRoute>
-        } />
-        <Route path="edit-mentor-profile" element={
-          // <ProtectedRoute requiredUserType="mentor">
-          <EditMentorProfile />
-          // </ProtectedRoute>
-        } />
-        <Route path="*" element={<NotFound />} />
-      </Route>
-    )
-  );
-
+  
   return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
-  );
+    <div>
+      <AuthProvider>
+        <NotificationProvider>
+          <RouterProvider router={router} />
+        </NotificationProvider>
+      </AuthProvider>
+    </div>
+  )
 }
 
 export default App;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import {
   Calendar,
@@ -14,11 +14,15 @@ import {
   MapPin,
   Clock,
   Linkedin,
-  Globe
+  Globe,
+  MessageCircle
 } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
-
-
+import { useAuthStore } from "../store/authStore";
+import { supabasase } from "../supabase_creds/supabase";
+import { getProfilePictureUrl } from "../utils/profilePicture";
+import useRealtimeChat from "../hooks/useRealtimeChat";
+import MessagingInterface from "../components/MessagingInterface";
 
 // Import the helper function from utils/timezones.ts
 import { getCurrentTimeInTimezone as getTimeInTimezone, getTimezoneOffset } from "../utils/timezones";
@@ -30,11 +34,28 @@ const getCurrentTimeInTimezone = (timezone: string): string => {
 };
 
 const MenteeDashboard = () => {
+  const { userRole, roleLoading, user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<'profile' | 'goals' | 'skills' | 'inspiration'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'goals' | 'skills' | 'inspiration' | 'messages'>('profile');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState<string>("");
+  const [username, setUserName] = useState('');
+  const [mentors, setMentors] = useState<any[]>([]);
+  // mentorsLoading state removed — not used in UI
+  const [upcomingSessions, setUpcomingSessions] = useState<any[]>([]);
+  const [pastSessions, setPastSessions] = useState<any[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [menteeData, setMenteeData] = useState<any>(null);
+  const [menteeDataLoading, setMenteeDataLoading] = useState(true);
+  
+  // Add the chat hook (keeping for future use)
+  const { } = useRealtimeChat();
+
+  // Debug logging (only log when values change)
+  useEffect(() => {
+    console.log('MenteeDashboard - userRole:', userRole, 'roleLoading:', roleLoading, 'user:', user?.id);
+  }, [userRole, roleLoading, user?.id]); // Only log when these values actually change
 
   // Check for success message in navigation state
   useEffect(() => {
@@ -50,154 +71,494 @@ const MenteeDashboard = () => {
     }
   }, [location.state]);
 
-  // Default mentee data follows
-
-  // Default mentee data - wrapped in useMemo to prevent recreating on each render
-  const defaultMenteeData = useMemo(() => ({
-    id: 1,
-    firstName: "Bienvenu",
-    lastName: "Cyuzuzo",
-    role: "Student",
-    organization: "African Leadership University",
-    location: "Kigali, Rwanda",
-    timezone: "UTC+2",
-    profilePicture: "/shema-portrait.png",
-    bio: "I'm a software engineering student passionate about building web applications. I'm currently focused on full-stack development using JavaScript, React, and SQL. I'm seeking mentorship to strengthen my system design, problem-solving, and career navigation skills.",
-    languages: ["English", "Français", "Ikinyarwanda"],
-    socials: {
-      linkedin: "https://linkedin.com/in/bienvenu-cyuzuzo",
-      website: "https://portfolio-bienvenu.com"
-    },
-    achievementBadges: [
-      { id: 1, name: "First Session Complete", icon: "🎯", earned: true },
-      { id: 2, name: "Goal Setter", icon: "📋", earned: true },
-      { id: 3, name: "Network Builder", icon: "🤝", earned: true },
-      { id: 4, name: "Knowledge Seeker", icon: "📚", earned: true },
-    ],
-    skills: ["React", "JavaScript", "Node.js", "SQL", "HTML/CSS"],
-    goals: ["Transition to Software Engineering", "Build Professional Network", "Develop Leadership Skills", "Prepare for technical interviews"],
-    professionalBackground: {
-      education: "B.S. Computer Science, African Leadership University, 2025 (Expected)",
-      experience: [
-        { position: "Software Engineering Intern", company: "Andela", duration: "Summer 2024" },
-        { position: "Web Developer", company: "Student Projects", duration: "2023 - Present" }
-      ],
-    },
-    learningPreferences: {
-      mentorshipStyle: "Practical guidance with hands-on examples",
-      preferredSessionFormat: "1:1 video calls with follow-up tasks",
-      learningGoals: "Career development and technical skill improvement",
-      availability: "Evenings and weekends",
+  // Redirect if explicitly not a mentee (don't redirect on null/unknown role)
+  useLayoutEffect(() => {
+    // Only perform actions when role is not loading and user exists
+    if (!roleLoading && user) {
+      // If user is a mentor, deny access and redirect
+      if (userRole === 'mentor') {
+        console.log('MenteeDashboard: Access denied - Mentor trying to access mentee dashboard, redirecting to mentor dashboard');
+        navigate('/mentor-dashboard', { replace: true });
+      }
+      // Only redirect to onboarding if we have confirmed the user has no role
+      // AND they have a valid session (to avoid race conditions)
+      else if (userRole === null) {
+        console.log('MenteeDashboard: User has session but no role after role check complete, redirecting to onboarding');
+        navigate('/onboarding', { replace: true });
+      }
+      // If we reach here and userRole is 'mentee', stay on dashboard
+      else if (userRole === 'mentee') {
+        console.log('✅ MenteeDashboard: User confirmed as mentee, staying on dashboard');
+      }
+    } else if (!roleLoading && !user) {
+      console.log('MenteeDashboard: No user session, letting AuthProvider handle...');
+    } else {
+      console.log('MenteeDashboard: Role is still loading, waiting...');
     }
-  }), []);
+  }, [roleLoading, userRole, user, navigate]);
 
-  // State to store mentee data
-  const [menteeData, setMenteeData] = useState(defaultMenteeData);
-
-  // Update the current time every minute
+  // Fetch username when role is confirmed as mentee
   useEffect(() => {
-    const updateTime = () => {
-      if (menteeData.timezone) {
-        setCurrentTime(getCurrentTimeInTimezone(menteeData.timezone));
+    const fetchUsername = async () => {
+      // Only fetch if we have auth state AND haven't already fetched username
+      if (userRole === 'mentee' && user?.id && !username) {
+        try {
+          const res = await supabasase.from('mentee').select('first_name').eq('supabaseId', user.id).single();
+          if (res?.data?.first_name) {
+            setUserName(res.data.first_name);
+          }
+        } catch (error) {
+          console.error('Error fetching username:', error);
+        }
+      }
+    };
+    
+    fetchUsername();
+  }, [userRole, user?.id, username]); // Added username to prevent refetch
+
+  // Fetch real mentee data from database
+  useEffect(() => {
+    const fetchMenteeData = async () => {
+      console.log('🔍 fetchMenteeData called with:', { 
+        userRole, 
+        userId: user?.id, 
+        hasMenteeData: !!menteeData,
+        username 
+      });
+      
+      // Only fetch if we have the required auth state AND haven't already loaded the data
+      if (userRole === 'mentee' && user?.id && !menteeData) {
+        try {
+          setMenteeDataLoading(true);
+          console.log('🔄 Fetching mentee data for user:', user.id);
+          
+          const { data: menteeProfile, error } = await supabasase
+            .from('mentee')
+            .select('*')
+            .eq('supabaseId', user.id)
+            .single();
+
+          console.log('🔍 Database query result:', { menteeProfile, error, userId: user.id });
+
+          if (error) {
+            console.error('❌ Error fetching mentee data:', error);
+            // Fallback to mock data structure with user's name
+            setMenteeData({
+              firstName: username || 'User',
+              lastName: '',
+              role: 'Software Developer',
+              organization: 'Tech Startup',
+              location: 'Kigali, Rwanda',
+              timezone: 'Africa/Kigali',
+              languages: ['English', 'Kinyarwanda', 'French'],
+              profilePicture: '/professional-headshot-of-young-hispanic-freelancer.png',
+              bio: 'Welcome to your mentorship journey! Please update your profile to get started.',
+              skills: [
+                { name: 'JavaScript', level: 75, category: 'Programming' },
+                { name: 'React', level: 70, category: 'Frontend' },
+                { name: 'Node.js', level: 65, category: 'Backend' },
+                { name: 'Project Management', level: 60, category: 'Soft Skills' },
+                { name: 'Problem Solving', level: 80, category: 'Soft Skills' }
+              ],
+              goals: [
+                'Advance to Senior Software Developer position within 18 months',
+                'Master system design and architecture principles',
+                'Develop leadership and team collaboration skills',
+                'Build expertise in cloud technologies (AWS/Azure)'
+              ],
+              socials: {
+                linkedin: '',
+                website: ''
+              },
+              professionalBackground: {
+                interests: [
+                  'Technology and Innovation',
+                  'Professional Development',
+                  'Software Engineering',
+                  'Career Growth'
+                ],
+                interestAreas: [
+                  {
+                    id: 1,
+                    area: 'Technology and Innovation',
+                    level: 'Developing',
+                    description: 'Passionate about technology and innovation and eager to learn more in this area.'
+                  },
+                  {
+                    id: 2,
+                    area: 'Professional Development',
+                    level: 'Developing', 
+                    description: 'Passionate about professional development and eager to learn more in this area.'
+                  }
+                ]
+              },
+              learningPreferences: {
+                mentorshipStyle: 'Goal-oriented with regular check-ins and structured feedback sessions',
+                preferredSessionFormat: 'Video calls with screen sharing for technical topics, 45-60 minute sessions',
+                learningGoals: 'Advance to senior developer role, improve system design skills, and develop leadership capabilities',
+                availability: 'Weekday evenings (6-9 PM EAT) and Saturday mornings (9 AM - 12 PM EAT)'
+              },
+              achievementBadges: [
+                { id: 1, name: 'First Session', icon: '🎯', earned: false },
+                { id: 2, name: 'Goal Setter', icon: '📈', earned: false },
+                { id: 3, name: 'Skill Builder', icon: '🛠️', earned: false },
+                { id: 4, name: 'Networker', icon: '🤝', earned: false }
+              ]
+            });
+          } else if (menteeProfile) {
+            console.log('✅ Mentee data fetched successfully:', menteeProfile);
+            
+            // Use profile picture from database or fetch from Storage as fallback
+            let profilePicUrl = menteeProfile.profile_picture;
+            if (!profilePicUrl || profilePicUrl.includes('anonymous.jpg')) {
+              console.log('🔄 Fetching custom profile picture from Storage...');
+              profilePicUrl = await getProfilePictureUrl(user.id, 'mentee');
+            }
+            
+            // Map database fields to component structure
+            setMenteeData({
+              firstName: menteeProfile.first_name || 'User',
+              lastName: menteeProfile.last_name || '',
+              email: menteeProfile.email || '',
+              age: menteeProfile.age || 20,
+              gender: menteeProfile.gender || 'Not specified',
+              phone_number: menteeProfile.phone_number || '',
+              ratings: menteeProfile.ratings || 0,
+              joined: menteeProfile.joined,
+              role: 'Software Developer', // Will be stored in DB in future
+              organization: 'Tech Startup', // Will be stored in DB in future
+              location: menteeProfile.location || 'Kigali, Rwanda',
+              timezone: 'Africa/Kigali', // Default timezone
+              languages: ['English', 'Kinyarwanda', 'French'], // Will be stored in DB in future
+              profilePicture: profilePicUrl,
+              bio: menteeProfile.bio || 'Welcome to your mentorship journey! Please update your profile to get started.',
+              skills: [
+                { name: 'JavaScript', level: 75, category: 'Programming' },
+                { name: 'React', level: 70, category: 'Frontend' },
+                { name: 'Node.js', level: 65, category: 'Backend' },
+                { name: 'Project Management', level: 60, category: 'Soft Skills' },
+                { name: 'Problem Solving', level: 80, category: 'Soft Skills' }
+              ],
+              goals: menteeProfile.Interests && menteeProfile.Interests.length > 0 ? menteeProfile.Interests : [
+                'Advance to Senior Software Developer position within 18 months',
+                'Master system design and architecture principles',
+                'Develop leadership and team collaboration skills',
+                'Build expertise in cloud technologies (AWS/Azure)'
+              ],
+              socials: {
+                linkedin: menteeProfile.LinkedIn || '',
+                website: menteeProfile.Website || '',
+                github: menteeProfile.Github || '',
+                instagram: menteeProfile.Instagram || '',
+                twitter: menteeProfile.Twitter || ''
+              },
+              professionalBackground: {
+                interests: menteeProfile.Interests && menteeProfile.Interests.length > 0 ? menteeProfile.Interests : [
+                  'Technology and Innovation',
+                  'Professional Development',
+                  'Software Engineering',
+                  'Career Growth'
+                ],
+                interestAreas: menteeProfile.Interests && menteeProfile.Interests.length > 0 
+                  ? menteeProfile.Interests.map((interest: string, index: number) => ({
+                      id: index + 1,
+                      area: interest,
+                      level: 'Developing',
+                      description: `Passionate about ${interest.toLowerCase()} and eager to learn more in this area.`
+                    }))
+                  : [
+                      {
+                        id: 1,
+                        area: 'Technology and Innovation',
+                        level: 'Developing',
+                        description: 'Passionate about technology and innovation and eager to learn more in this area.'
+                      },
+                      {
+                        id: 2,
+                        area: 'Professional Development',
+                        level: 'Developing', 
+                        description: 'Passionate about professional development and eager to learn more in this area.'
+                      }
+                    ]
+              },
+              learningPreferences: {
+                mentorshipStyle: 'Goal-oriented with regular check-ins and structured feedback sessions',
+                preferredSessionFormat: 'Video calls with screen sharing for technical topics, 45-60 minute sessions',
+                learningGoals: 'Advance to senior developer role, improve system design skills, and develop leadership capabilities',
+                availability: 'Weekday evenings (6-9 PM EAT) and Saturday mornings (9 AM - 12 PM EAT)'
+              },
+              achievementBadges: [
+                { id: 1, name: 'First Session', icon: '🎯', earned: false },
+                { id: 2, name: 'Goal Setter', icon: '📈', earned: menteeProfile.Interests && menteeProfile.Interests.length > 0 },
+                { id: 3, name: 'Skill Builder', icon: '🛠️', earned: false },
+                { id: 4, name: 'Networker', icon: '🤝', earned: false }
+              ]
+            });
+          }
+        } catch (error) {
+          console.error('💥 Unexpected error fetching mentee data:', error);
+          // Set fallback data
+          setMenteeData({
+            firstName: username || 'User',
+            lastName: '',
+            role: 'Software Developer',
+            organization: 'Tech Startup',
+            location: 'Kigali, Rwanda',
+            timezone: 'Africa/Kigali',
+            languages: ['English', 'Kinyarwanda', 'French'],
+            profilePicture: '/professional-headshot-of-young-hispanic-freelancer.png',
+            bio: 'Welcome to your mentorship journey! Please update your profile to get started.',
+            skills: [
+              { name: 'JavaScript', level: 75, category: 'Programming' },
+              { name: 'React', level: 70, category: 'Frontend' },
+              { name: 'Node.js', level: 65, category: 'Backend' },
+              { name: 'Project Management', level: 60, category: 'Soft Skills' },
+              { name: 'Problem Solving', level: 80, category: 'Soft Skills' }
+            ],
+            goals: [
+              'Advance to Senior Software Developer position within 18 months',
+              'Master system design and architecture principles',
+              'Develop leadership and team collaboration skills',
+              'Build expertise in cloud technologies (AWS/Azure)'
+            ],
+            socials: { linkedin: '', website: '' },
+            professionalBackground: { 
+              interests: [
+                'Technology and Innovation',
+                'Professional Development',
+                'Software Engineering',
+                'Career Growth'
+              ],
+              interestAreas: [
+                {
+                  id: 1,
+                  area: 'Technology and Innovation',
+                  level: 'Developing',
+                  description: 'Passionate about technology and innovation and eager to learn more in this area.'
+                },
+                {
+                  id: 2,
+                  area: 'Professional Development',
+                  level: 'Developing', 
+                  description: 'Passionate about professional development and eager to learn more in this area.'
+                }
+              ]
+            },
+            learningPreferences: { 
+              mentorshipStyle: 'Goal-oriented with regular check-ins and structured feedback sessions',
+              preferredSessionFormat: 'Video calls with screen sharing for technical topics, 45-60 minute sessions',
+              learningGoals: 'Advance to senior developer role, improve system design skills, and develop leadership capabilities',
+              availability: 'Weekday evenings (6-9 PM EAT) and Saturday mornings (9 AM - 12 PM EAT)'
+            },
+            achievementBadges: [
+              { id: 1, name: 'First Session', icon: '🎯', earned: false },
+              { id: 2, name: 'Goal Setter', icon: '📈', earned: false },
+              { id: 3, name: 'Skill Builder', icon: '🛠️', earned: false },
+              { id: 4, name: 'Networker', icon: '🤝', earned: false }
+            ]
+          });
+        } finally {
+          setMenteeDataLoading(false);
+        }
+      } else {
+        setMenteeDataLoading(false);
+      }
+    };
+    
+    fetchMenteeData();
+  }, [userRole, user?.id, username]); // Removed menteeData from dependencies to prevent infinite loop
+
+  // Fetch real mentors from database - Using select all fields approach
+  useEffect(() => {
+    const fetchMentors = async () => {
+      console.log('🔄 Fetching mentors - userRole:', userRole, 'roleLoading:', roleLoading);
+      
+      // Don't fetch if still loading role OR if we already have mentors data
+      if (roleLoading || (mentors && mentors.length > 0)) {
+        console.log('⏳ Role still loading or mentors already fetched, skipping mentor fetch');
+        return;
+      }
+      
+      if (userRole === 'mentee') {
+        try {
+          // setMentorsLoading(true);
+          console.log('📡 Fetching mentors from database...');
+          
+          const { data: mentor, error } = await supabasase
+            .from('mentor')
+            .select('*');
+          
+          if (error) {
+            console.error('❌ Error fetching mentors:', error);
+            setMentors([]);
+          } else {
+            console.log('✅ Mentors fetched successfully. Count:', mentor?.length || 0);
+            setMentors(mentor || []);
+          }
+        } catch (error: any) {
+          console.error('💥 Unexpected error fetching mentors:', error);
+          setMentors([]);
+        } finally {
+          console.log('🏁 Mentor fetch complete');
+        }
+      } else {
+  console.log('🚫 Not fetching mentors - userRole is:', userRole);
+      }
+    };
+    
+    fetchMentors();
+  }, [userRole, user?.id, roleLoading]); // Removed mentors from dependencies to prevent infinite loop
+
+  // Early return while role is unknown (only if we don't have a role yet)
+  if (roleLoading && userRole === null) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Verifying access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If not a mentee, show redirect message
+  if (userRole !== 'mentee') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
+          <p className="text-gray-600">Redirecting to mentor dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Fetch upcoming sessions when role is confirmed as mentee
+  useEffect(() => {
+    const fetchUpcomingSessions = async () => {
+      // Only fetch if we have the required auth state AND haven't already loaded sessions
+      if (userRole === 'mentee' && user?.id && upcomingSessions.length === 0) {
+        try {
+          setSessionsLoading(true);
+          
+          // Use today's date string for better date comparison
+          const today = new Date().toISOString().split('T')[0];
+          
+          const { data: sessions, error } = await supabasase
+            .from('sessions')
+            .select(`
+              *,
+              mentor:mentorId (
+                supabaseId,
+                first_name,
+                last_name,
+                expertise
+              )
+            `)
+            .eq('menteeId', user.id)
+            .gte('sessionDate', today)
+            .order('sessionDate', { ascending: true })
+            .order('startTime', { ascending: true })
+            .limit(10);
+
+          console.log('🔍 Session query params:', {
+            menteeId: user.id,
+            today,
+            userIdType: typeof user.id
+          });
+
+          if (error) {
+            console.error('❌ Error fetching sessions:', error);
+          } else {
+            console.log('📅 Fetched mentee sessions:', sessions?.length || 0, 'sessions found');
+            console.log('📋 Session details:', sessions);
+            setUpcomingSessions(sessions || []);
+          }
+        } catch (error) {
+          console.error('Error fetching sessions:', error);
+        } finally {
+          setSessionsLoading(false);
+        }
+      }
+    };
+    
+    fetchUpcomingSessions();
+
+    // Set up real-time subscription for session updates
+    const channel = supabasase
+      .channel('mentee-sessions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sessions',
+          filter: `menteeId=eq.${user?.id}`
+        },
+        (payload) => {
+          console.log('📅 Session update received:', payload);
+          fetchUpcomingSessions(); // Refetch sessions when changes occur
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabasase.removeChannel(channel);
+    };
+  }, [userRole, user?.id]); // Removed upcomingSessions from dependencies to prevent infinite loop
+
+  // Fetch past sessions for session history
+  useEffect(() => {
+    const fetchPastSessions = async () => {
+      if (userRole === 'mentee' && user?.id && pastSessions.length === 0) {
+        try {
+          console.log('🔄 Fetching mentee session history...');
+          
+          // Fetch past sessions (completed or cancelled) in reverse chronological order
+          const { data: pastSessionsData, error: pastSessionsError } = await supabasase
+            .from('sessions')
+            .select(`
+              *,
+              mentor:mentorId (
+                first_name,
+                last_name,
+                profile_picture
+              )
+            `)
+            .eq('menteeId', user.id)
+            .lt('sessionDate', new Date().toISOString().split('T')[0])
+            .in('status', ['COMPLETED', 'CANCELLED', 'NO_SHOW'])
+            .order('sessionDate', { ascending: false })
+            .order('startTime', { ascending: false });
+
+          if (pastSessionsError) {
+            console.error('❌ Error fetching past sessions:', pastSessionsError);
+          } else {
+            console.log('📚 Fetched past sessions:', pastSessionsData?.length || 0, 'sessions found');
+            setPastSessions(pastSessionsData || []);
+          }
+        } catch (error) {
+          console.error('💥 Error fetching session history:', error);
+        }
       }
     };
 
-    // Set initial time
-    updateTime();
+    fetchPastSessions();
+  }, [userRole, user?.id, pastSessions]); // Added pastSessions to prevent refetch if already loaded
 
-    // Update time every minute
-    const timer = setInterval(updateTime, 60000);
-
-    // Clean up the interval on component unmount
-    return () => clearInterval(timer);
-  }, [menteeData.timezone]);
-
-  // Load mentee data from localStorage if available
+  // Update current time
   useEffect(() => {
-    // This simulates fetching user data from a backend
-    // In a real app, this would be replaced with an API call to Supabase
-    const savedProfile = localStorage.getItem("menteeProfile");
+    const timezone = 'Africa/Kigali'; // Default to Rwanda timezone for mentee data
+    setCurrentTime(getCurrentTimeInTimezone(timezone));
+    
+    const timer = setInterval(() => {
+      setCurrentTime(getCurrentTimeInTimezone(timezone));
+    }, 60000); // Update every minute
 
-    if (savedProfile) {
-      try {
-        const profileData = JSON.parse(savedProfile);
+    return () => clearInterval(timer);
+  }, []);
 
-        // Merge with default data to ensure all required fields exist
-        // This ensures backwards compatibility if the data structure changes
-        const mergedData = {
-          ...defaultMenteeData,
-          ...profileData,
-          // Make sure nested objects are properly merged
-          professionalBackground: {
-            ...defaultMenteeData.professionalBackground,
-            ...profileData.professionalBackground
-          },
-          learningPreferences: {
-            ...defaultMenteeData.learningPreferences,
-            ...profileData.learningPreferences
-          },
-          // Make sure socials are properly merged
-          socials: {
-            ...defaultMenteeData.socials,
-            ...profileData.socials
-          },
-          // Keep achievement badges from default data
-          achievementBadges: defaultMenteeData.achievementBadges
-        };
-
-        setMenteeData(mergedData);
-
-        // Update time with the loaded timezone
-        if (mergedData.timezone) {
-          setCurrentTime(getCurrentTimeInTimezone(mergedData.timezone));
-        }
-      } catch (error) {
-        console.error("Error parsing profile data:", error);
-      }
-    } else {
-      // If no saved profile, set time based on default data
-      if (defaultMenteeData.timezone) {
-        setCurrentTime(getCurrentTimeInTimezone(defaultMenteeData.timezone));
-      }
-    }
-  }, [defaultMenteeData]);
-
-  const upcomingSessions = [
-    {
-      id: 1,
-      mentor: "Emmanuel Ntagungira",
-      expertise: "Software Engineering",
-      time: "Today, 2:00 PM",
-      topic: "Career Planning Discussion"
-    },
-    {
-      id: 2,
-      mentor: "Marie Claire Uwimana",
-      expertise: "Digital Marketing",
-      time: "Friday, 11:00 AM",
-      topic: "Marketing Strategy Review"
-    }
-  ];
-
-  const featuredMentees = [
-    {
-      id: 1,
-      name: "David Nshuti",
-      role: "Data Scientist",
-      company: "DataInsights Africa",
-      image: "/alex-portrait.webp",
-      skills: ["Python", "Machine Learning", "Data Visualization"]
-    },
-    {
-      id: 2,
-      name: "Alice Mutoni",
-      role: "Frontend Developer",
-      company: "TechRwanda",
-      image: "/claudine-portrait.png",
-      skills: ["React", "Angular", "UI/UX"]
-    }
-  ];
-
+  // Mock data for recommended mentors
   const recommendedMentors = [
     {
       id: 1,
@@ -219,6 +580,34 @@ const MenteeDashboard = () => {
     }
   ];
 
+  // Mock data for featured mentees
+  const featuredMentees = [
+    {
+      id: 1,
+      name: "John Doe",
+      role: "Frontend Developer",
+      company: "TechCorp",
+      skills: [
+        { name: "React", level: 75, category: "Technical" },
+        { name: "TypeScript", level: 70, category: "Technical" },
+        { name: "CSS", level: 80, category: "Technical" }
+      ],
+      image: null
+    },
+    {
+      id: 2,
+      name: "Jane Smith",
+      role: "Data Analyst",
+      company: "DataFlow",
+      skills: [
+        { name: "Python", level: 85, category: "Technical" },
+        { name: "SQL", level: 90, category: "Technical" },
+        { name: "Tableau", level: 75, category: "Technical" }
+      ],
+      image: null
+    }
+  ];
+
   // Success stories for Inspiration tab
   const successStories = [
     {
@@ -236,7 +625,7 @@ const MenteeDashboard = () => {
         image: null
       },
       story: {
-        text: "As a self-taught developer in Kigali, I struggled to find opportunities in the global tech market. Through ATLAS, I was matched with Emmanuel, a Rwandan tech leader now working in Europe. His guidance helped me improve my coding practices and understand international tech standards.",
+        text: "As a self-taught developer in Kigali, I struggled to find opportunities in the global tech market. Through Skills Connect, I was matched with Emmanuel, a Rwandan tech leader now working in Europe. His guidance helped me improve my coding practices and understand international tech standards.",
         highlight: "After 8 months of mentorship, I secured a remote position with a European startup, doubling my income while staying in Rwanda."
       },
       outcomes: ["Secured remote job with European company", "Improved coding standards", "Built international network"],
@@ -264,28 +653,6 @@ const MenteeDashboard = () => {
       outcomes: ["Expanded client base across East Africa", "Completed international certifications", "Started local training program"],
       industry: "Marketing",
       featured: true
-    },
-    {
-      id: 3,
-      mentee: {
-        name: "Eric Mugabo",
-        role: "Agricultural Entrepreneur",
-        location: "Musanze, Rwanda",
-        image: null
-      },
-      mentor: {
-        name: "James Karemera",
-        role: "Agricultural Tech Consultant",
-        location: "Amsterdam, Netherlands",
-        image: null
-      },
-      story: {
-        text: "My family has farmed the same way for generations in northern Rwanda. Through ATLAS, I met James who introduced me to agricultural technologies being used across Europe that could work in Rwanda's climate. With his guidance, I implemented data-driven farming methods and secured funding to expand.",
-        highlight: "Our crop yield has increased by 40%, and we now export organic produce to three countries."
-      },
-      outcomes: ["Increased crop yield by 40%", "Secured international export partnerships", "Implemented sustainable farming methods"],
-      industry: "Agriculture",
-      featured: false
     }
   ];
 
@@ -296,7 +663,24 @@ const MenteeDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <AuthHeader />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Show loading spinner if mentee data is still loading */}
+      {menteeDataLoading ? (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading your profile...</p>
+            </div>
+          </div>
+        </div>
+      ) : !menteeData ? (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <p className="text-gray-600">Unable to load your profile. Please try refreshing the page.</p>
+          </div>
+        </div>
+      ) : (
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Success message notification */}
         {successMessage && (
           <div className="mb-6 flex items-center justify-between p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700">
@@ -335,7 +719,9 @@ const MenteeDashboard = () => {
             </div>
             <span className="text-xs font-medium">Resources</span>
             <span className="text-[10px] text-gray-500">& Opportunities</span>
-          </button>          <button
+          </button>
+
+          <button
             onClick={() => navigate('/progress')}
             className="flex flex-col items-center justify-center gap-1 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
           >
@@ -373,7 +759,7 @@ const MenteeDashboard = () => {
                 <p className="text-gray-600">{menteeData.role} at {menteeData.organization}</p>
 
                 <div className="flex flex-wrap justify-center gap-1 mt-3">
-                  {menteeData.languages.map((language, index) => (
+                  {menteeData.languages.map((language: string, index: number) => (
                     <span
                       key={index}
                       className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full"
@@ -426,11 +812,11 @@ const MenteeDashboard = () => {
                 {/* Sessions and Mentors count */}
                 <div className="flex justify-center gap-8 mt-4 w-full border-t border-gray-100 pt-4">
                   <div className="text-center">
-                    <div className="text-2xl font-semibold text-emerald-600">6</div>
+                    <div className="text-2xl font-semibold text-emerald-600">{upcomingSessions.length}</div>
                     <div className="text-xs text-gray-600">Sessions</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-semibold text-emerald-600">3</div>
+                    <div className="text-2xl font-semibold text-emerald-600">{mentors.length}</div>
                     <div className="text-xs text-gray-600">Mentors</div>
                   </div>
                 </div>
@@ -447,9 +833,9 @@ const MenteeDashboard = () => {
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {menteeData.skills.slice(0, 3).map((skill, index) => (
+                    {menteeData.skills.slice(0, 3).map((skill: any, index: number) => (
                       <div key={index} className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">
-                        {skill}
+                        {skill.name}
                       </div>
                     ))}
                   </div>
@@ -467,7 +853,7 @@ const MenteeDashboard = () => {
                     </button>
                   </div>
                   <ul className="text-left text-sm pl-5 space-y-1">
-                    {menteeData.goals.slice(0, 2).map((goal, index) => (
+                    {menteeData.goals.slice(0, 2).map((goal: string, index: number) => (
                       <li key={index} className="list-disc text-gray-700">{goal}</li>
                     ))}
                   </ul>
@@ -485,7 +871,7 @@ const MenteeDashboard = () => {
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-4 mt-2">
-                    {menteeData.achievementBadges.filter(badge => badge.earned).map((badge) => (
+                    {menteeData.achievementBadges.filter((badge: any) => badge.earned).map((badge: any) => (
                       <div
                         key={badge.id}
                         className="relative group cursor-pointer"
@@ -590,6 +976,15 @@ const MenteeDashboard = () => {
                   >
                     Inspiration
                   </button>
+                  <button
+                    onClick={() => setActiveTab('messages')}
+                    className={`px-4 py-4 text-sm font-medium border-b-2 ${activeTab === 'messages'
+                      ? 'border-emerald-500 text-emerald-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                  >
+                    Messages
+                  </button>
                 </nav>
               </div>
 
@@ -612,19 +1007,30 @@ const MenteeDashboard = () => {
 
                     {/* Professional Background Section */}
                     <div className="mb-6">
-                      <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-100">Professional Background</h3>
+                      <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-100">Interests & Learning Areas</h3>
                       <div className="space-y-4">
                         <div>
-                          <h4 className="text-sm font-medium text-gray-700">Education</h4>
-                          <p className="text-gray-600 mt-1">{menteeData.professionalBackground.education}</p>
+                          <h4 className="text-sm font-medium text-gray-700">Primary Interests</h4>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {(menteeData?.professionalBackground?.interests || []).map((interest: string, index: number) => (
+                              <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                {interest}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                         <div>
-                          <h4 className="text-sm font-medium text-gray-700">Experience</h4>
-                          <ul className="mt-1 space-y-2">
-                            {menteeData.professionalBackground.experience.map((exp, index) => (
+                          <h4 className="text-sm font-medium text-gray-700">Learning Focus Areas</h4>
+                          <ul className="mt-2 space-y-3">
+                            {(menteeData?.professionalBackground?.interestAreas || []).map((area: any, index: number) => (
                               <li key={index} className="text-gray-600">
-                                <div className="font-medium">{exp.position}</div>
-                                <div className="text-sm">{exp.company} • {exp.duration}</div>
+                                <div className="flex items-center justify-between">
+                                  <div className="font-medium text-gray-800">{area.area}</div>
+                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {area.level}
+                                  </span>
+                                </div>
+                                <div className="text-sm mt-1">{area.description}</div>
                               </li>
                             ))}
                           </ul>
@@ -668,7 +1074,7 @@ const MenteeDashboard = () => {
                       </button>
                     </div>
 
-                    {menteeData.goals.map((goal, index) => (
+                    {menteeData.goals.map((goal: string, index: number) => (
                       <div key={index} className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-100 flex items-center gap-3">
                         <Target className="h-5 w-5 text-emerald-600 flex-shrink-0" />
                         <span>{goal}</span>
@@ -689,9 +1095,9 @@ const MenteeDashboard = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-2 mb-6">
-                      {menteeData.skills.map((skill, index) => (
+                      {menteeData.skills.map((skill: any, index: number) => (
                         <div key={index} className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-sm">
-                          {skill}
+                          {skill.name}
                         </div>
                       ))}
                     </div>
@@ -825,6 +1231,13 @@ const MenteeDashboard = () => {
                     </div>
                   </div>
                 )}
+
+                {activeTab === 'messages' && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Messages</h3>
+                    <MessagingInterface className="w-full" />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -835,20 +1248,74 @@ const MenteeDashboard = () => {
                 Upcoming Sessions
               </h3>
 
-              {upcomingSessions.length > 0 ? (
+              {sessionsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading upcoming sessions...</p>
+                </div>
+              ) : upcomingSessions.length > 0 ? (
                 <div className="space-y-4">
                   {upcomingSessions.map((session) => (
-                    <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">{session.mentor}</h4>
-                        <p className="text-sm text-emerald-600">{session.expertise}</p>
-                        <p className="text-xs text-gray-500">{session.time}</p>
-                        <p className="text-xs text-gray-500">{session.topic}</p>
+                    <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">{session.title}</h4>
+                        <p className="text-sm text-emerald-600 font-medium">
+                          with {session.mentor?.first_name} {session.mentor?.last_name}
+                        </p>
+                        {session.mentor?.expertise && session.mentor.expertise.length > 0 && (
+                          <p className="text-xs text-gray-600">
+                            {session.mentor.expertise.join(', ')}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-500 mt-1">
+                          📅 {new Date(session.sessionDate).toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            month: 'short', 
+                            day: 'numeric',
+                            year: 'numeric'
+                          })} ⏰ {session.startTime} - {session.endTime}
+                        </p>
+                        {session.description && (
+                          <p className="text-xs text-gray-600 mt-1 italic">"{session.description}"</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                            session.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                            session.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                            session.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                            session.status === 'COMPLETED' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {session.status === 'PENDING' ? '⏳ Pending Approval' :
+                             session.status === 'ACCEPTED' ? '✅ Confirmed' :
+                             session.status === 'REJECTED' ? '❌ Declined' :
+                             session.status === 'COMPLETED' ? '✨ Completed' :
+                             session.status}
+                          </span>
+                          {session.status === 'PENDING' && (
+                            <span className="text-xs text-gray-500">Waiting for mentor response</span>
+                          )}
+                        </div>
                       </div>
-                      <button className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700">
-                        <Video className="h-4 w-4" />
-                        <span>Join</span>
-                      </button>
+                      <div className="flex gap-2">
+                        {session.status === 'ACCEPTED' && (
+                          <button
+                            onClick={() => navigate(`/session/${session.id}`)}
+                            className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            title="Join video session"
+                          >
+                            <Video className="h-4 w-4" />
+                            Join Session
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => navigate(`/simple-chat/${session.mentorId}`)}
+                          className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                          Chat
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -856,10 +1323,110 @@ const MenteeDashboard = () => {
                 <div className="text-center py-6 bg-gray-50 rounded-lg">
                   <Calendar className="h-10 w-10 mx-auto text-gray-400 mb-2" />
                   <p className="text-gray-500">No upcoming sessions</p>
-                  <button className="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
+                  <button 
+                    onClick={() => navigate('/discover-mentors')}
+                    className="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+                  >
                     Book a Session
                   </button>
                 </div>
+              )}
+
+              {upcomingSessions.length > 0 && (
+                <button 
+                  onClick={() => navigate('/discover-mentors')}
+                  className="w-full mt-4 inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                >
+                  <Search className="h-4 w-4" />
+                  Book More Sessions
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Session History */}
+          <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-emerald-600" />
+                Session History
+              </h3>
+
+              {sessionsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading session history...</p>
+                </div>
+              ) : pastSessions.length > 0 ? (
+                <div className="space-y-4">
+                  {pastSessions.slice(0, 5).map((session) => (
+                    <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">{session.title}</h4>
+                        <p className="text-sm text-emerald-600 font-medium">
+                          with {session.mentor?.first_name} {session.mentor?.last_name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          📅 {new Date(session.sessionDate).toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            month: 'short', 
+                            day: 'numeric',
+                            year: 'numeric'
+                          })} ⏰ {session.startTime} - {session.endTime}
+                        </p>
+                        {session.description && (
+                          <p className="text-xs text-gray-600 mt-1 italic">"{session.description}"</p>
+                        )}
+                        <div className="flex items-center gap-3 mt-2">
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                            session.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                            session.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
+                            session.status === 'NO_SHOW' ? 'bg-gray-100 text-gray-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {session.status === 'COMPLETED' ? '✨ Completed' :
+                             session.status === 'CANCELLED' ? '❌ Cancelled' :
+                             session.status === 'NO_SHOW' ? '👻 No Show' :
+                             session.status}
+                          </span>
+                          {session.mentorRating && (
+                            <div className="flex items-center gap-1">
+                              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                              <span className="text-xs text-gray-600">{session.mentorRating}/5 rating from mentor</span>
+                            </div>
+                          )}
+                        </div>
+                        {session.mentorReview && (
+                          <p className="text-xs text-gray-600 mt-2 italic">Mentor feedback: "{session.mentorReview}"</p>
+                        )}
+                        {session.notes && (
+                          <p className="text-xs text-gray-600 mt-1">📝 Notes: {session.notes}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => navigate(`/simple-chat/${session.mentorId}`)}
+                          className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                          Chat
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 bg-gray-50 rounded-lg">
+                  <TrendingUp className="h-10 w-10 mx-auto text-gray-400 mb-2" />
+                  <p className="text-gray-500">No session history yet</p>
+                  <p className="text-xs text-gray-400">Your completed sessions will appear here</p>
+                </div>
+              )}
+
+              {pastSessions.length > 5 && (
+                <button className="w-full mt-4 inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
+                  View All Session History ({pastSessions.length} total)
+                </button>
               )}
             </div>
           </div>
@@ -868,7 +1435,7 @@ const MenteeDashboard = () => {
         {/* Recommended Mentors */}
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold mb-4">Recommended Mentors</h3>
+            <h3 className="text-xl font-semibold">Recommended Mentors</h3>
             <button
               onClick={() => navigate('/discover-mentors')}
               className="text-sm px-3 py-1.5 text-emerald-600 border border-emerald-600 rounded-md hover:bg-emerald-50"
@@ -877,39 +1444,47 @@ const MenteeDashboard = () => {
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recommendedMentors.map(mentor => (
-              <div key={mentor.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+            {/* Show real mentors if available, otherwise show mock data */}
+            {(mentors.length > 0 ? mentors.slice(0, 3) : recommendedMentors).map((mentor, index) => (
+              <div key={mentor.id || mentor.supabaseId || index} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                 <div className="p-6">
                   <div className="flex items-center space-x-4">
                     <div className="flex-shrink-0">
-                      {mentor.image ? (
+                      {mentor.image || mentor.profile_picture ? (
                         <img
-                          src={mentor.image}
-                          alt={mentor.name}
+                          src={mentor.image || mentor.profile_picture}
+                          alt={mentor.name || `${mentor.first_name} ${mentor.last_name}`}
                           className="h-14 w-14 rounded-full object-cover"
                         />
                       ) : (
                         <div className="h-14 w-14 rounded-full bg-emerald-100 flex items-center justify-center">
                           <span className="text-lg font-semibold text-emerald-600">
-                            {mentor.name.split(' ').map(n => n[0]).join('')}
+                            {mentor.name ? mentor.name.split(' ').map((n: string) => n[0]).join('') : 
+                             `${mentor.first_name?.[0] || ''}${mentor.last_name?.[0] || ''}`}
                           </span>
                         </div>
                       )}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium">{mentor.name}</h4>
-                      <p className="text-sm text-emerald-600">{mentor.expertise}</p>
-                      <p className="text-xs text-gray-500">{mentor.location}</p>
-                      <div className="flex items-center mt-1">
-                        <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
-                        <span className="text-xs text-gray-600 ml-1">{mentor.rating} • {mentor.sessions} sessions</span>
-                      </div>
+                      <h4 className="font-medium">{mentor.name || `${mentor.first_name} ${mentor.last_name}`}</h4>
+                      <p className="text-sm text-emerald-600">
+                        {mentor.expertise ? 
+                          (Array.isArray(mentor.expertise) ? mentor.expertise.slice(0, 2).join(', ') : mentor.expertise) :
+                          'Professional Mentor'}
+                      </p>
+                      <p className="text-xs text-gray-500">{mentor.location || 'Location not specified'}</p>
+                      {mentor.rating && (
+                        <div className="flex items-center mt-1">
+                          <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
+                          <span className="text-xs text-gray-600 ml-1">{mentor.rating} • {mentor.sessions} sessions</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
                     <button
-                      onClick={() => navigate(`/mentor/${mentor.id}`)}
+                      onClick={() => navigate(`/mentor/${mentor.id || mentor.supabaseId}`)}
                       className="px-3 py-1.5 bg-emerald-600 text-white text-sm rounded-md hover:bg-emerald-700"
                     >
                       View Profile
@@ -957,7 +1532,7 @@ const MenteeDashboard = () => {
                   <div className="flex flex-wrap justify-center gap-1 mt-3 mb-3">
                     {mentee.skills.slice(0, 2).map((skill, i) => (
                       <span key={i} className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">
-                        {skill}
+                        {skill.name}
                       </span>
                     ))}
                     {mentee.skills.length > 2 && (
@@ -979,6 +1554,7 @@ const MenteeDashboard = () => {
           </div>
         </div>
       </main>
+      )}
     </div>
   );
 };
