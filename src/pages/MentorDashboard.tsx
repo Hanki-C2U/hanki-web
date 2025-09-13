@@ -303,7 +303,7 @@ const MentorDashboard = () => {
   // Sessions fetched from backend (converted from SessionData)
   const { user } = useAuthStore();
   const [dbSessions, setDbSessions] = useState<SessionData[]>([]);
-  const [sessionsLoading, setSessionsLoading] = useState<boolean>(false);
+  const [_sessionsLoading, setSessionsLoading] = useState<boolean>(false);
   const location = useLocation();
 
   // Map DB mentor row to the frontend MentorProfile shape

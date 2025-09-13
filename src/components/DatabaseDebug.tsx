@@ -22,7 +22,7 @@ export const DatabaseDebug: React.FC = () => {
 
     for (const tableName of tablesToTest) {
       try {
-        const { data, error, count } = await supabasase
+        const { error, count } = await supabasase
           .from(tableName)
           .select('*', { count: 'exact', head: true });
         

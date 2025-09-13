@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import { supabasase } from "../supabase_creds/supabase";
-import WorkExperienceDisplay from "../components/ui/WorkExperienceDisplay";
+// import WorkExperienceDisplay from "../components/ui/WorkExperienceDisplay";
 import {
   ArrowLeft,
   MapPin,
@@ -42,15 +42,15 @@ interface MentorData {
   supabaseId: string;
 }
 
-interface Experience {
-  role: string;
-  company: string;
-  period: string;
-  description: string;
-}
+// interface Experience {
+//   role: string;
+//   company: string;
+//   period: string;
+//   description: string;
+// }
 
 // Helper function to get current time in mentor's timezone
-const getCurrentTimeInTimezone = (timezone: string): string => {
+const getCurrentTimeInTimezone = (_timezone: string): string => {
   // In a real implementation, we would use proper timezone conversion
   // For the hackathon demo, we'll just format the current time
   return format(new Date(), 'HH:mm');

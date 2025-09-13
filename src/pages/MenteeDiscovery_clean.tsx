@@ -54,8 +54,8 @@ const MenteeDiscovery = () => {
   const [selectedSkills, setSelectedSkills] = useState("");
   
   // Dynamic filter options
-  const [locations, setLocations] = useState<string[]>([]);
-  const [goals, setGoals] = useState<string[]>([]);
+  const [_locations, setLocations] = useState<string[]>([]);
+  const [_goals, setGoals] = useState<string[]>([]);
 
   // Mock data for enhanced UI display
   const fields = [

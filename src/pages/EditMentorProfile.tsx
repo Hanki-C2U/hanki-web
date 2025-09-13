@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Save, X, Plus, Trash2, Camera, MapPin, Clock, Linkedin, Globe, Github, Instagram, Twitter } from "lucide-react";
+import { Save, X, Plus, Trash2, Camera, MapPin, Clock, Linkedin, Globe, Github, Twitter } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
 import TimezoneDropdown from "../components/ui/TimezoneDropdown";
 import { useAuthStore } from "../store/authStore";
@@ -220,16 +220,16 @@ const EditMentorProfile = () => {
   };
 
   // Handle professional background changes
-  const handleProfessionalChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: string) => {
-    const { value } = e.target;
-    setFormData((prev: MentorProfile) => ({
-      ...prev,
-      professionalBackground: {
-        ...prev.professionalBackground,
-        [field]: value
-      }
-    }));
-  };
+  // const handleProfessionalChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: string) => {
+  //   const { value } = e.target;
+  //   setFormData((prev: MentorProfile) => ({
+  //     ...prev,
+  //     professionalBackground: {
+  //       ...prev.professionalBackground,
+  //       [field]: value
+  //     }
+  //   }));
+  // };
 
   // Language management
   const addLanguage = () => {

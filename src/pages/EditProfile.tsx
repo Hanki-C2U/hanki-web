@@ -94,7 +94,7 @@ const EditProfile = () => {
   const [newLanguage, setNewLanguage] = useState("");
   const [newSkill, setNewSkill] = useState("");
   const [newGoal, setNewGoal] = useState("");
-  const [newExperience, setNewExperience] = useState<Experience>({ position: "", company: "", duration: "" });
+  // experience fields disabled for now
 
   // Fetch mentee data from Supabase
   useEffect(() => {
@@ -208,16 +208,7 @@ const EditProfile = () => {
   };
 
   // Handle professional background changes
-  const handleProfessionalChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev: MenteeProfile) => ({
-      ...prev,
-      professionalBackground: {
-        ...prev.professionalBackground,
-        [name]: value
-      }
-    }));
-  };
+  // Professional background handling removed — not used in current UI
 
   // Add functions for managing arrays
   const addLanguage = () => {
@@ -271,28 +262,7 @@ const EditProfile = () => {
     }));
   };
 
-  const addExperience = () => {
-    if (newExperience.position && newExperience.company && newExperience.duration) {
-      setFormData(prev => ({
-        ...prev,
-        professionalBackground: {
-          ...prev.professionalBackground,
-          experience: [...prev.professionalBackground.experience, newExperience]
-        }
-      }));
-      setNewExperience({ position: "", company: "", duration: "" });
-    }
-  };
-
-  const removeExperience = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      professionalBackground: {
-        ...prev.professionalBackground,
-        experience: prev.professionalBackground.experience.filter((_, i) => i !== index)
-      }
-    }));
-  };
+  // Experience list management moved to future iteration (disabled to avoid unused function warnings)
 
   // Handle form submission with Supabase update
   const handleSubmit = async (e: React.FormEvent) => {

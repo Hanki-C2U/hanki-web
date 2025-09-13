@@ -92,7 +92,7 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
-      const { error } = await supabasase.auth.signInWithOAuth({
+      const { error: _googleError } = await supabasase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`

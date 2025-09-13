@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Save, X, Plus, Trash2, Camera, MapPin, Clock, Linkedin, Globe } from "lucide-react";
 import AuthHeader from "../components/AuthHeader";
 import TimezoneDropdown from "../components/ui/TimezoneDropdown";
-import { useAuthStore } from "../store/authStore";
-import { supabasase } from "../supabase_creds/supabase";
+// Note: this is a backup file; avoid importing runtime-only modules to prevent unused import errors
 
 // Define types for our mentee data structure
 interface Experience {

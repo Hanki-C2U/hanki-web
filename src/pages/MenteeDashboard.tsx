@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import {
   Calendar,
@@ -42,7 +42,7 @@ const MenteeDashboard = () => {
   const [currentTime, setCurrentTime] = useState<string>("");
   const [username, setUserName] = useState('');
   const [mentors, setMentors] = useState<any[]>([]);
-  // const [mentorsLoading, setMentorsLoading] = useState(true);
+  // mentorsLoading state removed — not used in UI
   const [upcomingSessions, setUpcomingSessions] = useState<any[]>([]);
   const [pastSessions, setPastSessions] = useState<any[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
@@ -260,7 +260,7 @@ const MenteeDashboard = () => {
                   'Career Growth'
                 ],
                 interestAreas: menteeProfile.Interests && menteeProfile.Interests.length > 0 
-                  ? menteeProfile.Interests.map((interest, index) => ({
+                  ? menteeProfile.Interests.map((interest: string, index: number) => ({
                       id: index + 1,
                       area: interest,
                       level: 'Developing',
@@ -399,12 +399,10 @@ const MenteeDashboard = () => {
           console.error('💥 Unexpected error fetching mentors:', error);
           setMentors([]);
         } finally {
-          console.log('🏁 Setting mentorsLoading to false');
-          setMentorsLoading(false);
+          console.log('🏁 Mentor fetch complete');
         }
       } else {
-        console.log('🚫 Not fetching mentors - userRole is:', userRole);
-        setMentorsLoading(false);
+  console.log('🚫 Not fetching mentors - userRole is:', userRole);
       }
     };
     

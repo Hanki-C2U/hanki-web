@@ -430,13 +430,7 @@ const Onboarding = () => {
     );
   }
 
-  const handleSignOut = () => {
-    localStorage.removeItem('mockUser');
-    localStorage.removeItem('userType');
-    localStorage.removeItem('mockUserProfile');
-    navigate('/login');
-    return;
-  }
+  // handleSignOut removed — not used in current onboarding flow
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 flex items-center justify-center p-4">

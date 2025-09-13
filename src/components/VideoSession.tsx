@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/authStore';
 
 interface VideoSessionProps {
   roomId: string;
-  sessionId: number;
+  sessionId?: number;
   isHost?: boolean;
   onJoinSuccess?: () => void;
   onLeaveSession?: () => void;
@@ -18,7 +18,6 @@ declare global {
 
 const VideoSession: React.FC<VideoSessionProps> = ({ 
   roomId, 
-  sessionId,
   isHost = false,
   onJoinSuccess, 
   onLeaveSession,

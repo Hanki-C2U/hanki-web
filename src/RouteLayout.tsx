@@ -22,8 +22,7 @@ import MenteeDashboard from "./pages/MenteeDashboard";
 import ChatPage from "./pages/ChatPage"
 import SimpleChatPage from "./pages/SimpleChatPage"
 import SessionRoom from "./pages/SessionRoom"
-import ScrollToTop from "./components/ScrollToTop";
-import { AuthProvider } from "./contexts/AuthContext";
+// ScrollToTop and AuthProvider imports removed (not used)
 import InspirationPage from "./pages/InspirationPage";
 import EditProfile from "./pages/EditProfile";
 import EditMentorProfile from "./pages/EditMentorProfile";

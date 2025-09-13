@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { MicOff, Mic, Video, VideoOff, MonitorUp, MonitorOff, Play, Square } from 'lucide-react'
 import useSessionStore from '../stateStore/useSessionStore'
 import JitsiMeeting from '../components/JitsiMeeting'

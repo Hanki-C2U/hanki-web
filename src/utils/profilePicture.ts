@@ -22,14 +22,14 @@ export const getProfilePictureUrl = async (supabaseId: string, userType: 'mentor
       const fileName = `${supabaseId}.${ext}`;
       
       // Check if the file exists in the bucket
-      const { data, error } = await supabasase.storage
+      const { data: _data, error } = await supabasase.storage
         .from('Project_Pics')
         .list('', {
           limit: 1,
           search: fileName
         });
 
-      if (data && data.length > 0 && !error) {
+      if (_data && _data.length > 0 && !error) {
         // File exists, return the public URL
         const { data: urlData } = supabasase.storage
           .from('Project_Pics')
@@ -96,7 +96,7 @@ export const uploadProfilePicture = async (file: File, supabaseId: string): Prom
       .remove([fileName]);
 
     // Upload the new file
-    const { data, error } = await supabasase.storage
+    const { data: _data, error } = await supabasase.storage
       .from('Project_Pics')
       .upload(fileName, file, {
         cacheControl: '3600',
