@@ -26,8 +26,8 @@ export default function Header() {
         }}
       ></div>
       
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4 md:py-6">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center py-3 md:py-4 lg:py-3">
           {/* Logo */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
