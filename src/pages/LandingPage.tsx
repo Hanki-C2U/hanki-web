@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+<<<<<<< HEAD
 import AuthenticatedHeader from "../components/AuthenticatedHeader";
+=======
+import AuthenticatedLanding from "../components/AuthenticatedHeader";
+>>>>>>> 37e06af (fixed some import for what used to be AuthenticatedLanding that i changed into AuthenticatedHeader)
 import Hero from "../components/Hero";
 import HowItWorks from "../components/HowItWorks";
 import MentorShowcase from "../components/MentorShowcase";
