@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
-import AuthenticatedLanding from "../components/AuthenticatedLanding";
+import AuthenticatedLanding from "../components/AuthenticatedHeader";
 import Hero from "../components/Hero";
 import HowItWorks from "../components/HowItWorks";
 import MentorShowcase from "../components/MentorShowcase";
