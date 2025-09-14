@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import AuthHeader from "../components/AuthHeader";
 import { Lightbulb, CheckCircle, Search, Filter, ArrowLeft } from "lucide-react";
@@ -7,9 +7,22 @@ const InspirationPage = () => {
   const navigate = useNavigate();
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({
+    menteeName: "",
+    menteeRole: "",
+    menteeLocation: "",
+    mentorName: "",
+    mentorRole: "",
+    mentorLocation: "",
+    story: "",
+    outcomes: "",
+    industry: ""
+  });
+  const [localStories, setLocalStories] = useState([]);
 
-  // Success stories data (same as in MenteeDashboard but could be expanded)
-  const successStories = [
+  // Default hardcoded stories
+  const defaultStories = [
     {
       id: 1,
       mentee: {
@@ -107,11 +120,20 @@ const InspirationPage = () => {
     }
   ];
 
+  // Load stories from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem("sharedStories");
+    if (stored) setLocalStories(JSON.parse(stored));
+  }, []);
+
+  // Merge local stories with hardcoded ones
+  const allStories = [...(localStories || []), ...defaultStories];
+
   // Get all unique industries for filter dropdown
-  const industries = [...new Set(successStories.map(story => story.industry))];
+  const industries = [...new Set(allStories.map(story => story.industry))];
 
   // Filter stories based on search query and selected industry
-  const filteredStories = successStories.filter(story => {
+  const filteredStories = allStories.filter(story => {
     const matchesIndustry = selectedIndustry ? story.industry === selectedIndustry : true;
     const matchesSearch = searchQuery.toLowerCase() === "" ? true : (
       story.mentee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -123,10 +145,105 @@ const InspirationPage = () => {
     return matchesIndustry && matchesSearch;
   });
 
+  // Handle form input
+  const handleFormChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // Handle form submit
+  const handleShare = (e) => {
+    e.preventDefault();
+    const newStory = {
+      id: Date.now(),
+      mentee: {
+        name: form.menteeName,
+        role: form.menteeRole,
+        location: form.menteeLocation,
+        image: null
+      },
+      mentor: {
+        name: form.mentorName,
+        role: form.mentorRole,
+        location: form.mentorLocation,
+        image: null
+      },
+      story: form.story,
+      outcomes: form.outcomes.split("; ").filter(Boolean),
+      industry: form.industry,
+      featured: false
+    };
+    const updated = [newStory, ...localStories];
+    setLocalStories(updated);
+    localStorage.setItem("sharedStories", JSON.stringify(updated));
+    setShowModal(false);
+    setForm({
+      menteeName: "",
+      menteeRole: "",
+      menteeLocation: "",
+      mentorName: "",
+      mentorRole: "",
+      mentorLocation: "",
+      story: "",
+      outcomes: "",
+      industry: ""
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AuthHeader />
-
+      {/* Share Story Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 px-2">
+          <form
+            onSubmit={handleShare}
+            className="bg-white rounded-lg shadow-lg w-full max-w-md relative mx-auto p-4 sm:p-6"
+            style={{ maxHeight: '95vh', overflowY: 'auto' }}
+          >
+            <button type="button" onClick={() => setShowModal(false)} className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            <h2 className="text-lg sm:text-xl font-bold mb-4">Share Your Success Story</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Your Name</label>
+                <input name="menteeName" value={form.menteeName} onChange={handleFormChange} required className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Your Role</label>
+                <input name="menteeRole" value={form.menteeRole} onChange={handleFormChange} required className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Your Location</label>
+                <input name="menteeLocation" value={form.menteeLocation} onChange={handleFormChange} required className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Mentor Name</label>
+                <input name="mentorName" value={form.mentorName} onChange={handleFormChange} required className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Mentor Role</label>
+                <input name="mentorRole" value={form.mentorRole} onChange={handleFormChange} required className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Mentor Location</label>
+                <input name="mentorLocation" value={form.mentorLocation} onChange={handleFormChange} required className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-1">Industry</label>
+                <input name="industry" value={form.industry} onChange={handleFormChange} required className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-1">Story</label>
+                <textarea name="story" value={form.story} onChange={handleFormChange} required rows={3} className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-1">Key Outcomes <span className="text-xs text-gray-400">(separate with "; ")</span></label>
+                <input name="outcomes" value={form.outcomes} onChange={handleFormChange} required className="w-full border rounded px-3 py-2 text-sm" placeholder="e.g. Got a remote job; Improved skills" />
+              </div>
+            </div>
+            <button type="submit" className="w-full bg-emerald-600 text-white py-2 rounded hover:bg-emerald-700 font-semibold text-base">Share Story</button>
+          </form>
+        </div>
+      )}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center mb-6">
           <button
@@ -253,7 +370,7 @@ const InspirationPage = () => {
               Has mentorship helped you achieve significant milestones in your career? Share your journey to inspire others.
             </p>
             <button
-              onClick={() => navigate('/share-story')}
+              onClick={() => setShowModal(true)}
               className="px-5 py-2.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 inline-flex items-center"
             >
               Share Your Story
