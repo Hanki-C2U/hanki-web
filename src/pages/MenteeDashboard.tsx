@@ -509,12 +509,14 @@ const MenteeDashboard = () => {
 
   // Fetch past sessions for session history
   useEffect(() => {
+    let mounted = true; // guard to avoid state updates if component unmounted
+
     const fetchPastSessions = async () => {
-      if (userRole === 'mentee' && user?.id && pastSessions.length === 0) {
+      // Only fetch once when we have a mentee user; don't depend on `pastSessions`
+      if (userRole === 'mentee' && user?.id) {
         try {
           console.log('🔄 Fetching mentee session history...');
-          
-          // Fetch past sessions (completed or cancelled) in reverse chronological order
+
           const { data: pastSessionsData, error: pastSessionsError } = await supabasase
             .from('sessions')
             .select(`
@@ -533,9 +535,10 @@ const MenteeDashboard = () => {
 
           if (pastSessionsError) {
             console.error('❌ Error fetching past sessions:', pastSessionsError);
-          } else {
+          } else if (mounted) {
             console.log('📚 Fetched past sessions:', pastSessionsData?.length || 0, 'sessions found');
-            setPastSessions(pastSessionsData || []);
+            // Only set state if we have data and state is empty to avoid re-renders
+            setPastSessions((prev) => (prev.length === 0 ? (pastSessionsData || []) : prev));
           }
         } catch (error) {
           console.error('💥 Error fetching session history:', error);
@@ -544,7 +547,11 @@ const MenteeDashboard = () => {
     };
 
     fetchPastSessions();
-  }, [userRole, user?.id, pastSessions]); // Added pastSessions to prevent refetch if already loaded
+
+    return () => {
+      mounted = false;
+    };
+  }, [userRole, user?.id]); // run when role or user id changes
 
   // Update current time
   useEffect(() => {
