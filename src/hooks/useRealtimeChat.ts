@@ -6,7 +6,7 @@ interface Message {
   id: number
   conversationId: number
   senderId: string
-  senderRole: 'mentor' | 'mentee'
+  senderRole?: 'mentor' | 'mentee'
   content: string
   messageType: string
   isRead: boolean
@@ -165,7 +165,6 @@ function useRealtimeChat() {
         id: tempId,
         conversationId,
         senderId: user.id,
-        senderRole: userRole,
         content: messageContent,
         messageType: 'text',
         isRead: false,
@@ -177,14 +176,13 @@ function useRealtimeChat() {
       // Add to UI immediately for instant feedback
       setMessages(prev => [...prev, optimisticMessage])
 
-      // Send to database
+      // Send to database (do NOT include senderRole - column was removed server-side)
       const { data, error } = await supabasase
         .from('messages')
         .insert([
           {
             conversationId,
             senderId: user.id,
-            senderRole: userRole,
             content: messageContent,
             messageType: 'text'
           }
@@ -220,8 +218,10 @@ function useRealtimeChat() {
 
       // Replace optimistic message with real one from database
       if (data) {
+        // merge senderRole back in for UI since DB row doesn't have it
+        const returned = { ...(data as Message), senderRole: userRole }
         setMessages(prev => 
-          prev.map(msg => msg.id === tempId ? data as Message : msg)
+          prev.map(msg => msg.id === tempId ? returned : msg)
         )
       }
 

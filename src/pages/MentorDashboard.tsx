@@ -28,6 +28,7 @@ import { useAuthStore } from "../store/authStore";
 import { getMentorSessions, getMentorProfile, type SessionData } from "../services/mentorService";
 import { useLocation } from 'react-router';
 import { supabasase } from "../supabase_creds/supabase";
+import MessagingInterface from "../components/MessagingInterface";
 
 // Define types for mentor profile data - matching EditMentorProfile
 interface Experience {
@@ -104,7 +105,7 @@ interface Request {
 
 const MentorDashboard = () => {
   // Tabs for the profile view
-  const [activeTab, setActiveTab] = useState<'bio' | 'reviews' | 'schedule' | 'opportunities'>('bio');
+  const [activeTab, setActiveTab] = useState<'bio' | 'reviews' | 'schedule' | 'opportunities' | 'messages'>('bio');
   // State for the selected date in the calendar
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   // State to track current time for display
@@ -715,10 +716,24 @@ const MentorDashboard = () => {
                   >
                     Opportunities
                   </button>
+                  <button
+                    onClick={() => setActiveTab('messages')}
+                    className={`px-4 py-4 text-sm font-medium border-b-2 ${activeTab === 'messages'
+                      ? 'border-emerald-500 text-emerald-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                  >
+                    Messages
+                  </button>
                 </nav>
               </div>
 
               <div className="p-6">
+                {activeTab === 'messages' && (
+                  <div className="space-y-8">
+                    <MessagingInterface />
+                  </div>
+                )}
                 {activeTab === 'bio' && (
                   <div className="space-y-8">
                     {/* About Me */}
