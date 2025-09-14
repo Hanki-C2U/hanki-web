@@ -25,8 +25,9 @@ const MessagingInterface: React.FC<MessagingInterfaceProps> = ({ className = "" 
   )
 
   const handleConversationClick = (conversation: any) => {
-    if (conversation.otherParticipant?.id) {
-      navigate(`/chat/${conversation.otherParticipant.id}`)
+    if (conversation.id) {
+      // Navigate using the conversation id so ChatPage can load it directly
+      navigate(`/chat/${conversation.id}`)
     }
   }
 
