@@ -184,7 +184,7 @@ function useRealtimeChat() {
             conversationId,
             senderId: user.id,
             content: messageContent,
-            messageType: 'text'
+            messageType: 'TEXT'
           }
         ])
         .select()
