@@ -84,7 +84,7 @@ const MentorDiscovery = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
       {/* Header */}
       <AuthHeader />
 
@@ -161,7 +161,7 @@ const MentorDiscovery = () => {
         {/* Mentors Grid */}
         {loading ? (
           <div className="text-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-orange-600" />
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-emerald-600" />
             <p className="text-gray-600">Loading mentors...</p>
           </div>
         ) : error ? (
@@ -172,7 +172,7 @@ const MentorDiscovery = () => {
               <p className="text-gray-600 mb-4">{error}</p>
               <button 
                 onClick={() => window.location.reload()}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700"
               >
                 Try Again
               </button>
@@ -300,13 +300,13 @@ const MentorDiscovery = () => {
                     {/* Actions */}
                     <div className="flex gap-2">
                       <button
-                        className="flex-1 inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                        className="flex-1 inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                         onClick={() => navigate(`/mentor/${mentor.supabaseId}`)}
                       >
                         View Profile
                       </button>
                       <button
-                        className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                        className="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                         onClick={() => navigate(`/book-session/${mentor.supabaseId}`)}
                       >
                         Book Session
@@ -314,7 +314,7 @@ const MentorDiscovery = () => {
                     </div>
                     <div className="mt-2">
                       <button
-                        className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                        className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                         onClick={() => navigate(`/simple-chat/${mentor.supabaseId}`)}
                       >
                         <MessageCircle className="h-4 w-4" />
