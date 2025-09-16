@@ -328,6 +328,7 @@ const Onboarding = () => {
 
         const mentorInsertData = {
           ...userData,
+          password: 'OAUTH_USER',
           expertise: mentorData.expertise,
           experience: formatExperienceForDatabase(), // Use formatted work experience
           bio: currentData.bio, // Using 'bio' field name for mentor table
@@ -375,6 +376,7 @@ const Onboarding = () => {
 
         const menteeInsertData = {
           ...userData,
+          password: 'OAUTH_USER',
           Interests: menteeData.goals, // Using database column name 'Interests' (mapped from goals)
           bio: currentData.bio,
           Github: currentData.Github || null,

@@ -33,15 +33,15 @@ interface SessionState {
 const useSessionStore = create<SessionState>()(
   persist(
     (set, get) => ({
-      // Initial state
+      // Initial state when logged out
       user: null,
       session: null,
       isAuthenticated: false,
       isLoading: true,
       userRole: null,
-      roleLoading: false, // Changed back to false as initial state
+      roleLoading: false, 
       
-      // Actions
+      // Setting sesh from 
       setSession: (session) => {
         set({
           session,
@@ -87,7 +87,7 @@ const useSessionStore = create<SessionState>()(
           // Sign out from Supabase
           await supabasase.auth.signOut();
           
-          // Clear the session store
+          // Wipe out the store 
           set({
             user: null,
             session: null,
@@ -110,7 +110,7 @@ const useSessionStore = create<SessionState>()(
         }
       },
       
-      // Check user role in database
+      // role in database
       checkUserRole: async (userId: string) => {
         try {
           set({ roleLoading: true });
@@ -130,10 +130,10 @@ const useSessionStore = create<SessionState>()(
           }
           
           set({ userRole: role, roleLoading: false });
-          console.log('🔍 User role determined:', role);
+          console.log('User role :', role);
           return role;
         } catch (error) {
-          console.error('❌ Error checking user role:', error);
+          console.error(' Error checking user role:', error);
           set({ userRole: null, roleLoading: false });
           return null;
         }
@@ -166,7 +166,7 @@ const useSessionStore = create<SessionState>()(
       },
     }),
     {
-      name: 'session-store', // Storage key
+      name: 'session-store', 
       partialize: (state) => ({
         user: state.user,
         session: state.session,

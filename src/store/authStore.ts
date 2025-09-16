@@ -11,10 +11,9 @@ interface AuthState {
   userRole: UserRole;
   isLoading: boolean;
   roleLoading: boolean;
-  lastRoleCheck: number | null; // Timestamp of last role check
-  hasHydrated: boolean; // Track if persistence has loaded
+  lastRoleCheck: number | null; 
+  hasHydrated: boolean; // vals from Lstorage laoded ??
   
-  // Actions
   setSession: (session: Session | null) => void;
   setUser: (user: User | null) => void;
   setUserRole: (role: UserRole) => void;
@@ -38,27 +37,26 @@ export const useAuthStore = create<AuthState>()(
       isLoading: true,
       roleLoading: false,
       lastRoleCheck: null,
-      hasHydrated: false,
+      hasHydrated: false, // Vals loaded from Lstorg
 
       setSession: (session) => {
-        console.log('🔥 AuthStore: Setting session', session?.user?.id);
+        console.log(' Setting session', session?.user?.id);
         set({ 
           session, 
           user: session?.user || null 
         });
-        console.log('✅ AuthStore: Session set successfully');
+        console.log(' Session set successfully');
       },
 
       setUser: (user) => set({ user }),
 
       setUserRole: (userRole) => {
-        console.log('🎯 AuthStore: Setting user role:', userRole);
+        console.log('Setting user role:', userRole);
         set({ 
           userRole, 
           roleLoading: false,
           lastRoleCheck: Date.now()
         });
-        console.log('✅ AuthStore: User role set successfully');
       },
 
       setIsLoading: (isLoading) => set({ isLoading }),
@@ -75,7 +73,7 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
           roleLoading: false,
           lastRoleCheck: null,
-          hasHydrated: true, // Keep hydrated as true when clearing
+          hasHydrated: true, 
         });
       },
 
@@ -85,7 +83,6 @@ export const useAuthStore = create<AuthState>()(
       if (error) {
         console.error('Error signing out:', error);
       }
-      // Clear the store
       get().clearSession();
     } catch (error) {
       console.error('Unexpected error during sign out:', error);
@@ -95,16 +92,15 @@ export const useAuthStore = create<AuthState>()(
   initializeAuth: async () => {
     const currentState = get();
     
-    console.log('🚀 initializeAuth called. Current state:', {
+    console.log('initializeAuth called. Current state:', {
       hasUser: !!currentState.user,
       hasSession: !!currentState.session,
       isLoading: currentState.isLoading,
       hasHydrated: currentState.hasHydrated
     });
     
-    // If we already have a valid user and session, and we're not loading, don't re-initialize
+    // 
     if (currentState.user && currentState.session && !currentState.isLoading && currentState.hasHydrated) {
-      console.log('✅ Auth already initialized and valid, skipping');
       return;
     }
 
