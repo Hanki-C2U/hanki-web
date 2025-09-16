@@ -79,7 +79,8 @@ export async function getMentorProfile(supabaseId: string): Promise<MentorData |
 
 export async function getMentorSessions(supabaseId: string): Promise<SessionData[]> {
   try {
-    const { data, error } = await supabasase
+    // First, get sessions where the mentor is the primary mentor
+    const { data: primarySessions, error: primaryError } = await supabasase
       .from('sessions')
       .select(`
         *,
@@ -92,12 +93,41 @@ export async function getMentorSessions(supabaseId: string): Promise<SessionData
       .eq('mentorId', supabaseId)
       .order('sessionDate', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching mentor sessions:', error);
+    if (primaryError) {
+      console.error('Error fetching primary mentor sessions:', primaryError);
       return [];
     }
 
-    return data || [];
+    // Then, get sessions where the mentor is an additional participant
+    const { data: additionalSessions, error: additionalError } = await supabasase
+      .from('sessions')
+      .select(`
+        *,
+        mentee:menteeId (
+          first_name,
+          last_name,
+          profile_picture
+        )
+      `)
+      .contains('additionalParticipants', [supabaseId])
+      .order('sessionDate', { ascending: true });
+
+    if (additionalError) {
+      console.error('Error fetching additional participant sessions:', additionalError);
+      // Return primary sessions even if additional sessions fail
+      return primarySessions || [];
+    }
+
+    // Combine both results and remove duplicates
+    const allSessions = [...(primarySessions || []), ...(additionalSessions || [])];
+    const uniqueSessions = allSessions.filter((session, index, self) =>
+      index === self.findIndex(s => s.id === session.id)
+    );
+
+    // Sort by session date
+    uniqueSessions.sort((a, b) => new Date(a.sessionDate).getTime() - new Date(b.sessionDate).getTime());
+
+    return uniqueSessions;
   } catch (error) {
     console.error('Unexpected error fetching mentor sessions:', error);
     return [];

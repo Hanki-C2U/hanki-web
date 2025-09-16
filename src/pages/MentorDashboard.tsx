@@ -638,32 +638,50 @@ const MentorDashboard = () => {
               </div>
 
               {upcomingSessions.length > 0 ? (
-                <div
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                  <div>
-                    <h4 className="font-medium">{upcomingSessions[0].mentee}</h4>
-                    <p className="text-sm text-gray-600">{upcomingSessions[0].topic}</p>
-                    <p className="text-xs text-gray-500">
-                      {isToday(parseISO(upcomingSessions[0].date)) ? "Today" : format(parseISO(upcomingSessions[0].date), 'EEE, MMM d')},
-                      {upcomingSessions[0].startTime} • {upcomingSessions[0].duration}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => navigate(`/session/${upcomingSessions[0].id}`)}
-                    className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 hover:scale-105 cursor-pointer"
-                  >
-                    <Video className="h-4 w-4" />
-                    <span>Join</span>
-                  </button>
-                  {dbSessions.find(s => s.id === upcomingSessions[0].id)?.menteeId && (
-                    <button
-                      onClick={() => navigate(`/simple-chat/${dbSessions.find(s => s.id === upcomingSessions[0].id)!.menteeId}`)}
-                      className="ml-3 inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      Message
-                    </button>
-                  )}
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {upcomingSessions
+                    .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime())
+                    .map((session) => {
+                      const sessionDate = parseISO(session.date);
+                      const isTodaySession = isToday(sessionDate);
+                      const isTomorrowSession = isSameDay(sessionDate, new Date(new Date().setDate(new Date().getDate() + 1)));
+                      let displayDate = format(sessionDate, 'EEE, MMM d');
+                      if (isTodaySession) displayDate = "Today";
+                      if (isTomorrowSession) displayDate = "Tomorrow";
+
+                      return (
+                        <div
+                          key={session.id}
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                        >
+                          <div>
+                            <h4 className="font-medium">{session.mentee}</h4>
+                            <p className="text-sm text-gray-600">{session.topic}</p>
+                            <p className="text-xs text-gray-500">
+                              {displayDate}, {session.startTime} • {session.duration}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => navigate(`/session/${session.id}`)}
+                              className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 hover:scale-105 cursor-pointer"
+                            >
+                              <Video className="h-4 w-4" />
+                              <span>Join</span>
+                            </button>
+                            {dbSessions.find(s => s.id === session.id)?.menteeId && (
+                              <button
+                                onClick={() => navigate(`/simple-chat/${dbSessions.find(s => s.id === session.id)!.menteeId}`)}
+                                className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50"
+                              >
+                                <MessageCircle className="h-4 w-4" />
+                                Message
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               ) : (
                 <div className="text-center py-4 bg-gray-50 rounded-lg">
@@ -912,7 +930,7 @@ const MentorDashboard = () => {
                               hasSession: 'rdp-day_has_session',
                             }}
                             modifiers={{
-                              hasSession: getDaysWithSessions(upcomingSessions),
+                              hasSession: getDaysWithSessions(allSessions),
                             }}
                             modifiersStyles={{
                               hasSession: {
@@ -949,7 +967,7 @@ const MentorDashboard = () => {
                         </div>
 
                         <div className="space-y-3">
-                          {upcomingSessions
+                          {allSessions
                             .filter(session => isSameDay(parseISO(session.date), selectedDate))
                             .map((session) => (
                               <div key={session.id} className="border rounded-lg p-3">
@@ -971,7 +989,7 @@ const MentorDashboard = () => {
                               </div>
                             ))}
 
-                          {upcomingSessions.filter(session => isSameDay(parseISO(session.date), selectedDate)).length === 0 && (
+                          {allSessions.filter(session => isSameDay(parseISO(session.date), selectedDate)).length === 0 && (
                             <div className="text-center py-8 text-gray-500">
                               <Clock className="h-10 w-10 mx-auto text-gray-300 mb-2" />
                               <p>No sessions scheduled for this day</p>
@@ -983,11 +1001,11 @@ const MentorDashboard = () => {
 
                     {/* Upcoming sessions */}
                     <div className="mb-8">
-                      <h3 className="text-lg font-semibold mb-4">Upcoming Sessions</h3>
+                      <h3 className="text-lg font-semibold mb-4">All Sessions</h3>
 
-                      {upcomingSessions.length > 0 ? (
+                      {allSessions.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {upcomingSessions
+                          {allSessions
                             .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime())
                             .map((session) => {
                               // Format date
@@ -1032,7 +1050,7 @@ const MentorDashboard = () => {
                       ) : (
                         <div className="text-center py-8">
                           <Calendar className="h-12 w-12 mx-auto text-gray-300 mb-3" />
-                          <p className="text-gray-500">No upcoming sessions</p>
+                          <p className="text-gray-500">No sessions found</p>
                         </div>
                       )}
                     </div>

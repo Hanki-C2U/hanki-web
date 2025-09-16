@@ -823,7 +823,7 @@ const MenteeDashboard = () => {
                     <div className="text-xs text-gray-600">Sessions</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-semibold text-emerald-600">{mentors.length}</div>
+                    <div className="text-2xl font-semibold text-emerald-600">0</div>
                     <div className="text-xs text-gray-600">Mentors</div>
                   </div>
                 </div>

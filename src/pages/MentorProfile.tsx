@@ -83,7 +83,7 @@ const MentorProfile = () => {
         const { data, error } = await supabasase
           .from('mentor')
           .select('*')
-          .eq('id', id)
+          .eq('supabaseId',id)
           .single();
 
         if (error) {
