@@ -37,7 +37,7 @@ const MenteeDashboard = () => {
   const { userRole, roleLoading, user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<'profile' | 'goals' | 'skills' | 'inspiration' | 'messages'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'goals' | 'skills' | 'inspiration' | 'messages' | 'sessions'>('profile');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState<string>("");
   const [username, setUserName] = useState('');
@@ -433,18 +433,27 @@ const MenteeDashboard = () => {
     );
   }
 
-  // Fetch upcoming sessions when role is confirmed as mentee
+  // Fetch all sessions for the mentee and update when session count changes
   useEffect(() => {
-    const fetchUpcomingSessions = async () => {
-      // Only fetch if we have the required auth state AND haven't already loaded sessions
-      if (userRole === 'mentee' && user?.id && upcomingSessions.length === 0) {
+    const fetchAllSessions = async () => {
+      // Only fetch if we have the required auth state
+      if (userRole === 'mentee' && user?.id) {
         try {
           setSessionsLoading(true);
-          
-          // Use today's date string for better date comparison
-          const today = new Date().toISOString().split('T')[0];
-          
-          const { data: sessions, error } = await supabasase
+          console.log('🔄 Fetching all mentee sessions...');
+          console.log('👤 Current user:', { id: user.id, role: userRole });
+
+          // First, let's check if there are any sessions at all
+          const { data: allSessionsCheck, error: checkError } = await supabasase
+            .from('sessions')
+            .select('id, menteeId, mentorId, title, status, sessionDate')
+            .limit(5);
+
+          console.log('🔍 All sessions in DB (first 5):', allSessionsCheck);
+          console.log('🔍 Check error:', checkError);
+
+          // Fetch all sessions the mentee is involved in (both upcoming and past)
+          const { data: allSessionsData, error: sessionsError } = await supabasase
             .from('sessions')
             .select(`
               *,
@@ -452,41 +461,123 @@ const MenteeDashboard = () => {
                 supabaseId,
                 first_name,
                 last_name,
+                profile_picture,
                 expertise
               )
             `)
             .eq('menteeId', user.id)
-            .gte('sessionDate', today)
-            .order('sessionDate', { ascending: true })
-            .order('startTime', { ascending: true })
-            .limit(10);
+            .order('sessionDate', { ascending: false })
+            .order('startTime', { ascending: false });
 
-          console.log('🔍 Session query params:', {
-            menteeId: user.id,
-            today,
-            userIdType: typeof user.id
+          console.log('🔍 Query details:', {
+            table: 'sessions',
+            filter: { menteeId: user.id },
+            userIdType: typeof user.id,
+            userIdLength: user.id?.length
           });
 
-          if (error) {
-            console.error('❌ Error fetching sessions:', error);
+          if (sessionsError) {
+            console.error('❌ Error fetching all sessions:', sessionsError);
+            console.error('❌ Error details:', {
+              message: sessionsError.message,
+              details: sessionsError.details,
+              hint: sessionsError.hint
+            });
           } else {
-            console.log('📅 Fetched mentee sessions:', sessions?.length || 0, 'sessions found');
-            console.log('📋 Session details:', sessions);
-            setUpcomingSessions(sessions || []);
+            console.log('📅 Fetched all mentee sessions:', allSessionsData?.length || 0, 'sessions found');
+            console.log('📋 Session details:', allSessionsData);
+
+            // Separate sessions into upcoming and past based on current date and time
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
+
+            console.log('📅 Current date/time for filtering:', { today, currentTime, now: now.toISOString() });
+
+            const upcoming = [];
+            const past = [];
+
+            for (const session of allSessionsData || []) {
+              // Handle sessionDate properly - it might be a Date object or ISO string
+              let sessionDateStr = '';
+              let sessionTimeStr = session.startTime || '00:00';
+
+              if (session.sessionDate instanceof Date) {
+                sessionDateStr = session.sessionDate.toISOString().split('T')[0];
+              } else if (typeof session.sessionDate === 'string') {
+                // If it's an ISO string, extract just the date part
+                sessionDateStr = session.sessionDate.split('T')[0];
+              } else {
+                console.warn('⚠️ Unexpected sessionDate format:', session.sessionDate);
+                continue; // Skip this session
+              }
+
+              console.log('🔍 Processing session:', {
+                id: session.id,
+                title: session.title,
+                sessionDate: session.sessionDate,
+                sessionDateStr,
+                sessionTime: sessionTimeStr,
+                status: session.status,
+                isUpcoming: sessionDateStr > today || (sessionDateStr === today && sessionTimeStr > currentTime)
+              });
+
+              // Check if session is upcoming
+              if (sessionDateStr > today ||
+                  (sessionDateStr === today && sessionTimeStr > currentTime)) {
+                upcoming.push(session);
+                console.log('➡️ Added to upcoming:', session.id);
+              } else {
+                // Include ALL past sessions regardless of status for now
+                past.push(session);
+                console.log('➡️ Added to past:', session.id, 'status:', session.status);
+              }
+            }
+
+            console.log('📊 Session categorization:', {
+              total: allSessionsData?.length || 0,
+              upcoming: upcoming.length,
+              past: past.length
+            });
+
+            // Sort upcoming sessions by date/time ascending
+            upcoming.sort((a, b) => {
+              const dateCompare = a.sessionDate.localeCompare(b.sessionDate);
+              if (dateCompare !== 0) return dateCompare;
+              return a.startTime.localeCompare(b.startTime);
+            });
+
+            // Sort past sessions by date/time descending
+            past.sort((a, b) => {
+              const dateCompare = b.sessionDate.localeCompare(a.sessionDate);
+              if (dateCompare !== 0) return dateCompare;
+              return b.startTime.localeCompare(a.startTime);
+            });
+
+            setUpcomingSessions(upcoming);
+            setPastSessions(past);
+
+            console.log('✅ Final session counts:', {
+              upcoming: upcoming.length,
+              past: past.length,
+              total: (allSessionsData || []).length
+            });
           }
         } catch (error) {
-          console.error('Error fetching sessions:', error);
+          console.error('💥 Error fetching sessions:', error);
         } finally {
           setSessionsLoading(false);
         }
+      } else {
+        console.log('⏭️ Skipping session fetch:', { userRole, hasUser: !!user, userId: user?.id });
       }
     };
-    
-    fetchUpcomingSessions();
+
+    fetchAllSessions();
 
     // Set up real-time subscription for session updates
     const channel = supabasase
-      .channel('mentee-sessions')
+      .channel('mentee-all-sessions')
       .on(
         'postgres_changes',
         {
@@ -496,8 +587,13 @@ const MenteeDashboard = () => {
           filter: `menteeId=eq.${user?.id}`
         },
         (payload) => {
-          console.log('📅 Session update received:', payload);
-          fetchUpcomingSessions(); // Refetch sessions when changes occur
+          console.log('� Session update received:', payload);
+          // Only refetch if the session count might have changed
+          if (payload.eventType === 'INSERT' || payload.eventType === 'DELETE' ||
+              (payload.eventType === 'UPDATE' && payload.new?.status !== payload.old?.status)) {
+            console.log('� Refetching sessions due to count/status change');
+            fetchAllSessions();
+          }
         }
       )
       .subscribe();
@@ -505,53 +601,7 @@ const MenteeDashboard = () => {
     return () => {
       supabasase.removeChannel(channel);
     };
-  }, [userRole, user?.id]); // Removed upcomingSessions from dependencies to prevent infinite loop
-
-  // Fetch past sessions for session history
-  useEffect(() => {
-    let mounted = true; // guard to avoid state updates if component unmounted
-
-    const fetchPastSessions = async () => {
-      // Only fetch once when we have a mentee user; don't depend on `pastSessions`
-      if (userRole === 'mentee' && user?.id) {
-        try {
-          console.log('🔄 Fetching mentee session history...');
-
-          const { data: pastSessionsData, error: pastSessionsError } = await supabasase
-            .from('sessions')
-            .select(`
-              *,
-              mentor:mentorId (
-                first_name,
-                last_name,
-                profile_picture
-              )
-            `)
-            .eq('menteeId', user.id)
-            .lt('sessionDate', new Date().toISOString().split('T')[0])
-            .in('status', ['COMPLETED', 'CANCELLED', 'NO_SHOW'])
-            .order('sessionDate', { ascending: false })
-            .order('startTime', { ascending: false });
-
-          if (pastSessionsError) {
-            console.error('❌ Error fetching past sessions:', pastSessionsError);
-          } else if (mounted) {
-            console.log('📚 Fetched past sessions:', pastSessionsData?.length || 0, 'sessions found');
-            // Only set state if we have data and state is empty to avoid re-renders
-            setPastSessions((prev) => (prev.length === 0 ? (pastSessionsData || []) : prev));
-          }
-        } catch (error) {
-          console.error('💥 Error fetching session history:', error);
-        }
-      }
-    };
-
-    fetchPastSessions();
-
-    return () => {
-      mounted = false;
-    };
-  }, [userRole, user?.id]); // run when role or user id changes
+  }, [userRole, user?.id]); // Only depend on user role and ID changes
 
   // Update current time
   useEffect(() => {
@@ -992,6 +1042,15 @@ const MenteeDashboard = () => {
                   >
                     Messages
                   </button>
+                  <button
+                    onClick={() => setActiveTab('sessions')}
+                    className={`px-4 py-4 text-sm font-medium border-b-2 ${activeTab === 'sessions'
+                      ? 'border-emerald-500 text-emerald-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                  >
+                    Sessions
+                  </button>
                 </nav>
               </div>
 
@@ -1245,197 +1304,245 @@ const MenteeDashboard = () => {
                     <MessagingInterface className="w-full" />
                   </div>
                 )}
+
+                {activeTab === 'sessions' && (
+                  <div>
+                    {/* All Sessions Content */}
+                    <div className="space-y-8">
+                      {/* Compact Sessions Summary - Moved to top */}
+                      <div className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg p-4 border border-emerald-200">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-sm font-semibold flex items-center gap-2 text-emerald-800">
+                              <Calendar className="h-4 w-4 text-emerald-600" />
+                              Sessions Overview
+                            </h3>
+                            <p className="text-xs text-emerald-700 mt-1">
+                              {upcomingSessions.length} upcoming • {pastSessions.length} completed
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            {upcomingSessions.length > 0 && upcomingSessions[0].status === 'ACCEPTED' && (
+                              <button
+                                onClick={() => navigate(`/session/${upcomingSessions[0].id}`)}
+                                className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 flex items-center gap-1"
+                              >
+                                <Video className="h-3 w-3" />
+                                Join Next
+                              </button>
+                            )}
+                            <button
+                              onClick={() => navigate('/discover-mentors')}
+                              className="px-3 py-1.5 bg-emerald-600 text-white text-xs rounded-md hover:bg-emerald-700"
+                            >
+                              Book New
+                            </button>
+                          </div>
+                        </div>
+
+                        {upcomingSessions.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-emerald-200">
+                            <p className="text-xs font-medium text-emerald-800 mb-2">Next Session:</p>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{upcomingSessions[0].title}</p>
+                                <p className="text-xs text-emerald-700">
+                                  with {upcomingSessions[0].mentor?.first_name} {upcomingSessions[0].mentor?.last_name}
+                                </p>
+                                <p className="text-xs text-gray-600">
+                                  {new Date(upcomingSessions[0].sessionDate).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric'
+                                  })} at {upcomingSessions[0].startTime}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* All Sessions Section */}
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                          <Calendar className="h-5 w-5 text-emerald-600" />
+                          All Sessions
+                        </h3>
+
+                        {sessionsLoading ? (
+                          <div className="text-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+                            <p className="text-gray-600">Loading all sessions...</p>
+                          </div>
+                        ) : (upcomingSessions.length > 0 || pastSessions.length > 0) ? (
+                          <div className="space-y-4">
+                            {/* Combine and sort all sessions by date (most recent first) */}
+                            {[...upcomingSessions, ...pastSessions]
+                              .sort((a, b) => {
+                                // Sort by date descending (most recent first)
+                                const dateCompare = new Date(b.sessionDate).getTime() - new Date(a.sessionDate).getTime();
+                                if (dateCompare !== 0) return dateCompare;
+                                // If same date, sort by time descending
+                                return b.startTime.localeCompare(a.startTime);
+                              })
+                              .map((session) => {
+                                // Check if session is upcoming or past
+                                const now = new Date();
+                                const sessionDateTime = new Date(`${session.sessionDate}T${session.startTime}`);
+                                const isUpcoming = sessionDateTime > now;
+
+                                return (
+                                  <div key={session.id} className={`flex items-center justify-between p-4 border rounded-lg transition-colors ${
+                                    isUpcoming
+                                      ? 'hover:bg-gray-50 border-emerald-200 bg-emerald-50/30'
+                                      : 'hover:bg-gray-100 bg-gray-50 border-gray-200'
+                                  }`}>
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <h4 className="font-medium text-gray-900">{session.title}</h4>
+                                        {isUpcoming && (
+                                          <span className="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
+                                            Upcoming
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-sm text-emerald-600 font-medium">
+                                        with {session.mentor?.first_name} {session.mentor?.last_name}
+                                      </p>
+                                      {session.mentor?.expertise && session.mentor.expertise.length > 0 && (
+                                        <p className="text-xs text-gray-600">
+                                          {session.mentor.expertise.join(', ')}
+                                        </p>
+                                      )}
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        📅 {new Date(session.sessionDate).toLocaleDateString('en-US', {
+                                          weekday: 'long',
+                                          month: 'short',
+                                          day: 'numeric',
+                                          year: 'numeric'
+                                        })} ⏰ {session.startTime} - {session.endTime}
+                                      </p>
+                                      {session.description && (
+                                        <p className="text-xs text-gray-600 mt-1 italic">"{session.description}"</p>
+                                      )}
+                                      <div className="flex items-center gap-2 mt-2">
+                                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                                          session.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                          session.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                                          session.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                                          session.status === 'COMPLETED' ? 'bg-blue-100 text-blue-800' :
+                                          session.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
+                                          session.status === 'NO_SHOW' ? 'bg-gray-100 text-gray-800' :
+                                          'bg-gray-100 text-gray-800'
+                                        }`}>
+                                          {session.status === 'PENDING' ? '⏳ Pending Approval' :
+                                           session.status === 'ACCEPTED' ? '✅ Confirmed' :
+                                           session.status === 'REJECTED' ? '❌ Declined' :
+                                           session.status === 'COMPLETED' ? '✨ Completed' :
+                                           session.status === 'CANCELLED' ? '❌ Cancelled' :
+                                           session.status === 'NO_SHOW' ? '👻 No Show' :
+                                           session.status}
+                                        </span>
+                                        {session.status === 'PENDING' && (
+                                          <span className="text-xs text-gray-500">Waiting for mentor response</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={() => navigate(`/session/${session.id}`)}
+                                        className={`inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                                          session.status === 'ACCEPTED'
+                                            ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
+                                            : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+                                        }`}
+                                        title={isUpcoming ? "Join video session" : "Rejoin video session"}
+                                      >
+                                        <Video className="h-4 w-4" />
+                                        {isUpcoming ? 'Join Session' : 'Rejoin'}
+                                      </button>
+                                      <button
+                                        onClick={() => navigate(`/simple-chat/${session.mentorId}`)}
+                                        className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                                      >
+                                        <MessageCircle className="h-4 w-4" />
+                                        Chat
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 bg-gray-50 rounded-lg">
+                            <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                            <p className="text-gray-500 mb-2">No sessions found</p>
+                            <p className="text-sm text-gray-400 mb-4">Book your first session to get started on your mentorship journey</p>
+                            <button
+                              onClick={() => navigate('/discover-mentors')}
+                              className="inline-flex items-center justify-center gap-2 h-10 px-6 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                            >
+                              <Search className="h-4 w-4" />
+                              Discover Mentors
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Book More Sessions CTA */}
+                      <div className="text-center pt-6 border-t">
+                        <button
+                          onClick={() => navigate('/discover-mentors')}
+                          className="inline-flex items-center justify-center gap-2 h-10 px-6 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                        >
+                          <Search className="h-4 w-4" />
+                          Book More Sessions
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Upcoming Sessions */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-emerald-600" />
-                Upcoming Sessions
-              </h3>
 
-              {sessionsLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading upcoming sessions...</p>
-                </div>
-              ) : upcomingSessions.length > 0 ? (
-                <div className="space-y-4">
-                  {upcomingSessions.map((session) => (
-                    <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{session.title}</h4>
-                        <p className="text-sm text-emerald-600 font-medium">
-                          with {session.mentor?.first_name} {session.mentor?.last_name}
-                        </p>
-                        {session.mentor?.expertise && session.mentor.expertise.length > 0 && (
-                          <p className="text-xs text-gray-600">
-                            {session.mentor.expertise.join(', ')}
-                          </p>
-                        )}
-                        <p className="text-xs text-gray-500 mt-1">
-                          📅 {new Date(session.sessionDate).toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            month: 'short', 
-                            day: 'numeric',
-                            year: 'numeric'
-                          })} ⏰ {session.startTime} - {session.endTime}
-                        </p>
-                        {session.description && (
-                          <p className="text-xs text-gray-600 mt-1 italic">"{session.description}"</p>
-                        )}
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                            session.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                            session.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
-                            session.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                            session.status === 'COMPLETED' ? 'bg-blue-100 text-blue-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {session.status === 'PENDING' ? '⏳ Pending Approval' :
-                             session.status === 'ACCEPTED' ? '✅ Confirmed' :
-                             session.status === 'REJECTED' ? '❌ Declined' :
-                             session.status === 'COMPLETED' ? '✨ Completed' :
-                             session.status}
-                          </span>
-                          {session.status === 'PENDING' && (
-                            <span className="text-xs text-gray-500">Waiting for mentor response</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        {session.status === 'ACCEPTED' && (
-                          <button
-                            onClick={() => navigate(`/session/${session.id}`)}
-                            className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                            title="Join video session"
-                          >
-                            <Video className="h-4 w-4" />
-                            Join Session
-                          </button>
-                        )}
-                        <button 
-                          onClick={() => navigate(`/simple-chat/${session.mentorId}`)}
-                          className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-                        >
-                          <MessageCircle className="h-4 w-4" />
-                          Chat
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-6 bg-gray-50 rounded-lg">
-                  <Calendar className="h-10 w-10 mx-auto text-gray-400 mb-2" />
-                  <p className="text-gray-500">No upcoming sessions</p>
-                  <button 
-                    onClick={() => navigate('/discover-mentors')}
-                    className="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
-                  >
-                    Book a Session
-                  </button>
-                </div>
-              )}
 
-              {upcomingSessions.length > 0 && (
-                <button 
-                  onClick={() => navigate('/discover-mentors')}
-                  className="w-full mt-4 inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-                >
-                  <Search className="h-4 w-4" />
-                  Book More Sessions
-                </button>
-              )}
-            </div>
           </div>
 
-          {/* Session History */}
-          <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-emerald-600" />
-                Session History
-              </h3>
-
-              {sessionsLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading session history...</p>
-                </div>
-              ) : pastSessions.length > 0 ? (
-                <div className="space-y-4">
-                  {pastSessions.slice(0, 5).map((session) => (
-                    <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{session.title}</h4>
-                        <p className="text-sm text-emerald-600 font-medium">
-                          with {session.mentor?.first_name} {session.mentor?.last_name}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          📅 {new Date(session.sessionDate).toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            month: 'short', 
-                            day: 'numeric',
-                            year: 'numeric'
-                          })} ⏰ {session.startTime} - {session.endTime}
-                        </p>
-                        {session.description && (
-                          <p className="text-xs text-gray-600 mt-1 italic">"{session.description}"</p>
-                        )}
-                        <div className="flex items-center gap-3 mt-2">
-                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                            session.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                            session.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
-                            session.status === 'NO_SHOW' ? 'bg-gray-100 text-gray-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {session.status === 'COMPLETED' ? '✨ Completed' :
-                             session.status === 'CANCELLED' ? '❌ Cancelled' :
-                             session.status === 'NO_SHOW' ? '👻 No Show' :
-                             session.status}
-                          </span>
-                          {session.mentorRating && (
-                            <div className="flex items-center gap-1">
-                              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                              <span className="text-xs text-gray-600">{session.mentorRating}/5 rating from mentor</span>
-                            </div>
-                          )}
-                        </div>
-                        {session.mentorReview && (
-                          <p className="text-xs text-gray-600 mt-2 italic">Mentor feedback: "{session.mentorReview}"</p>
-                        )}
-                        {session.notes && (
-                          <p className="text-xs text-gray-600 mt-1">📝 Notes: {session.notes}</p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={() => navigate(`/simple-chat/${session.mentorId}`)}
-                          className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-                        >
-                          <MessageCircle className="h-4 w-4" />
-                          Chat
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-6 bg-gray-50 rounded-lg">
-                  <TrendingUp className="h-10 w-10 mx-auto text-gray-400 mb-2" />
-                  <p className="text-gray-500">No session history yet</p>
-                  <p className="text-xs text-gray-400">Your completed sessions will appear here</p>
-                </div>
-              )}
-
-              {pastSessions.length > 5 && (
-                <button className="w-full mt-4 inline-flex items-center justify-center gap-2 h-10 px-4 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                  View All Session History ({pastSessions.length} total)
-                </button>
-              )}
+          {/* Recent Activity - Compact */}
+          <div className="bg-white rounded-lg shadow-sm p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-emerald-600" />
+                  Recent Activity
+                </h3>
+                <p className="text-xs text-gray-600 mt-1">
+                  {pastSessions.length > 0 ? `Last session: ${new Date(pastSessions[0].sessionDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'No completed sessions yet'}
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveTab('sessions')}
+                className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs rounded-md hover:bg-gray-50"
+              >
+                View History
+              </button>
             </div>
+
+            {pastSessions.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <p className="text-xs text-gray-600">
+                    {pastSessions[0].title} with {pastSessions[0].mentor?.first_name} {pastSessions[0].mentor?.last_name}
+                  </p>
+                </div>
+                {pastSessions.length > 1 && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    +{pastSessions.length - 1} more completed sessions
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

@@ -136,7 +136,6 @@ model sessions {
   mentee                 Mentee        @relation(fields: [menteeId], references: [supabaseId])
   mentor                 Mentor        @relation(fields: [mentorId], references: [supabaseId])
 
-  // Ensure only one session per time slot globally (across all mentors and mentees)
   @@unique([sessionDate, startTime])
   @@map("sessions")
 }
