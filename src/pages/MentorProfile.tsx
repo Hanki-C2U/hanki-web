@@ -118,6 +118,7 @@ const MentorProfile = () => {
     // Use database data where available, fallback to mock data for missing fields
     return {
       id: mentorData.id,
+      supabaseId: mentorData.supabaseId, // Add this line
       name: `${mentorData.first_name} ${mentorData.last_name}`,
       title: "Software Engineer", // Mock - not in schema
       company: "Tech Company", // Mock - not in schema
@@ -397,7 +398,7 @@ const MentorProfile = () => {
                       : 'bg-emerald-500 text-white hover:bg-emerald-600'
                       }`}
                     disabled={!selectedTimeSlot}
-                    onClick={() => navigate(`/book-session/${mentor.id}?slot=${selectedTimeSlot}`)}
+                    onClick={() => navigate(`/book-session/${mentor.supabaseId}?slot=${selectedTimeSlot}`)}
                   >
                     Book Selected Time
                   </button>

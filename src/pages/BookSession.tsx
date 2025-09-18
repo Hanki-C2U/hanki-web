@@ -87,10 +87,10 @@ const BookSession = () => {
 
   // Use useMemo to prevent arrays from being recreated on each render
   const availableDates = useMemo(() => [
-    { date: "2025-09-08", label: "Mon, Sep 8" },
-    { date: "2025-09-10", label: "Wed, Sep 10" }, 
-    { date: "2025-09-12", label: "Fri, Sep 12" },
-    { date: "2025-09-15", label: "Mon, Sep 15" }
+    { date: "2025-09-18", label: "Mon, Sep 18" },
+    { date: "2025-09-19", label: "Wed, Sep 19" }, 
+    { date: "2025-09-22", label: "Fri, Sep 22" },
+    { date: "2025-09-25", label: "Mon, Sep 25" }
   ], []);
 
   const timeSlots = useMemo(() => [
