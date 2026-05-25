@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { User, LogOut } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { startDemoSession } from "../lib/demoSession";
