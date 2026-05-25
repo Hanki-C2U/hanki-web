@@ -1,6 +1,15 @@
 import { Button } from "./ui/Button";
+import { useNavigate } from "react-router";
+import { startDemoSession } from "../lib/demoSession";
 
 export default function Hero() {
+  const navigate = useNavigate();
+
+  const openDemo = () => {
+    startDemoSession();
+    navigate("/auth/callback");
+  };
+
   return (
     <section
       id="hero"
@@ -31,7 +40,7 @@ export default function Hero() {
 
         {/* 3D Globe Container */}
         <div className="absolute bottom-0 right-0 w-[600px] h-[600px] transform translate-x-1/3 translate-y-1/6">
-          <div 
+          <div
             className="relative w-full h-full rounded-full"
             style={{
               background: `
@@ -73,7 +82,7 @@ export default function Hero() {
                     strokeWidth="0.5"
                   />
                 </pattern>
-                
+
                 {/* Continent-like regions */}
                 <g id="continents">
                   <ellipse cx="200" cy="150" rx="80" ry="40" fill="rgba(16, 185, 129, 0.3)" opacity="0.7" />
@@ -82,12 +91,12 @@ export default function Hero() {
                   <ellipse cx="400" cy="180" rx="50" ry="30" fill="rgba(16, 185, 129, 0.35)" opacity="0.6" />
                 </g>
               </defs>
-              
+
               <circle cx="300" cy="300" r="300" fill="url(#globeHexPattern)" opacity="0.4" />
             </svg>
 
             {/* Atmospheric glow */}
-            <div 
+            <div
               className="absolute inset-0 rounded-full"
               style={{
                 background: 'radial-gradient(circle at 30% 30%, rgba(16, 185, 129, 0.1) 0%, transparent 60%)',
@@ -145,12 +154,8 @@ export default function Hero() {
 
           {/* Single CTA Button */}
           <div>
-            <Button
-              variant="outline"
-              size="lg"
-              className="bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-600 font-semibold px-10 py-4 text-lg min-w-[220px] transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-emerald-500/25"
-            >
-              Start Your Journey
+            <Button onClick={openDemo} variant="outline" size="lg" className="bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-600 font-semibold px-10 py-4 text-lg min-w-[220px] transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-emerald-500/25">
+              Explore demo
             </Button>
           </div>
         </div>
