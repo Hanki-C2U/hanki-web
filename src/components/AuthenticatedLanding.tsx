@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { User, LogOut } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { startDemoSession } from "../lib/demoSession";
 
 export default function AuthenticatedLanding() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,6 +13,11 @@ export default function AuthenticatedLanding() {
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const openDemo = () => {
+    startDemoSession();
+    navigate("/auth/callback");
   };
 
   const navigateToDashboard = () => {
@@ -36,16 +42,14 @@ export default function AuthenticatedLanding() {
           {/* Logo */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1
+              <button
+                type="button"
                 className="text-2xl font-bold text-emerald-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded px-2 py-1"
                 onClick={() => scrollToSection('hero')}
-                onKeyDown={(e) => e.key === 'Enter' && scrollToSection('hero')}
-                tabIndex={0}
-                role="button"
                 aria-label="Go to homepage"
               >
                 ATLAS
-              </h1>
+              </button>
             </div>
           </div>
 
@@ -146,13 +150,14 @@ export default function AuthenticatedLanding() {
               </div>
             </div>
           ) : (
-            <div className="hidden md:flex items-center space-x-4">
-              <Link to='login' className="text-emerald-600 hover:text-emerald-700 px-4 py-2 rounded-md text-sm font-medium">
-                Sign In
-              </Link>
-              <Link to='signup' className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-md text-sm font-medium">
-                Get Started
-              </Link>
+            <div className="hidden md:flex items-center">
+              <button
+                type="button"
+                onClick={openDemo}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-md text-sm font-medium"
+              >
+                Explore demo
+              </button>
             </div>
           )}
 
@@ -240,14 +245,13 @@ export default function AuthenticatedLanding() {
                 </div>
               ) : (
                 <div className="pt-4 pb-2 border-t border-slate-600">
-                  <div className="flex flex-col space-y-2">
-                    <Link to="/login" className="hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 px-3 py-2 rounded-md text-base font-medium text-left">
-                      Sign In
-                    </Link>
-                    <Link to="/signup" className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-base font-medium">
-                      Get Started
-                    </Link>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={openDemo}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-base font-medium"
+                  >
+                    Explore demo
+                  </button>
                 </div>
               )}
             </div>
